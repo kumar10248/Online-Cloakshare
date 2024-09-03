@@ -1,4 +1,4 @@
-# Clipnet
+# Online CloakShare
 
 This project is a clipboard application built with React and TypeScript. It allows users to upload files, set an expiration time for the uploaded file, and retrieve the file using a unique code.
 

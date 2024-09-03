@@ -1,4 +1,4 @@
-# Clipnet
+# Online CloakShare
 
 ## Overview
 This project is a clipboard application that allows users to save text or upload files temporarily. The saved text or uploaded files are accessible via a unique code and can be set to be automatically deleted after a specified time.
