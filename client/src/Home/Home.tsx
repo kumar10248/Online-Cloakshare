@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./Home.css";
 import { getData, postData } from "../Config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUpload } from "@fortawesome/free-solid-svg-icons";
+import { faUpload,faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
 
 const Home = () => {
   const [text, setText] = useState<string>("");
@@ -140,11 +140,14 @@ document.body.removeChild(link);
 
   return (
     <>
-     <div className="top"><h1>ONLINE  CLOAKSHARE</h1></div>
+    {/* top */}
+     <div className="text-2xl flex justify-center items-center"><h1>ONLINE  CLOAKSHARE</h1></div>
    
     {/* <div className="homeNoticeText">Your Data will be deleted within 24 hours automatically if you leave expiration time empty.</div> */}
-    <div className="homeMainDiv">
-      <div className="homeLeftDiv">
+    {/* homeMainDiv */}
+    <div className="bg-black flex justify-center h-[100vh]">
+      <div className="w-1/2">
+      <div className="">
         <div className="homeTitleText">Send to online CloakShare</div>
         <div className="homeBtnDiv">
           <button
@@ -172,7 +175,7 @@ document.body.removeChild(link);
           onSubmit={handleSave}>
           <textarea
             placeholder="Enter Text"
-            className="homeTextArea"
+            className="homeTextArea outline-none focus:outline-yellow-400 focus:border-none border-none text-black"
             value={text}
             onChange={(e) => {
               setText(e.target.value);
@@ -181,7 +184,10 @@ document.body.removeChild(link);
           <div className="homeExpireDiv">Expiration Time: <input type="text" className="homeExpireInput" maxLength={4} value={number} onChange={handleErrorNumChange} /> minutes. (max. 2880 minutes)</div>
           <button
             type="submit"
-            className="homeBtn">
+            className="px-6 py-3 rounded-xl bg-yellow-500 text-white my-2 hover:scale-95 transition-all duration-300">
+              <span className="icon mx-2">
+              <FontAwesomeIcon icon={faFloppyDisk} className="" />
+              </span>
             {isLoadingSave ? "Loading..." : "Save Copy"}
           </button>
         </form>}
@@ -233,8 +239,9 @@ document.body.removeChild(link);
           </div>
         )}
       </div>
-      <div className="homeRightDiv">
-        <div className="homeTitleText">Reveal from Online CloakShare</div>
+      <div className="homeRightDiv w-full justify-center flex">
+        <div>
+        <div className="homeTitleText text-white">Reveal from Online CloakShare</div>
         <form
           action="submit"
           className="homeForm"
@@ -270,6 +277,8 @@ document.body.removeChild(link);
             </button>
           </>
         )}
+      </div>
+      </div>
       </div>
     </div>
     </>
