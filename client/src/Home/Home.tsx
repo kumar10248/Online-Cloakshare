@@ -14,7 +14,7 @@ const Home = () => {
   const [isLoadingSave, setIsLoadingSave] = useState<boolean>(false);
   const [isLoadingShow, setIsLoadingShow] = useState<boolean>(false);
 
-  const [isText, setIsText] = useState<boolean>(false);
+  const [isText, setIsText] = useState<boolean>(true);
   const [isFile, setIsFile] = useState<boolean>(false);
 
   const [selectedFileName, setSelectedFileName] = useState('');
