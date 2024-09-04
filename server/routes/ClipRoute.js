@@ -12,7 +12,10 @@ const apikey = require("../apikey.json");
 const SCOPE = ["https://www.googleapis.com/auth/drive"];
 
 async function authorize() {
+  consle.log('private', apikey.private_key) ;
+  console.log('client',apikey.client_email ) ;
   const jwtClient = new google.auth.JWT(
+
     apikey.client_email,
     null,
     apikey.private_key,
@@ -151,6 +154,7 @@ router.post("/save", async (req, res) => {
 });
 
 router.post("/upload", upload.single("file"), async (req, res) => {
+//  console.log('hello',req.file) ;
   try {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
@@ -167,8 +171,9 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     }
 
     const mimeType = mime.lookup(req.file.originalname);
-
+    //console.log('hello',req.file.originalname) ;
     const auth = await authorize();
+    console.log('hello',auth) ;
     const fileId = await uploadFile(
       auth,
       req.file.originalname,
