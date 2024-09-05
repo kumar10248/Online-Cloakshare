@@ -75,7 +75,7 @@ document.body.removeChild(link);
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0] ?? null;
     setSelectedFile(selectedFile);
-    console.log('Selected File:', selectedFile);
+    // console.log('Selected File:', selectedFile);
 
   };
 
@@ -94,7 +94,6 @@ document.body.removeChild(link);
   
 
   const handleUpload = async (e: React.FormEvent) => {
-    console.log('Selected File successfully:');
     e.preventDefault();
     setCodeText("");
   
@@ -128,7 +127,7 @@ document.body.removeChild(link);
   
       const response = await postData('upload', formData, config);
   
-      console.log('File uploaded:', response.data);
+      // console.log('File uploaded:', response.data);
       setCodeText(response.code);
       setIsLoadingSave(false);
     } catch (error) {
@@ -226,7 +225,7 @@ document.body.removeChild(link);
 )}
 
         {codeText && (
-          <div className="homeCode">
+          <div className="homeCode text-white">
             {`Code - ${codeText}`}{" "}
             <button
               className="homeCopyBtn"

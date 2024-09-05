@@ -1,5 +1,3 @@
-
-```markdown
 # Online CloakShare
 
 This project is a clipboard application that allows users to save text or upload files temporarily. The saved text or uploaded files are accessible via a unique code and can be set to be automatically deleted after a specified time.
@@ -210,4 +208,3 @@ Email ID: kumardevashish000@gmail.com
 ## License
 
 This project is licensed under the terms of the MIT license.
-```
