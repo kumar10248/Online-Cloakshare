@@ -140,14 +140,14 @@ document.body.removeChild(link);
   return (
     <>
     {/* top */}
-     <div className="text-2xl flex justify-center items-center"><h1>ONLINE  CLOAKSHARE</h1></div>
+     <div className="text-3xl flex justify-center items-center h-20 bg-amber-500 text-stone-50 decoration-8 font-black"><h1>ONLINE  CLOAKSHARE</h1></div>
    
     {/* <div className="homeNoticeText">Your Data will be deleted within 24 hours automatically if you leave expiration time empty.</div> */}
     {/* homeMainDiv */}
     <div className="bg-black flex justify-center h-[100vh]">
       <div className="w-1/2">
       <div className="">
-        <div className="homeTitleText">Send to online CloakShare</div>
+        <div className="homeTitleText text-lime-300">Send to online CloakShare</div>
         <div className="homeBtnDiv">
           <button
             className="homeBtn"
@@ -180,7 +180,7 @@ document.body.removeChild(link);
               setText(e.target.value);
             }}
           />
-          <div className="homeExpireDiv">Expiration Time: <input type="text" className="homeExpireInput" maxLength={4} value={number} onChange={handleErrorNumChange} /> minutes. (max. 2880 minutes)</div>
+          <div className="homeExpireDiv text-lime-300">Expiration Time: <input type="text" className="homeExpireInput bg-stone-50 text-rose-700" maxLength={4} value={number} onChange={handleErrorNumChange} /> minutes. (max. 2880 minutes)</div>
           <button
             type="submit"
             className="px-6 py-3 rounded-xl bg-yellow-500 text-white my-2 hover:scale-95 transition-all duration-300">
@@ -240,7 +240,7 @@ document.body.removeChild(link);
       </div>
       <div className="homeRightDiv w-full justify-center flex">
         <div>
-        <div className="homeTitleText text-white">Reveal from Online CloakShare</div>
+        <div className="homeTitleText text-lime-300">Reveal from Online CloakShare</div>
         <form
           action="submit"
           className="homeForm"
