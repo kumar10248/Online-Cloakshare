@@ -213,7 +213,7 @@ document.body.removeChild(link);
         }
       }}
     />
-    <div className="homeExpireDiv">Expiration Time <input type="text" className="homeExpireInput" maxLength={4} value={number} onChange={handleErrorNumChange} /> minutes. (max. 2880 minutes)</div>
+    <div className="homeExpireDiv text-lime-300">Expiration Time <input type="text" className="homeExpireInput bg-stone-50 text-rose-700" maxLength={4} value={number} onChange={handleErrorNumChange} /> minutes. (max. 2880 minutes)</div>
     <button type="submit" className="homeBtn">
       {isLoadingSave ? "Loading..." : "Save Copy"}
     </button>
