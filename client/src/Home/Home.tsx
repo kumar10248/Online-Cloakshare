@@ -4,6 +4,7 @@ import { getData, postData } from "../Config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUpload,faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
 
+//this is new commit
 const Home = () => {
   const [text, setText] = useState<string>("");
   const [code, setCode] = useState<string>("");
