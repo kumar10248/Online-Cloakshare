@@ -145,7 +145,7 @@ document.body.removeChild(link);
    
     {/* <div className="homeNoticeText">Your Data will be deleted within 24 hours automatically if you leave expiration time empty.</div> */}
     {/* homeMainDiv */}
-    <div className="bg-black flex justify-center h-[100vh]">
+    <div className="bg-white flex justify-center h-[100vh]">
       <div className="w-1/2">
       <div className="">
         <div className="homeTitleText text-lime-300">Send to online CloakShare</div>
