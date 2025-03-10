@@ -141,11 +141,37 @@ document.body.removeChild(link);
   return (
     <>
     {/* top */}
-     <div className="text-3xl flex justify-center items-center h-20 bg-amber-500 text-stone-50 decoration-8 font-black"><h1>ONLINE  CLOAKSHARE</h1></div>
+    <div className="flex items-center h-20 bg-amber-500 px-4">
+  <h1 className="text-stone-50 decoration-8 font-black text-3xl">
+    ONLINE CLOAKSHARE
+  </h1>
+  <button className="font-bold ml-auto px-4 py-2 bg-stone-50 text-rose-700  rounded hover:bg-amber-600 hover:text-stone-50 transition">
+    PDF to Word
+  </button>
+  <button className="font-bold ml-auto px-4 py-2 bg-stone-50 text-rose-700 rounded hover:bg-amber-600 hover:text-stone-50 transition">
+    Merg PDF
+  </button>
+  <button className="font-bold ml-auto px-4 py-2 bg-stone-50 text-rose-700 rounded hover:bg-amber-600 hover:text-stone-50 transition">
+    Edit PDF
+  </button>
+
+  <button className="font-bold ml-auto px-4 py-2 bg-stone-50 text-rose-700 rounded hover:bg-amber-600 hover:text-stone-50 transition">
+    PDF to JPG
+  </button>
+
+  <button className="font-bold ml-auto px-4 py-2 bg-stone-50 text-rose-700 rounded hover:bg-amber-600 hover:text-stone-50 transition">
+  JPG to PDF
+  </button>
+
+  <button className="font-bold ml-auto px-4 py-2 bg-stone-50 text-rose-700 rounded hover:bg-amber-600 hover:text-stone-50 transition">
+    PDF to JPG
+  </button>
+</div>
+
    
     {/* <div className="homeNoticeText">Your Data will be deleted within 24 hours automatically if you leave expiration time empty.</div> */}
     {/* homeMainDiv */}
-    <div className="bg-white flex justify-center h-[100vh]">
+    <div className="bg-black flex justify-center h-[100vh]">
       <div className="w-1/2">
       <div className="">
         <div className="homeTitleText text-lime-300">Send to online CloakShare</div>
