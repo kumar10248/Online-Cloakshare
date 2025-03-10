@@ -152,7 +152,7 @@ document.body.removeChild(link);
     Merg PDF
   </button>
   <button className="font-bold ml-auto px-4 py-2 bg-stone-50 text-rose-700 rounded hover:bg-amber-600 hover:text-stone-50 transition">
-    Edit PDF
+    Edit Pdf
   </button>
 
   <button className="font-bold ml-auto px-4 py-2 bg-stone-50 text-rose-700 rounded hover:bg-amber-600 hover:text-stone-50 transition">
