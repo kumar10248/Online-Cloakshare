@@ -130,7 +130,7 @@ const PdfToWord = () => {
   return (
     <div className="bg-gray-800 bg-opacity-40 rounded-xl p-6 backdrop-blur-sm shadow-xl border border-gray-700">
       <h2 className="text-2xl font-bold text-amber-400 mb-6 flex items-center">
-        <FontAwesomeIcon icon={faFileWord} className="mr-3" />
+        <FontAwesomeIcon icon={faFileWord as IconProp} className="mr-3" />
         PDF to Word Converter
       </h2>
       
@@ -141,14 +141,14 @@ const PdfToWord = () => {
         </p>
         <div className="flex items-center space-x-6 p-4 bg-gray-900 bg-opacity-50 rounded-lg">
           <div className="flex items-center">
-          <FontAwesomeIcon icon={faUpload as IconProp} className="text-red-500 text-3xl mr-2" />
+            <FontAwesomeIcon icon={faUpload as IconProp} className="text-red-500 text-3xl mr-2" />
             <span className="text-white">PDF</span>
           </div>
           <div className="text-amber-400">
-          <FontAwesomeIcon icon={faDownload as IconProp} />
+            <FontAwesomeIcon icon={faDownload as IconProp} />
           </div>
           <div className="flex items-center">
-          <FontAwesomeIcon icon={faSpinner as IconProp} className="text-blue-500 text-3xl mr-2" />
+            <FontAwesomeIcon icon={faSpinner as IconProp} className="text-blue-500 text-3xl mr-2" />
             <span className="text-white">DOCX</span>
           </div>
         </div>
@@ -173,7 +173,7 @@ const PdfToWord = () => {
           {conversionStatus === "idle" && (
             <div className="flex flex-col items-center">
               <FontAwesomeIcon 
-                icon={selectedFile ? faFilePdf : faUpload} 
+                icon={(selectedFile ? faFilePdf : faUpload) as IconProp} 
                 className={`text-5xl mb-4 ${selectedFile ? "text-red-500" : "text-amber-400"}`} 
               />
               <span className="text-lg font-medium text-gray-300 mb-1">
@@ -185,7 +185,7 @@ const PdfToWord = () => {
           
           {(conversionStatus === "uploading" || conversionStatus === "converting") && (
             <div className="flex flex-col items-center">
-              <FontAwesomeIcon icon={faSpinner} className="text-5xl mb-4 text-amber-400 animate-spin" />
+              <FontAwesomeIcon icon={faSpinner as IconProp} className="text-5xl mb-4 text-amber-400 animate-spin" />
               <span className="text-lg font-medium text-gray-300 mb-3">
                 {conversionStatus === "uploading" ? "Uploading your file..." : "Converting to Word..."}
               </span>
@@ -206,7 +206,7 @@ const PdfToWord = () => {
           
           {conversionStatus === "completed" && (
             <div className="flex flex-col items-center">
-              <FontAwesomeIcon icon={faCheckCircle} className="text-5xl mb-4 text-green-500" />
+              <FontAwesomeIcon icon={faCheckCircle as IconProp} className="text-5xl mb-4 text-green-500" />
               <span className="text-lg font-medium text-gray-300 mb-1">
                 Conversion completed successfully!
               </span>
@@ -216,7 +216,7 @@ const PdfToWord = () => {
           
           {conversionStatus === "failed" && (
             <div className="flex flex-col items-center">
-              <FontAwesomeIcon icon={faExclamationTriangle} className="text-5xl mb-4 text-red-500" />
+              <FontAwesomeIcon icon={faExclamationTriangle as IconProp} className="text-5xl mb-4 text-red-500" />
               <span className="text-lg font-medium text-gray-300 mb-1">
                 Conversion failed
               </span>
@@ -232,7 +232,7 @@ const PdfToWord = () => {
               onClick={handleDownload}
               className="flex-1 py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition-all duration-200 flex items-center justify-center"
             >
-              <FontAwesomeIcon icon={faDownload} className="mr-2" />
+              <FontAwesomeIcon icon={faDownload as IconProp} className="mr-2" />
               Download Word Document
             </button>
           ) : (
@@ -247,12 +247,12 @@ const PdfToWord = () => {
             >
               {conversionStatus === "uploading" || conversionStatus === "converting" ? (
                 <>
-                  <FontAwesomeIcon icon={faSpinner} className="mr-2 animate-spin" />
+                  <FontAwesomeIcon icon={faSpinner as IconProp} className="mr-2 animate-spin" />
                   {conversionStatus === "uploading" ? "Uploading..." : "Converting..."}
                 </>
               ) : (
                 <>
-                  <FontAwesomeIcon icon={faFileWord} className="mr-2" />
+                  <FontAwesomeIcon icon={faFileWord as IconProp} className="mr-2" />
                   Convert to Word
                 </>
               )}
