@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import "./Home.css";
 import { getData, postData } from "../Config";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// Import the component
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+// Import the library and configure it
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
+// Import icons
 import { 
   faUpload, 
   faCopy, 
@@ -18,7 +23,8 @@ import {
   faKey,
   faTrashAlt,
   faInfoCircle,
-  faQuestionCircle
+  faQuestionCircle,
+  faUser
 } from "@fortawesome/free-solid-svg-icons";
 import { 
   faInstagram, 
@@ -28,6 +34,30 @@ import {
 import { motion } from "framer-motion";
 import { Toaster, toast } from "react-hot-toast";
 import PdfToWord from "../components/PdfToWord";
+
+// Add ALL icons to the library
+library.add(
+  faUpload, 
+  faCopy, 
+  faEye, 
+  faFileAlt, 
+  faFont, 
+  faClock, 
+  faExchangeAlt,
+  faFilePdf,
+  faFileWord,
+  faLock,
+  faShieldHalved,
+  faFingerprint,
+  faKey,
+  faTrashAlt,
+  faInfoCircle,
+  faQuestionCircle,
+  faUser,
+  faInstagram, 
+  faLinkedinIn, 
+  faXTwitter
+);
 
 // Define types for the component
 interface UtilityType {
@@ -329,7 +359,7 @@ const Home: React.FC = () => {
           <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-amber-500 opacity-10 rounded-full blur-xl"></div>
           
           <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 mb-6 flex items-center relative z-10">
-            <FontAwesomeIcon icon={faKey} className="mr-3" />
+          <FontAwesomeIcon icon={faUpload as IconProp}  className="mr-3" />
             Secure Your Content
           </h2>
           
@@ -345,7 +375,7 @@ const Home: React.FC = () => {
                 setCodeText("");
               }}
             >
-              <FontAwesomeIcon icon={faFont} className="mr-2" />
+              <FontAwesomeIcon icon={faUpload as IconProp}  className="mr-2" />
               Text
             </button>
             <button
@@ -664,7 +694,7 @@ const Home: React.FC = () => {
           <div className="space-y-6 text-gray-300">
             <div>
               <h4 className="text-xl text-amber-400 mb-2 flex items-center">
-                <FontAwesomeIcon icon={faFont} className="mr-2" /> 
+                <FontAwesomeIcon icon={faUpload as IconProp}  className="mr-2" /> 
                 Sharing Text
               </h4>
               <ol className="list-decimal list-inside space-y-2 ml-4">

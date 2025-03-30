@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import { 
   faUpload, 
   faDownload, 
@@ -129,14 +130,14 @@ const PdfToWord = () => {
         </p>
         <div className="flex items-center space-x-6 p-4 bg-gray-900 bg-opacity-50 rounded-lg">
           <div className="flex items-center">
-            <FontAwesomeIcon icon={faFilePdf} className="text-red-500 text-3xl mr-2" />
+          <FontAwesomeIcon icon={faUpload as IconProp} className="text-red-500 text-3xl mr-2" />
             <span className="text-white">PDF</span>
           </div>
           <div className="text-amber-400">
-            <FontAwesomeIcon icon={faDownload} />
+          <FontAwesomeIcon icon={faDownload as IconProp} />
           </div>
           <div className="flex items-center">
-            <FontAwesomeIcon icon={faFileWord} className="text-blue-500 text-3xl mr-2" />
+          <FontAwesomeIcon icon={faSpinner as IconProp} className="text-blue-500 text-3xl mr-2" />
             <span className="text-white">DOCX</span>
           </div>
         </div>
