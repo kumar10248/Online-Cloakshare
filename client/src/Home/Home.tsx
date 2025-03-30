@@ -35,7 +35,7 @@ import { motion } from "framer-motion";
 import { Toaster, toast } from "react-hot-toast";
 import PdfToWord from "../components/PdfToWord";
 
-// Add ALL icons to the library
+// Add ALL icons to the library - use spread operator to pass multiple icons
 library.add(
   faUpload, 
   faCopy, 
@@ -62,7 +62,7 @@ library.add(
 // Define types for the component
 interface UtilityType {
   name: string;
-  icon: any; // Using any for FontAwesome icon type
+  icon: IconProp; // Changed from any to IconProp
   description: string;
   coming?: boolean;
 }
@@ -359,7 +359,7 @@ const Home: React.FC = () => {
           <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-amber-500 opacity-10 rounded-full blur-xl"></div>
           
           <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 mb-6 flex items-center relative z-10">
-          <FontAwesomeIcon icon={faUpload as IconProp}  className="mr-3" />
+          <FontAwesomeIcon icon={faUpload as IconProp} className="mr-3" />
             Secure Your Content
           </h2>
           
@@ -375,7 +375,7 @@ const Home: React.FC = () => {
                 setCodeText("");
               }}
             >
-              <FontAwesomeIcon icon={faUpload as IconProp}  className="mr-2" />
+              <FontAwesomeIcon icon={faUpload as IconProp} className="mr-2" />
               Text
             </button>
             <button
@@ -388,7 +388,7 @@ const Home: React.FC = () => {
                 setCodeText("");
               }}
             >
-              <FontAwesomeIcon icon={faFileAlt} className="mr-2" />
+              <FontAwesomeIcon icon={faFileAlt as IconProp} className="mr-2" />
               File
             </button>
           </div>
@@ -409,7 +409,7 @@ const Home: React.FC = () => {
               </div>
               
               <div className="flex items-center space-x-2 text-sm p-3 bg-gray-900 bg-opacity-60 rounded-lg">
-                <FontAwesomeIcon icon={faClock} className="text-amber-400" />
+                <FontAwesomeIcon icon={faClock as IconProp} className="text-amber-400" />
                 <span className="text-amber-300">Auto-destroy after:</span>
                 <input
                   type="text"
@@ -441,7 +441,7 @@ const Home: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <FontAwesomeIcon icon={faFingerprint} className="mr-2" />
+                    <FontAwesomeIcon icon={faFingerprint as IconProp} className="mr-2" />
                     Secure & Generate Code
                   </>
                 )}
@@ -464,7 +464,7 @@ const Home: React.FC = () => {
                   className="cursor-pointer flex flex-col items-center justify-center"
                 >
                   <div className="w-16 h-16 flex items-center justify-center rounded-full bg-amber-500 bg-opacity-20 mb-4 group-hover:bg-opacity-40 transition-all duration-300">
-                    <FontAwesomeIcon icon={faUpload} className="text-2xl text-amber-400 group-hover:scale-110 transition-all duration-300" />
+                    <FontAwesomeIcon icon={faUpload as IconProp} className="text-2xl text-amber-400 group-hover:scale-110 transition-all duration-300" />
                   </div>
                   <span className="text-lg font-medium text-gray-300 mb-1 group-hover:text-amber-400 transition-all duration-300">
                     {selectedFileName || "Choose a file to upload"}
@@ -486,7 +486,7 @@ const Home: React.FC = () => {
               )}
               
               <div className="flex items-center space-x-2 text-sm p-3 bg-gray-900 bg-opacity-60 rounded-lg">
-                <FontAwesomeIcon icon={faClock} className="text-amber-400" />
+                <FontAwesomeIcon icon={faClock as IconProp} className="text-amber-400" />
                 <span className="text-amber-300">Auto-destroy after:</span>
                 <input
                   type="text"
@@ -518,7 +518,7 @@ const Home: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <FontAwesomeIcon icon={faFingerprint} className="mr-2" />
+                    <FontAwesomeIcon icon={faFingerprint as IconProp} className="mr-2" />
                     Secure & Generate Code
                   </>
                 )}
@@ -536,7 +536,7 @@ const Home: React.FC = () => {
             >
               <div className="flex justify-between items-center">
                 <span className="text-gray-400 text-sm flex items-center">
-                  <FontAwesomeIcon icon={faKey} className="mr-2 text-amber-400" />
+                  <FontAwesomeIcon icon={faKey as IconProp} className="mr-2 text-amber-400" />
                   Secret access code:
                 </span>
                 <button
@@ -544,7 +544,7 @@ const Home: React.FC = () => {
                   className="text-amber-400 hover:text-amber-300 transition-colors duration-200 p-2 bg-gray-800 bg-opacity-50 rounded-full"
                   title="Copy to clipboard"
                 >
-                  <FontAwesomeIcon icon={faCopy} />
+                  <FontAwesomeIcon icon={faCopy as IconProp} />
                 </button>
               </div>
               <div className="mt-4 text-3xl font-mono tracking-wider text-center">
@@ -566,7 +566,7 @@ const Home: React.FC = () => {
           <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-amber-500 opacity-10 rounded-full blur-xl"></div>
           
           <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 mb-6 flex items-center relative z-10">
-            <FontAwesomeIcon icon={faEye} className="mr-3" />
+            <FontAwesomeIcon icon={faEye as IconProp} className="mr-3" />
             Reveal Secret Content
           </h2>
           
@@ -602,7 +602,7 @@ const Home: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <FontAwesomeIcon icon={faEye} className="mr-2" />
+                  <FontAwesomeIcon icon={faEye as IconProp} className="mr-2" />
                   Decrypt & Reveal
                 </>
               )}
@@ -619,7 +619,7 @@ const Home: React.FC = () => {
             >
               <div className="flex justify-between items-center mb-2">
                 <span className="text-gray-400 text-sm flex items-center">
-                  <FontAwesomeIcon icon={faLock} className="mr-2 text-green-400" />
+                  <FontAwesomeIcon icon={faLock as IconProp} className="mr-2 text-green-400" />
                   Decrypted content:
                 </span>
                 <div className="flex space-x-2">
@@ -627,7 +627,7 @@ const Home: React.FC = () => {
                     onClick={() => handleCopy(showText)}
                     className="text-sm px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg text-gray-300 transition-colors duration-200 flex items-center"
                   >
-                    <FontAwesomeIcon icon={faCopy} className="mr-2" />
+                    <FontAwesomeIcon icon={faCopy as IconProp} className="mr-2" />
                     Copy
                   </button>
                   <button
@@ -635,7 +635,7 @@ const Home: React.FC = () => {
                     className="text-sm px-3 py-1 bg-gray-700 hover:bg-red-900 rounded-lg text-gray-300 hover:text-white transition-colors duration-200 flex items-center"
                     title="Clear and destroy"
                   >
-                    <FontAwesomeIcon icon={faTrashAlt} className="mr-2" />
+                    <FontAwesomeIcon icon={faTrashAlt as IconProp} className="mr-2" />
                     Clear
                   </button>
                 </div>
@@ -651,7 +651,7 @@ const Home: React.FC = () => {
                 </div>
               </div>
               <div className="text-xs text-center mt-2 text-gray-500 flex items-center justify-center">
-                <FontAwesomeIcon icon={faTrashAlt} className="mr-1 text-amber-500" />
+                <FontAwesomeIcon icon={faTrashAlt as IconProp} className="mr-1 text-amber-500" />
                 This content will be removed from our servers after expiration
               </div>
             </motion.div>
@@ -686,62 +686,62 @@ const Home: React.FC = () => {
               className="text-gray-400 hover:text-amber-500"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
           
           <div className="space-y-6 text-gray-300">
             <div>
-              <h4 className="text-xl text-amber-400 mb-2 flex items-center">
-                <FontAwesomeIcon icon={faUpload as IconProp}  className="mr-2" /> 
-                Sharing Text
+              <h4 className="text-lg font-semibold text-amber-400 mb-2 flex items-center">
+                <FontAwesomeIcon icon="upload" className="mr-2" />
+                Sharing Content Securely
               </h4>
-              <ol className="list-decimal list-inside space-y-2 ml-4">
-                <li>Select the <span className="text-amber-400 font-medium">Text</span> tab</li>
-                <li>Enter the text you want to share securely</li>
-                <li>Set an auto-destroy time (default 24 hours / 1440 minutes)</li>
-                <li>Click <span className="text-amber-400 font-medium">Secure & Generate Code</span></li>
-                <li>Share the generated 4-digit code with your recipient</li>
-                <li>Your text will be automatically deleted after the set time</li>
-              </ol>
-              </div>
-            
-              <div>
-              <h4 className="text-xl text-amber-400 mb-2 flex items-center">
-                <FontAwesomeIcon icon={faEye} className="mr-2" /> 
-                Accessing Shared Content
-              </h4>
-              <ol className="list-decimal list-inside space-y-2 ml-4">
-                <li>Go to the <span className="text-amber-400 font-medium">Reveal Secret Content</span> section</li>
-                <li>Enter the 4-digit code you received</li>
-                <li>Click <span className="text-amber-400 font-medium">Decrypt & Reveal</span></li>
-                <li>The content will be displayed and you can copy it to your clipboard</li>
-                <li>For files, a download will automatically start</li>
-              </ol>
+              <p>
+                1. Choose between <span className="text-amber-300">Text</span> or <span className="text-amber-300">File</span> tab
+                <br />
+                2. Enter your text or select a file (up to 100MB)
+                <br />
+                3. Set an auto-destroy time (default: 24 hours, max: 48 hours)
+                <br />
+                4. Click "Secure & Generate Code"
+                <br />
+                5. Share the generated 4-digit code with the recipient
+              </p>
             </div>
             
             <div>
-              <h4 className="text-xl text-amber-400 mb-2 flex items-center">
-                <FontAwesomeIcon icon={faFileAlt} className="mr-2" /> 
-                Sharing Files
+              <h4 className="text-lg font-semibold text-amber-400 mb-2 flex items-center">
+                <FontAwesomeIcon icon="eye" className="mr-2" />
+                Accessing Shared Content
               </h4>
-              <ol className="list-decimal list-inside space-y-2 ml-4">
-                <li>Select the <span className="text-amber-400 font-medium">File</span> tab</li>
-                <li>Click to select or drag and drop your file (max 100MB)</li>
-                <li>Set an auto-destroy time (default 24 hours / 1440 minutes)</li>
-                <li>Click <span className="text-amber-400 font-medium">Secure & Generate Code</span></li>
-                <li>Share the generated 4-digit code with your recipient</li>
-                <li>Your file will be automatically deleted after the set time</li>
-              </ol>
+              <p>
+                1. Enter the 4-digit code in the "Reveal Secret Content" section
+                <br />
+                2. Click "Decrypt & Reveal"
+                <br />
+                3. The content will be displayed or downloaded automatically
+                <br />
+                4. Content is automatically deleted after the set time period
+              </p>
             </div>
             
-            <div className="bg-amber-900 bg-opacity-20 p-4 rounded-lg border border-amber-700">
-              <h4 className="text-lg text-amber-400 mb-2 flex items-center">
-                <FontAwesomeIcon icon={faShieldHalved} className="mr-2" /> 
-                Security Note
+            <div className="bg-gray-800 p-4 rounded-lg border-l-4 border-amber-500">
+              <h4 className="text-lg font-semibold text-amber-400 mb-2 flex items-center">
+                <FontAwesomeIcon icon="shield-halved" className="mr-2" />
+                Security Information
               </h4>
-              <p>All content is encrypted and cannot be accessed without the correct code. Once the timer expires, the content is permanently deleted from our servers. For maximum security, share the access code through a different communication channel than where you share the link to CloakShare.</p>
+              <p className="text-sm">
+                • All content is encrypted with AES-256 encryption
+                <br />
+                • Your content is never stored in plain text
+                <br />
+                • Auto-destruction ensures your data doesn't remain on servers
+                <br />
+                • We don't track or analyze the content you share
+                <br />
+                • No account required to maintain anonymity
+              </p>
             </div>
           </div>
         </div>
@@ -781,59 +781,54 @@ const Home: React.FC = () => {
           
           <div className="space-y-6 text-gray-300">
             <p>
-              CloakShare is a secure content sharing platform that allows you to share text and files with end-to-end encryption and self-destruct timers. We designed CloakShare with privacy and security in mind.
+              CloakShare was designed to make secure communication accessible to everyone. In an age where privacy is increasingly important, we wanted to create a simple tool that allows anyone to share sensitive information securely without complex setups or technical knowledge.
             </p>
             
             <div>
-              <h4 className="text-xl text-amber-400 mb-2 flex items-center">
-                <FontAwesomeIcon icon={faShieldHalved} className="mr-2" /> 
-                Our Security Features
-              </h4>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>End-to-end encryption for all shared content</li>
-                <li>Automatic deletion after a specified time</li>
+              <h4 className="text-lg font-semibold text-amber-400 mb-2">Key Features:</h4>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>End-to-end encryption for all content</li>
+                <li>Self-destructing messages and files</li>
+                <li>No accounts required - complete anonymity</li>
                 <li>Simple 4-digit access codes</li>
-                <li>No account or login required</li>
-                <li>No tracking of user activity or IP addresses</li>
-                <li>Content is never indexed or searchable</li>
+                <li>File sharing up to 100MB</li>
+                <li>Mobile-friendly design</li>
               </ul>
             </div>
             
-            <div>
-              <h4 className="text-xl text-amber-400 mb-2 flex items-center">
-                <FontAwesomeIcon icon={faInfoCircle} className="mr-2" /> 
-                Technical Details
-              </h4>
-              <p>
-                CloakShare uses AES-256 encryption to secure your content. The encryption keys are never stored on our servers, making it impossible for anyone (including us) to access your content without the correct code. All data is stored in a temporary encrypted storage and permanently deleted after the timer expires.
+            <div className="bg-gray-800 p-4 rounded-lg">
+              <h4 className="text-lg font-semibold text-amber-400 mb-2">Our Privacy Promise:</h4>
+              <p className="text-sm">
+                We don't store any identifiable information about users. All content is encrypted before storage and automatically deleted after the set time period. We have no way to access or view the content you share through our service.
               </p>
             </div>
             
-            <div className="bg-gray-800 p-4 rounded-lg">
-              <h4 className="text-lg text-amber-400 mb-2">Developer</h4>
+            <div>
+              <h4 className="text-lg font-semibold text-amber-400 mb-2">Created By:</h4>
               <p>
-                CloakShare was developed by Kumar Devashish. For more information, questions, or feedback, please reach out through one of the social media channels below.
+                CloakShare was developed by Kumar Devashish, a software engineer passionate about privacy and security. If you have feedback or suggestions, please reach out through the social links below.
               </p>
-              <div className="flex space-x-4 mt-4">
-                <button 
-                  onClick={() => handleSocialMedia("instagram")} 
-                  className="text-white hover:text-pink-500 transition-colors duration-200"
-                >
-                  <FontAwesomeIcon icon={faInstagram} size="lg" />
-                </button>
-                <button 
-                  onClick={() => handleSocialMedia("linkedin")} 
-                  className="text-white hover:text-blue-500 transition-colors duration-200"
-                >
-                  <FontAwesomeIcon icon={faLinkedinIn} size="lg" />
-                </button>
-                <button 
-                  onClick={() => handleSocialMedia("twitter")} 
-                  className="text-white hover:text-blue-400 transition-colors duration-200"
-                >
-                  <FontAwesomeIcon icon={faXTwitter} size="lg" />
-                </button>
-              </div>
+            </div>
+            
+            <div className="flex justify-center space-x-4 pt-4">
+              <button
+                onClick={() => handleSocialMedia("instagram")}
+                className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center hover:from-amber-600 hover:to-amber-700 transition-all duration-300"
+              >
+                <FontAwesomeIcon icon={["fab", "instagram"]} className="text-white" />
+              </button>
+              <button
+                onClick={() => handleSocialMedia("linkedin")}
+                className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center hover:from-amber-600 hover:to-amber-700 transition-all duration-300"
+              >
+                <FontAwesomeIcon icon={["fab", "linkedin-in"]} className="text-white" />
+              </button>
+              <button
+                onClick={() => handleSocialMedia("twitter")}
+                className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center hover:from-amber-600 hover:to-amber-700 transition-all duration-300"
+              >
+                <FontAwesomeIcon icon={["fab", "x-twitter"]} className="text-white" />
+              </button>
             </div>
           </div>
         </div>
@@ -841,29 +836,35 @@ const Home: React.FC = () => {
     );
   };
 
-  // Utilities modal and list
-  const utilities: UtilityType[] = [
-    {
-      name: "PDF to Word",
-      icon: faExchangeAlt,
-      description: "Convert PDF files to editable Word documents"
-    },
-    {
-      name: "Word to PDF",
-      icon: faFilePdf,
-      description: "Convert Word documents to PDF files",
-      coming: true
-    },
-    {
-      name: "Image to Text",
-      icon: faFileWord,
-      description: "Extract text from images using OCR",
-      coming: true
-    }
-  ];
-
+  // Utility selection modal
   const renderUtilitiesModal = (): JSX.Element | null => {
     if (!showUtilities) return null;
+    
+    const utilities: UtilityType[] = [
+      {
+        name: "PDF to Word",
+        icon: "file-pdf",
+        description: "Convert PDF documents to editable Word files"
+      },
+      {
+        name: "Image Compressor",
+        icon: "file-alt",
+        description: "Compress images without losing quality",
+        coming: true
+      },
+      {
+        name: "Text Translator",
+        icon: "language",
+        description: "Translate text between multiple languages",
+        coming: true
+      },
+      {
+        name: "Password Generator",
+        icon: "key",
+        description: "Create strong, secure passwords",
+        coming: true
+      }
+    ];
     
     return (
       <motion.div
@@ -874,12 +875,12 @@ const Home: React.FC = () => {
         onClick={closeAllModals}
       >
         <div 
-          className="bg-gray-900 rounded-xl p-6 max-w-3xl w-full max-h-[80vh] overflow-y-auto shadow-2xl border border-amber-600" 
+          className="bg-gray-900 rounded-xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto shadow-2xl border border-amber-600" 
           onClick={e => e.stopPropagation()}
         >
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">
-              Utilities & Tools
+              Additional Utilities
             </h3>
             <button 
               onClick={() => setShowUtilities(false)}
@@ -893,12 +894,10 @@ const Home: React.FC = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {utilities.map((utility, index) => (
-              <div 
-                key={index} 
-                className={`bg-gray-800 rounded-xl p-5 border border-gray-700 ${
-                  utility.coming 
-                    ? "opacity-70 cursor-not-allowed" 
-                    : "hover:border-amber-500 cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-amber-900/30"
+              <div
+                key={index}
+                className={`p-4 rounded-lg border border-gray-700 hover:border-amber-500 transition-all duration-300 ${
+                  utility.coming ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
                 }`}
                 onClick={() => {
                   if (!utility.coming) {
@@ -908,14 +907,14 @@ const Home: React.FC = () => {
                 }}
               >
                 <div className="flex items-start">
-                  <div className="w-12 h-12 flex items-center justify-center rounded-full bg-amber-500 bg-opacity-20 mr-4">
-                    <FontAwesomeIcon icon={utility.icon} className="text-amber-400 text-xl" />
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-amber-500 bg-opacity-20 flex items-center justify-center mr-4">
+                    <FontAwesomeIcon icon={utility.icon} className="text-2xl text-amber-400" />
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold text-white flex items-center">
+                    <h4 className="text-lg font-medium text-white flex items-center">
                       {utility.name}
                       {utility.coming && (
-                        <span className="ml-2 text-xs bg-amber-900 bg-opacity-40 text-amber-400 px-2 py-1 rounded-full">
+                        <span className="ml-2 text-xs px-2 py-1 bg-amber-600 bg-opacity-30 rounded-full text-amber-300">
                           Coming Soon
                         </span>
                       )}
@@ -932,137 +931,122 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white relative overflow-hidden">
-      {/* Particles background */}
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white relative overflow-hidden">
+      {/* Background particles */}
       <div id="particles-js" className="absolute inset-0 z-0"></div>
       
-      {/* Header */}
-      <header className="relative z-10 pt-6 pb-4 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">
-                CloakShare
-              </h1>
-              <span className="ml-3 text-xs bg-amber-900 bg-opacity-40 text-amber-400 px-2 py-1 rounded-full">
-                BETA
-              </span>
-            </div>
-            
-            <div className="flex space-x-2">
-              <button 
-                onClick={() => setShowUtilities(true)}
-                className="bg-gray-800 bg-opacity-70 hover:bg-amber-700 text-white px-4 py-2 rounded-lg transition-colors duration-300 flex items-center text-sm border border-gray-700 shadow-md"
-              >
-                <FontAwesomeIcon icon={faExchangeAlt} className="mr-2" />
-                <span className="hidden md:inline">Utilities</span>
-              </button>
-              
-              <button 
-                onClick={() => setShowInstructions(true)}
-                className="bg-gray-800 bg-opacity-70 hover:bg-amber-700 text-white px-4 py-2 rounded-lg transition-colors duration-300 flex items-center text-sm border border-gray-700 shadow-md"
-              >
-                <FontAwesomeIcon icon={faQuestionCircle} className="mr-2" />
-                <span className="hidden md:inline">How to Use</span>
-              </button>
-              
-              <button 
-                onClick={() => setShowAbout(true)}
-                className="bg-gray-800 bg-opacity-70 hover:bg-amber-700 text-white px-4 py-2 rounded-lg transition-colors duration-300 flex items-center text-sm border border-gray-700 shadow-md"
-              >
-                <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
-                <span className="hidden md:inline">About</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-      
-      {/* Main Content */}
-      <main className="relative z-10 px-4 md:px-8 py-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Hero Section */}
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">
-              Secure Sharing. Simple Access. <br />Self-Destruction.
-            </h2>
-            <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-              Share text and files securely with end-to-end encryption and automatic deletion. 
-              No accounts, no tracking, just simple 4-digit access codes.
-            </p>
-          </div>
-          
-          {/* Main Functionality */}
-          {renderMainContent()}
-          
-          {/* Modals */}
-          {renderInstructionsModal()}
-          {renderAboutModal()}
-          {renderUtilitiesModal()}
-        </div>
-      </main>
-      
-      {/* Footer */}
-      <footer className="relative z-10 mt-12 bg-gray-900 bg-opacity-70 border-t border-gray-800 py-8 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-4 md:mb-0">
-            <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        {/* Header */}
+        <header className="flex flex-col md:flex-row justify-between items-center mb-8">
+          <div className="flex items-center mb-4 md:mb-0">
+            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">
               CloakShare
-            </h3>
-            <p className="text-sm text-gray-400 mt-1">
-              Secure sharing with self-destruct timers
-            </p>
+            </h1>
+            <span className="ml-2 text-xs px-2 py-1 bg-amber-800 bg-opacity-30 rounded-full text-amber-300">
+              Beta
+            </span>
           </div>
+          <nav className="flex space-x-2">
+            <button
+              onClick={() => {
+                setActiveUtility(null);
+                setShowUtilities(false);
+              }}
+              className={`px-4 py-2 rounded-lg text-sm transition-all duration-300 ${
+                !activeUtility
+                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white"
+                  : "bg-gray-800 bg-opacity-50 text-gray-300 hover:bg-gray-700"
+              }`}
+            >
+              <FontAwesomeIcon icon="exchange-alt" className="mr-2" />
+              Secure Share
+            </button>
+            <button
+              onClick={() => setShowUtilities(true)}
+              className={`px-4 py-2 rounded-lg text-sm transition-all duration-300 ${
+                activeUtility
+                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white"
+                  : "bg-gray-800 bg-opacity-50 text-gray-300 hover:bg-gray-700"
+              }`}
+            >
+              <FontAwesomeIcon icon="font" className="mr-2" />
+              Utilities
+            </button>
+            <button
+              onClick={() => setShowInstructions(true)}
+              className="px-4 py-2 rounded-lg text-sm bg-gray-800 bg-opacity-50 text-gray-300 hover:bg-gray-700 transition-all duration-300"
+            >
+              <FontAwesomeIcon icon="question-circle" className="mr-2" />
+              How To Use
+            </button>
+            <button
+              onClick={() => setShowAbout(true)}
+              className="px-4 py-2 rounded-lg text-sm bg-gray-800 bg-opacity-50 text-gray-300 hover:bg-gray-700 transition-all duration-300"
+            >
+              <FontAwesomeIcon icon="info-circle" className="mr-2" />
+              About
+            </button>
+          </nav>
+        </header>
+        
+        <main className="mb-12">
+          {/* Intro section */}
+          {!activeUtility && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+                Share <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">Secret</span> Messages <br className="hidden md:block" />
+                & Files <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">Securely</span>
+              </h2>
+              <p className="text-gray-400 text-lg md:text-xl max-w-3xl mx-auto">
+                End-to-end encryption with self-destructing content. <br className="hidden md:block" />
+                No accounts needed. Just share the 4-digit code.
+              </p>
+            </motion.div>
+          )}
           
-          <div className="flex space-x-4">
-            <button 
-              onClick={() => handleSocialMedia("instagram")} 
-              className="text-gray-400 hover:text-pink-500 transition-colors duration-200"
-            >
-              <FontAwesomeIcon icon={faInstagram} size="lg" />
-            </button>
-            <button 
-              onClick={() => handleSocialMedia("linkedin")} 
-              className="text-gray-400 hover:text-blue-500 transition-colors duration-200"
-            >
-              <FontAwesomeIcon icon={faLinkedinIn} size="lg" />
-            </button>
-            <button 
-              onClick={() => handleSocialMedia("twitter")} 
-              className="text-gray-400 hover:text-blue-400 transition-colors duration-200"
-            >
-              <FontAwesomeIcon icon={faXTwitter} size="lg" />
-            </button>
-          </div>
-          
-          <div className="mt-4 md:mt-0 text-sm text-gray-500">
-            © 2025 CloakShare. All rights reserved.
-          </div>
-        </div>
-      </footer>
+          {/* Main content areas */}
+          {renderMainContent()}
+        </main>
+        
+        {/* Footer */}
+        <footer className="text-center text-gray-500 text-sm">
+          <p>© 2023 CloakShare. All rights reserved.</p>
+          <p className="mt-1">Built with privacy and security in mind.</p>
+        </footer>
+      </div>
+      
+      {/* Modals */}
+      {renderInstructionsModal()}
+      {renderAboutModal()}
+      {renderUtilitiesModal()}
       
       {/* Toast notifications */}
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
           style: {
             background: '#333',
             color: '#fff',
-            border: '1px solid #555',
+            borderRadius: '8px',
           },
           success: {
-            icon: '🔒',
-            style: {
-              border: '1px solid #059669',
+            iconTheme: {
+              primary: '#FFB017',
+              secondary: '#FFFAEE',
             },
           },
           error: {
-            icon: '⚠️',
-            style: {
-              border: '1px solid #DC2626',
+            iconTheme: {
+              primary: '#ff4b4b',
+              secondary: '#FFFAEE',
             },
-          }
+          },
         }}
       />
     </div>
