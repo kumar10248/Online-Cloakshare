@@ -11,9 +11,16 @@ import {
   faFileWord
 } from "@fortawesome/free-solid-svg-icons";
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { fas } from '@fortawesome/free-solid-svg-icons';
-// Add the entire solid icon pack to the library
-library.add(fas);
+// Add icons to the library - pass them all as separate arguments, not an array
+library.add(
+  faUpload, 
+  faDownload, 
+  faSpinner, 
+  faCheckCircle, 
+  faExclamationTriangle,
+  faFilePdf,
+  faFileWord
+);
 import { toast } from "react-hot-toast";
 import { postData } from "../Config";
 
