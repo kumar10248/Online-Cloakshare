@@ -49,6 +49,7 @@ const Home: React.FC = () => {
 
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [showUtilities, setShowUtilities] = useState<boolean>(false);
+  const [showGuide, setShowGuide] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchAPI = async () => {
@@ -309,7 +310,187 @@ const Home: React.FC = () => {
               <span className="text-sm sm:text-base">No Signup</span>
             </div>
           </div>
+
+          {/* User Guide Toggle Button */}
+          <motion.div 
+            className="mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <button
+              onClick={() => setShowGuide(!showGuide)}
+              className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl shadow-lg hover:from-amber-600 hover:to-orange-700 hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-semibold flex items-center mx-auto"
+            >
+              <FontAwesomeIcon icon={faRocket as IconProp} className="mr-2" />
+              {showGuide ? 'Hide User Guide' : 'Show User Guide'}
+              <motion.div
+                animate={{ rotate: showGuide ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+                className="ml-2"
+              >
+                <FontAwesomeIcon icon={faEye as IconProp} className="text-sm" />
+              </motion.div>
+            </button>
+          </motion.div>
         </motion.div>
+
+        {/* User Guide Section */}
+        {showGuide && (
+          <motion.div 
+            className="mb-8 lg:mb-12"
+            initial={{ opacity: 0, y: 30, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -30, height: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 lg:p-8 border border-gray-700 shadow-2xl">
+              <div className="text-center mb-8">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center mr-4">
+                    <FontAwesomeIcon icon={faRocket as IconProp} className="text-white text-xl" />
+                  </div>
+                  <h3 className="text-2xl lg:text-3xl font-bold text-amber-400">How to Use CloakShare</h3>
+                </div>
+                <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+                  Follow these simple steps to securely share your files and text with automatic expiration
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Sending Guide */}
+                <div className="space-y-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center mr-3">
+                      <FontAwesomeIcon icon={faUpload as IconProp} className="text-white text-sm" />
+                    </div>
+                    <h4 className="text-xl font-bold text-amber-400">Sending Content</h4>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-start space-x-4 p-4 bg-gray-900 bg-opacity-50 rounded-xl border border-gray-600">
+                      <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <span className="text-white text-sm font-bold">1</span>
+                      </div>
+                      <div>
+                        <h5 className="font-semibold text-white mb-1">Choose Content Type</h5>
+                        <p className="text-gray-400 text-sm">Select between "Text" or "File" tabs in the left section based on what you want to share.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-4 p-4 bg-gray-900 bg-opacity-50 rounded-xl border border-gray-600">
+                      <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <span className="text-white text-sm font-bold">2</span>
+                      </div>
+                      <div>
+                        <h5 className="font-semibold text-white mb-1">Add Your Content</h5>
+                        <p className="text-gray-400 text-sm">For text: Type or paste your message. For files: Click to upload (max 100MB).</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-4 p-4 bg-gray-900 bg-opacity-50 rounded-xl border border-gray-600">
+                      <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <span className="text-white text-sm font-bold">3</span>
+                      </div>
+                      <div>
+                        <h5 className="font-semibold text-white mb-1">Set Expiration (Optional)</h5>
+                        <p className="text-gray-400 text-sm">Choose how long your content should be available (default: 24 hours, max: 48 hours).</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-4 p-4 bg-gray-900 bg-opacity-50 rounded-xl border border-gray-600">
+                      <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <span className="text-white text-sm font-bold">4</span>
+                      </div>
+                      <div>
+                        <h5 className="font-semibold text-white mb-1">Get Your Code</h5>
+                        <p className="text-gray-400 text-sm">Click "Save Securely" or "Upload Securely" to get a unique 4-digit code.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Receiving Guide */}
+                <div className="space-y-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center mr-3">
+                      <FontAwesomeIcon icon={faEye as IconProp} className="text-white text-sm" />
+                    </div>
+                    <h4 className="text-xl font-bold text-amber-400">Receiving Content</h4>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-start space-x-4 p-4 bg-gray-900 bg-opacity-50 rounded-xl border border-gray-600">
+                      <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <span className="text-white text-sm font-bold">1</span>
+                      </div>
+                      <div>
+                        <h5 className="font-semibold text-white mb-1">Get the Code</h5>
+                        <p className="text-gray-400 text-sm">Ask the sender for their unique 4-digit CloakShare code.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-4 p-4 bg-gray-900 bg-opacity-50 rounded-xl border border-gray-600">
+                      <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <span className="text-white text-sm font-bold">2</span>
+                      </div>
+                      <div>
+                        <h5 className="font-semibold text-white mb-1">Enter the Code</h5>
+                        <p className="text-gray-400 text-sm">Type the 4-digit code in the right section's input field.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-4 p-4 bg-gray-900 bg-opacity-50 rounded-xl border border-gray-600">
+                      <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <span className="text-white text-sm font-bold">3</span>
+                      </div>
+                      <div>
+                        <h5 className="font-semibold text-white mb-1">Reveal Content</h5>
+                        <p className="text-gray-400 text-sm">Click "Reveal Content" to access the shared text or download the file.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start space-x-4 p-4 bg-gray-900 bg-opacity-50 rounded-xl border border-gray-600">
+                      <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <span className="text-white text-sm font-bold">4</span>
+                      </div>
+                      <div>
+                        <h5 className="font-semibold text-white mb-1">Copy or Download</h5>
+                        <p className="text-gray-400 text-sm">For text: Copy to clipboard. For files: Download will start automatically.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Important Notes */}
+              <div className="mt-8 p-6 bg-gradient-to-r from-amber-500 to-orange-600 bg-opacity-10 rounded-xl border border-amber-500 border-opacity-30">
+                <div className="flex items-center mb-4">
+                  <FontAwesomeIcon icon={faShieldAlt as IconProp} className="text-amber-400 text-xl mr-3" />
+                  <h4 className="text-lg font-bold text-amber-400">Important Security Notes</h4>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-start space-x-2">
+                    <FontAwesomeIcon icon={faClock as IconProp} className="text-amber-400 mt-1 flex-shrink-0" />
+                    <span className="text-amber-200">Content automatically expires and gets deleted permanently</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <FontAwesomeIcon icon={faShieldAlt as IconProp} className="text-amber-400 mt-1 flex-shrink-0" />
+                    <span className="text-amber-200">No registration required - completely anonymous</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <FontAwesomeIcon icon={faCopy as IconProp} className="text-amber-400 mt-1 flex-shrink-0" />
+                    <span className="text-amber-200">Each code can only be used once for security</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <FontAwesomeIcon icon={faRocket as IconProp} className="text-amber-400 mt-1 flex-shrink-0" />
+                    <span className="text-amber-200">Maximum file size limit is 100MB</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         <div className="flex flex-col lg:flex-row xl:flex-row gap-4 sm:gap-6 lg:gap-8 min-h-[600px] sm:min-h-[650px] lg:min-h-[700px]">
           {/* Left Section - Send */}
