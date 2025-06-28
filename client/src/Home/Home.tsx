@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./Home.css";
 import { getData, postData } from "../Config";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import {
   faUpload,
   faFloppyDisk,
@@ -198,7 +199,7 @@ const Home: React.FC = () => {
                 onClick={() => setShowUtilities(!showUtilities)}
                 className="px-4 py-2 bg-white text-amber-600 rounded-lg shadow hover:bg-amber-700 hover:text-white transition-all duration-300 font-semibold flex items-center"
               >
-                <FontAwesomeIcon icon={faExchangeAlt} className="mr-2" />
+                <FontAwesomeIcon icon={faExchangeAlt as IconProp} className="mr-2" />
                 Utilities
               </button>
             </div>
@@ -241,7 +242,7 @@ const Home: React.FC = () => {
           {/* Left Section - Send */}
           <div className="w-full md:w-1/2 bg-gray-800 bg-opacity-40 rounded-xl p-6 backdrop-blur-sm shadow-xl border border-gray-700">
             <h2 className="text-2xl font-bold text-amber-400 mb-6 flex items-center">
-              <FontAwesomeIcon icon={faUpload} className="mr-3" />
+              <FontAwesomeIcon icon={faUpload as IconProp} className="mr-3" />
               Send to CloakShare
             </h2>
 
@@ -257,7 +258,7 @@ const Home: React.FC = () => {
                   setCodeText("");
                 }}
               >
-                <FontAwesomeIcon icon={faFont} className="mr-2" />
+                <FontAwesomeIcon icon={faFont as IconProp} className="mr-2" />
                 Text
               </button>
               <button
@@ -270,7 +271,7 @@ const Home: React.FC = () => {
                   setCodeText("");
                 }}
               >
-                <FontAwesomeIcon icon={faFileAlt} className="mr-2" />
+                <FontAwesomeIcon icon={faFileAlt as IconProp} className="mr-2" />
                 File
               </button>
             </div>
@@ -288,7 +289,7 @@ const Home: React.FC = () => {
                 </div>
 
                 <div className="flex items-center space-x-2 text-sm">
-                  <FontAwesomeIcon icon={faClock} className="text-amber-400" />
+                  <FontAwesomeIcon icon={faClock as IconProp} className="text-amber-400" />
                   <span className="text-amber-300">Expiration:</span>
                   <input
                     type="text"
@@ -320,7 +321,7 @@ const Home: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <FontAwesomeIcon icon={faFloppyDisk} className="mr-2" />
+                      <FontAwesomeIcon icon={faFloppyDisk as IconProp} className="mr-2" />
                       Save Securely
                     </>
                   )}
@@ -342,7 +343,7 @@ const Home: React.FC = () => {
                     htmlFor="fileInput"
                     className="cursor-pointer flex flex-col items-center justify-center"
                   >
-                    <FontAwesomeIcon icon={faUpload} className="text-4xl mb-3 text-amber-400" />
+                    <FontAwesomeIcon icon={faUpload as IconProp} className="text-4xl mb-3 text-amber-400" />
                     <span className="text-lg font-medium text-gray-300 mb-1">
                       {selectedFileName || "Choose a file to upload"}
                     </span>
@@ -363,7 +364,7 @@ const Home: React.FC = () => {
                 )}
 
                 <div className="flex items-center space-x-2 text-sm">
-                  <FontAwesomeIcon icon={faClock} className="text-amber-400" />
+                  <FontAwesomeIcon icon={faClock as IconProp} className="text-amber-400" />
                   <span className="text-amber-300">Expiration:</span>
                   <input
                     type="text"
@@ -395,7 +396,7 @@ const Home: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <FontAwesomeIcon icon={faUpload} className="mr-2" />
+                      <FontAwesomeIcon icon={faUpload as IconProp} className="mr-2" />
                       Upload Securely
                     </>
                   )}
@@ -418,7 +419,7 @@ const Home: React.FC = () => {
                     className="text-amber-400 hover:text-amber-300 transition-colors duration-200"
                     title="Copy to clipboard"
                   >
-                    <FontAwesomeIcon icon={faCopy} />
+                    <FontAwesomeIcon icon={faCopy as IconProp} />
                   </button>
                 </div>
                 <div className="mt-2 text-2xl font-mono tracking-wider text-amber-400 text-center">
@@ -431,7 +432,7 @@ const Home: React.FC = () => {
           {/* Right Section - Reveal */}
           <div className="w-full md:w-1/2 bg-gray-800 bg-opacity-40 rounded-xl p-6 backdrop-blur-sm shadow-xl border border-gray-700 mt-8 md:mt-0">
             <h2 className="text-2xl font-bold text-amber-400 mb-6 flex items-center">
-              <FontAwesomeIcon icon={faEye} className="mr-3" />
+              <FontAwesomeIcon icon={faEye as IconProp} className="mr-3" />
               Reveal from CloakShare
             </h2>
 
@@ -466,7 +467,7 @@ const Home: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <FontAwesomeIcon icon={faEye} className="mr-2" />
+                    <FontAwesomeIcon icon={faEye as IconProp} className="mr-2" />
                     Reveal Content
                   </>
                 )}
@@ -487,7 +488,7 @@ const Home: React.FC = () => {
                     onClick={() => handleCopy(showText)}
                     className="text-sm px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg text-gray-300 transition-colors duration-200 flex items-center"
                   >
-                    <FontAwesomeIcon icon={faCopy} className="mr-2" />
+                    <FontAwesomeIcon icon={faCopy as IconProp} className="mr-2" />
                     Copy
                   </button>
                 </div>
@@ -517,14 +518,14 @@ const Home: React.FC = () => {
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-white flex items-center">
-                  <FontAwesomeIcon icon={faFileAlt} className="mr-3 text-amber-400" />
+                  <FontAwesomeIcon icon={faFileAlt as IconProp} className="mr-3 text-amber-400" />
                   PDF Merger
                 </h2>
                 <button
                   onClick={() => setSelectedUtility(null)}
                   className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200 flex items-center"
                 >
-                  <FontAwesomeIcon icon={faEye} className="mr-2" />
+                  <FontAwesomeIcon icon={faEye as IconProp} className="mr-2" />
                   Back to CloakShare
                 </button>
               </div>
