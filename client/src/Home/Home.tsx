@@ -62,11 +62,11 @@ const Home: React.FC = () => {
 
     setIsLoadingSave(true);
     try {
-      const response = await postData<ApiResponse>(
+      const response = await postData(
         "save",
         { text: text, time: number || "1440" },
         {}
-      );
+      ) as ApiResponse;
       console.log(response);
       if (response && response.code) {
         setCodeText(response.code);
@@ -90,7 +90,7 @@ const Home: React.FC = () => {
     setIsLoadingShow(true);
     setShowText("");
     try {
-      const response = await getData<ApiResponse>("show", { code: code, responseType: "blob" });
+      const response = await getData("show", { code: code, responseType: "blob" }) as ApiResponse;
       if (response.text) {
         setShowText(response.text);
         toast.success("Content retrieved successfully!");
@@ -166,7 +166,7 @@ const Home: React.FC = () => {
       formData.append("file", selectedFile);
       formData.append("time", number || "1440");
 
-      const response = await postData<ApiResponse>("upload", formData, config);
+      const response = await postData("upload", formData, config) as ApiResponse;
       if (response && response.code) {
         setCodeText(response.code);
         toast.success("File uploaded successfully!");
