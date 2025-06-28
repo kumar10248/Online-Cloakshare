@@ -1,7 +1,6 @@
 import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
 import {
   faFilePdf,
   faPlus,
@@ -216,15 +215,15 @@ const PdfMerger: React.FC = () => {
   const getStatusIcon = () => {
     switch (mergeStatus) {
       case "uploading":
-        return <FontAwesomeIcon icon={faSpinner as IconProp} className="animate-spin text-blue-400" />;
+        return <FontAwesomeIcon icon={faSpinner} className="animate-spin text-blue-400" />;
       case "merging":
-        return <FontAwesomeIcon icon={faSpinner as IconProp} className="animate-spin text-amber-400" />;
+        return <FontAwesomeIcon icon={faSpinner} className="animate-spin text-amber-400" />;
       case "completed":
-        return <FontAwesomeIcon icon={faCheckCircle as IconProp} className="text-green-400" />;
+        return <FontAwesomeIcon icon={faCheckCircle} className="text-green-400" />;
       case "failed":
-        return <FontAwesomeIcon icon={faExclamationTriangle as IconProp} className="text-red-400" />;
+        return <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-400" />;
       default:
-        return <FontAwesomeIcon icon={faMagic as IconProp} className="text-purple-400" />;
+        return <FontAwesomeIcon icon={faMagic} className="text-purple-400" />;
     }
   };
 
@@ -248,7 +247,7 @@ const PdfMerger: React.FC = () => {
       {/* Header */}
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl mb-4">
-          <FontAwesomeIcon icon={faFilePdf as IconProp} className="text-2xl text-white" />
+          <FontAwesomeIcon icon={faFilePdf} className="text-2xl text-white" />
         </div>
         <h1 className="text-3xl font-bold text-white mb-2">PDF Merger</h1>
         <p className="text-gray-300 max-w-2xl mx-auto">
@@ -259,19 +258,19 @@ const PdfMerger: React.FC = () => {
       {/* Feature highlights */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-gray-800/50 rounded-xl p-4 text-center border border-gray-700">
-          <FontAwesomeIcon icon={faFilePdf as IconProp} className="text-red-400 text-2xl mb-2" />
+          <FontAwesomeIcon icon={faFilePdf} className="text-red-400 text-2xl mb-2" />
           <p className="text-sm text-gray-300">Multiple PDFs</p>
         </div>
         <div className="bg-gray-800/50 rounded-xl p-4 text-center border border-gray-700">
-          <FontAwesomeIcon icon={faArrowUp as IconProp} className="text-blue-400 text-2xl mb-2" />
+          <FontAwesomeIcon icon={faArrowUp} className="text-blue-400 text-2xl mb-2" />
           <p className="text-sm text-gray-300">Reorder Files</p>
         </div>
         <div className="bg-gray-800/50 rounded-xl p-4 text-center border border-gray-700">
-          <FontAwesomeIcon icon={faMagic as IconProp} className="text-purple-400 text-2xl mb-2" />
+          <FontAwesomeIcon icon={faMagic} className="text-purple-400 text-2xl mb-2" />
           <p className="text-sm text-gray-300">Fast Merge</p>
         </div>
         <div className="bg-gray-800/50 rounded-xl p-4 text-center border border-gray-700">
-          <FontAwesomeIcon icon={faDownload as IconProp} className="text-green-400 text-2xl mb-2" />
+          <FontAwesomeIcon icon={faDownload} className="text-green-400 text-2xl mb-2" />
           <p className="text-sm text-gray-300">Instant Download</p>
         </div>
       </div>
@@ -279,7 +278,7 @@ const PdfMerger: React.FC = () => {
       {/* File Upload Area */}
       <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border-2 border-dashed border-gray-600 p-8 mb-6">
         <div className="text-center">
-          <FontAwesomeIcon icon={faPlus as IconProp} className="text-4xl text-gray-400 mb-4" />
+          <FontAwesomeIcon icon={faPlus} className="text-4xl text-gray-400 mb-4" />
           <h3 className="text-xl font-semibold text-white mb-2">Add PDF Files</h3>
           <p className="text-gray-300 mb-4">Select multiple PDF files to merge (2-10 files)</p>
           
@@ -297,7 +296,7 @@ const PdfMerger: React.FC = () => {
             disabled={mergeStatus === "uploading" || mergeStatus === "merging"}
             className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <FontAwesomeIcon icon={faPlus as IconProp} className="mr-2" />
+            <FontAwesomeIcon icon={faPlus} className="mr-2" />
             Select PDF Files
           </button>
         </div>
@@ -314,7 +313,7 @@ const PdfMerger: React.FC = () => {
               onClick={clearAllFiles}
               className="px-3 py-1 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
             >
-              <FontAwesomeIcon icon={faTrash as IconProp} className="mr-1" />
+              <FontAwesomeIcon icon={faTrash} className="mr-1" />
               Clear All
             </button>
           </div>
@@ -330,7 +329,7 @@ const PdfMerger: React.FC = () => {
               >
                 <div className="flex items-center flex-1">
                   <div className="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center mr-3">
-                    <FontAwesomeIcon icon={faFilePdf as IconProp} className="text-red-400" />
+                    <FontAwesomeIcon icon={faFilePdf} className="text-red-400" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="text-white font-medium truncate">{pdfFile.name}</h4>
@@ -345,21 +344,21 @@ const PdfMerger: React.FC = () => {
                     disabled={index === 0 || mergeStatus === "uploading" || mergeStatus === "merging"}
                     className="p-2 text-gray-400 hover:text-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <FontAwesomeIcon icon={faArrowUp as IconProp} />
+                    <FontAwesomeIcon icon={faArrowUp} />
                   </button>
                   <button
                     onClick={() => moveFile(pdfFile.id, "down")}
                     disabled={index === selectedFiles.length - 1 || mergeStatus === "uploading" || mergeStatus === "merging"}
                     className="p-2 text-gray-400 hover:text-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <FontAwesomeIcon icon={faArrowDown as IconProp} />
+                    <FontAwesomeIcon icon={faArrowDown} />
                   </button>
                   <button
                     onClick={() => removeFile(pdfFile.id)}
                     disabled={mergeStatus === "uploading" || mergeStatus === "merging"}
                     className="p-2 text-gray-400 hover:text-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <FontAwesomeIcon icon={faTimes as IconProp} />
+                    <FontAwesomeIcon icon={faTimes} />
                   </button>
                 </div>
               </motion.div>
@@ -428,7 +427,7 @@ const PdfMerger: React.FC = () => {
           className="bg-gradient-to-br from-green-500/20 to-blue-500/20 backdrop-blur-sm rounded-2xl border border-green-500/30 p-6 mb-6"
         >
           <div className="text-center">
-            <FontAwesomeIcon icon={faCheckCircle as IconProp} className="text-4xl text-green-400 mb-4" />
+            <FontAwesomeIcon icon={faCheckCircle} className="text-4xl text-green-400 mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">Merge Completed!</h3>
             <p className="text-gray-300 mb-4">Your PDF files have been successfully merged.</p>
             
@@ -436,7 +435,7 @@ const PdfMerger: React.FC = () => {
               onClick={handleDownload}
               className="px-6 py-3 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-xl font-medium hover:from-green-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105"
             >
-              <FontAwesomeIcon icon={faDownload as IconProp} className="mr-2" />
+              <FontAwesomeIcon icon={faDownload} className="mr-2" />
               Download Merged PDF
             </button>
           </div>
