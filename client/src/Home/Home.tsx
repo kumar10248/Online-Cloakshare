@@ -14,12 +14,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { motion } from "framer-motion";
 import { Toaster, toast } from "react-hot-toast";
-
-interface ApiResponse {
-  code?: string;
-  text?: string;
-  fileId?: string;
-}
+import PdfMerger from "../components/PdfMerger";
 
 interface ProgressEvent {
   loaded: number;
@@ -44,6 +39,7 @@ const Home: React.FC = () => {
 
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [showUtilities, setShowUtilities] = useState<boolean>(false);
+  const [selectedUtility, setSelectedUtility] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAPI = async () => {
@@ -62,7 +58,7 @@ const Home: React.FC = () => {
 
     setIsLoadingSave(true);
     try {
-      const response = await postData<ApiResponse>(
+      const response = await postData(
         "save",
         { text: text, time: number || "1440" },
         {}
@@ -90,7 +86,7 @@ const Home: React.FC = () => {
     setIsLoadingShow(true);
     setShowText("");
     try {
-      const response = await getData<ApiResponse>("show", { code: code, responseType: "blob" });
+      const response = await getData("show", { code: code, responseType: "blob" });
       if (response.text) {
         setShowText(response.text);
         toast.success("Content retrieved successfully!");
@@ -166,7 +162,7 @@ const Home: React.FC = () => {
       formData.append("file", selectedFile);
       formData.append("time", number || "1440");
 
-      const response = await postData<ApiResponse>("upload", formData, config);
+      const response = await postData("upload", formData, config);
       if (response && response.code) {
         setCodeText(response.code);
         toast.success("File uploaded successfully!");
@@ -220,6 +216,10 @@ const Home: React.FC = () => {
               {["PDF to Word", "Merge PDF", "Edit PDF", "PDF to JPG", "JPG to PDF", "Compress PDF"].map((tool) => (
                 <button
                   key={tool}
+                  onClick={() => {
+                    setSelectedUtility(tool);
+                    setShowUtilities(false);
+                  }}
                   className="px-3 py-2 bg-white bg-opacity-10 backdrop-blur-sm text-white rounded-lg hover:bg-amber-600 hover:text-white transition-all duration-200 text-sm font-medium"
                 >
                   {tool}
@@ -503,6 +503,37 @@ const Home: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* PDF Merger Modal */}
+      {selectedUtility === "Merge PDF" && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <motion.div
+            className="bg-gray-800 rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto border border-gray-700"
+            initial={{ opacity: 0, scale: 0.9, y: 50 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 50 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-white flex items-center">
+                  <FontAwesomeIcon icon={faFileAlt} className="mr-3 text-amber-400" />
+                  PDF Merger
+                </h2>
+                <button
+                  onClick={() => setSelectedUtility(null)}
+                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors duration-200 flex items-center"
+                >
+                  <FontAwesomeIcon icon={faEye} className="mr-2" />
+                  Back to CloakShare
+                </button>
+              </div>
+              
+              <PdfMerger />
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="bg-gray-900 py-6 mt-12">
