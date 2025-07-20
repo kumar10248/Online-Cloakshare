@@ -19,6 +19,7 @@ import {
 import { faGithub, faLinkedin, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { motion } from "framer-motion";
 import { Toaster, toast } from "react-hot-toast";
+import cloakShareLogo from "../assets/cloakshare-logo-large.svg";
 
 interface ApiResponse {
   code?: string;
@@ -189,17 +190,21 @@ const Home: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white font-sans">
       {/* Header */}
-      <header className="bg-gradient-to-r from-amber-600 to-amber-400 shadow-xl">
+      <header className="bg-gradient-to-r from-amber-500 to-orange-600 shadow-xl">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-wrap items-center justify-between">
             <div className="flex items-center">
               <motion.div
-                className="mr-4 w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center"
+                className="mr-4 w-12 h-12 rounded-xl flex items-center justify-center"
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ duration: 0.6, type: "spring" }}
               >
-                <FontAwesomeIcon icon={faShieldAlt as IconProp} className="text-white text-xl" />
+                <img 
+                  src={cloakShareLogo} 
+                  alt="CloakShare Logo" 
+                  className="w-12 h-12 drop-shadow-lg"
+                />
               </motion.div>
               <motion.h1
                 className="text-white text-3xl md:text-4xl font-black tracking-tight"
@@ -836,8 +841,12 @@ const Home: React.FC = () => {
             {/* Brand Section */}
             <div className="col-span-1 sm:col-span-2 lg:col-span-2">
               <div className="flex items-center mb-4">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-amber-500 rounded-lg flex items-center justify-center mr-3">
-                  <FontAwesomeIcon icon={faShieldAlt as IconProp} className="text-white text-base sm:text-lg" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center mr-3">
+                  <img 
+                    src={cloakShareLogo} 
+                    alt="CloakShare Logo" 
+                    className="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-md"
+                  />
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-white">CloakShare</h3>
               </div>
