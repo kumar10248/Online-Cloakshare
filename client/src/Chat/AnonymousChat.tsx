@@ -91,6 +91,14 @@ const AnonymousChat: React.FC = () => {
     }
   }, [remoteStream]);
 
+  // Set local video when localStream changes
+  React.useEffect(() => {
+    if (localStream && localVideoRef.current && callType === 'video') {
+      console.log('Setting local video from useEffect:', localStream);
+      localVideoRef.current.srcObject = localStream;
+    }
+  }, [localStream, callType]);
+
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -145,6 +153,7 @@ const AnonymousChat: React.FC = () => {
 
     // Chat events
     socketInstance.on('room-created', (data) => {
+      console.log('🏠 Room created event received:', data);
       setUser({ roomId: data.roomId, userName: data.userName, role: 'host' });
       setRoomInfo({ roomId: data.roomId, hostName: data.userName, guestName: null, status: 'waiting' });
       toast.success(`Room ${data.roomId} created! Share this code with someone to start chatting.`);
@@ -152,7 +161,7 @@ const AnonymousChat: React.FC = () => {
     });
 
     socketInstance.on('room-joined', (data) => {
-      console.log('Room joined event received:', data);
+      console.log('🚪 Room joined event received:', data);
       setUser({ roomId: data.roomId, userName: data.userName, role: 'guest' });
       setRoomInfo({
         roomId: data.roomId,
@@ -166,7 +175,7 @@ const AnonymousChat: React.FC = () => {
     });
 
     socketInstance.on('user-joined', (data) => {
-      console.log('User joined event received:', data);
+      console.log('👤 User joined event received:', data);
       setRoomInfo(data);
       setMessages(data.messages || []);
       const guestName = data.guestName;
@@ -220,11 +229,21 @@ const AnonymousChat: React.FC = () => {
     });
 
     socketInstance.on('call-ended', (data) => {
+      console.log('Call ended event received:', data);
       setIsCallActive(false);
       setCallType(null);
       setIncomingCall(null);
       endCall();
-      toast(`Call ended: ${data.reason}`);
+      toast(`Call ended: ${data.reason || 'Call terminated'}`);
+    });
+
+    socketInstance.on('call-rejected', (data) => {
+      console.log('Call rejected event received:', data);
+      setIsCallActive(false);
+      setCallType(null);
+      setIncomingCall(null);
+      endCall();
+      toast.error('Call was rejected');
     });
 
     // WebRTC signaling handlers
@@ -468,30 +487,83 @@ const AnonymousChat: React.FC = () => {
 
   // Voice call
   const startVoiceCall = async () => {
-    if (!socket || !user) {
-      toast.error('Not connected to chat server');
+    console.log('=== START VOICE CALL FUNCTION ===');
+    console.log('1. Function called');
+    console.log('2. Socket exists:', !!socket);
+    console.log('3. Socket connected:', socket?.connected);
+    console.log('4. User exists:', !!user);
+    console.log('5. User details:', user);
+    console.log('6. RoomInfo:', roomInfo);
+    console.log('7. isConnected:', isConnected);
+    
+    if (!socket) {
+      console.log('❌ ERROR: No socket');
+      toast.error('No socket connection');
       return;
     }
+    
+    if (!socket.connected) {
+      console.log('❌ ERROR: Socket not connected');
+      toast.error('Socket not connected');
+      return;
+    }
+    
+    if (!user) {
+      console.log('❌ ERROR: No user');
+      toast.error('Not logged into chat');
+      return;
+    }
+    
+    if (!isConnected) {
+      console.log('❌ ERROR: Not connected flag false');
+      toast.error('Connection status shows disconnected');
+      return;
+    }
+    
     try {
-      console.log('Starting voice call...');
+      console.log('8. ✅ All checks passed, starting media setup...');
+      toast.loading('Getting microphone access...');
+      
       const stream = await setupLocalMedia('voice');
+      console.log('9. ✅ Got local media stream:', stream);
+      toast.success('Microphone access granted!');
+      
+      console.log('10. Creating peer connection...');
       const pc = createPeerConnection();
+      console.log('11. ✅ Created peer connection:', pc);
 
       // Add local stream to peer connection
-      stream.getTracks().forEach(track => {
+      console.log('12. Adding tracks to peer connection...');
+      stream.getTracks().forEach((track, index) => {
+        console.log(`Adding track ${index}:`, track);
         pc.addTrack(track, stream);
       });
+      console.log('13. ✅ All tracks added');
 
       // Create offer
+      console.log('14. Creating WebRTC offer...');
       const offer = await pc.createOffer();
+      console.log('15. ✅ Created offer:', offer);
+      
+      console.log('16. Setting local description...');
       await pc.setLocalDescription(offer);
+      console.log('17. ✅ Set local description');
 
+      console.log('18. Emitting Socket.IO events...');
+      console.log('19. Emitting initiate-voice-call...');
       socket.emit('initiate-voice-call');
+      
+      console.log('20. Emitting webrtc-offer...');
       socket.emit('webrtc-offer', { offer, callType: 'voice' });
-      toast.loading('Initiating voice call...');
+      
+      console.log('21. ✅ All events emitted successfully!');
+      toast.success('Voice call initiated! Waiting for response...');
+      
     } catch (error) {
-      console.error('Error starting voice call:', error);
-      toast.error('Failed to access microphone');
+      console.error('❌ ERROR in startVoiceCall:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      toast.error(`Voice call failed: ${errorMessage}`);
     }
   };
 
@@ -545,26 +617,93 @@ const AnonymousChat: React.FC = () => {
 
   // WebRTC Functions
   const setupLocalMedia = async (type: 'voice' | 'video') => {
+    console.log(`=== SETUP LOCAL MEDIA (${type}) ===`);
+    
     try {
       const constraints: MediaStreamConstraints = {
         audio: true,
         video: type === 'video'
       };
 
-      console.log('Requesting media permissions:', constraints);
+      console.log('1. Media constraints:', constraints);
+      console.log('2. Checking navigator.mediaDevices...');
+      console.log('3. navigator.mediaDevices exists:', !!navigator.mediaDevices);
+      console.log('4. getUserMedia exists:', !!navigator.mediaDevices?.getUserMedia);
+      
+      if (!navigator.mediaDevices) {
+        throw new Error('navigator.mediaDevices is not available');
+      }
+      
+      if (!navigator.mediaDevices.getUserMedia) {
+        throw new Error('getUserMedia is not supported in this browser');
+      }
+      
+      console.log('5. Requesting media access...');
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
+      console.log('6. ✅ Got media stream:', stream);
+      console.log('7. Stream ID:', stream.id);
+      console.log('8. Audio tracks:', stream.getAudioTracks().length);
+      console.log('9. Video tracks:', stream.getVideoTracks().length);
+      
+      stream.getAudioTracks().forEach((track, index) => {
+        console.log(`Audio track ${index}:`, {
+          id: track.id,
+          label: track.label,
+          enabled: track.enabled,
+          muted: track.muted,
+          readyState: track.readyState
+        });
+      });
+      
+      if (type === 'video') {
+        stream.getVideoTracks().forEach((track, index) => {
+          console.log(`Video track ${index}:`, {
+            id: track.id,
+            label: track.label,
+            enabled: track.enabled,
+            muted: track.muted,
+            readyState: track.readyState
+          });
+        });
+      }
+      
+      console.log('10. Setting local stream state...');
       setLocalStream(stream);
       setCallType(type);
       
-      if (localVideoRef.current && type === 'video') {
-        localVideoRef.current.srcObject = stream;
+      if (type === 'video') {
+        console.log('11. Setting up local video display...');
+        // Use a timeout to ensure the ref is ready
+        setTimeout(() => {
+          if (localVideoRef.current) {
+            console.log('Setting local video ref srcObject...');
+            localVideoRef.current.srcObject = stream;
+          } else {
+            console.log('Local video ref not ready yet');
+          }
+        }, 100);
       }
 
+      console.log('12. ✅ setupLocalMedia completed successfully');
       return stream;
+      
     } catch (error) {
-      console.error('Error accessing media devices:', error);
-      toast.error('Failed to access camera/microphone. Please check permissions.');
+      console.error('❌ ERROR in setupLocalMedia:', error);
+      const err = error as Error;
+      console.error('Error name:', err.name);
+      console.error('Error message:', err.message);
+      
+      if (err.name === 'NotAllowedError') {
+        toast.error('Microphone access denied. Please allow access and try again.');
+      } else if (err.name === 'NotFoundError') {
+        toast.error('No microphone found. Please connect a microphone and try again.');
+      } else if (err.name === 'NotSupportedError') {
+        toast.error('Media devices not supported in this browser.');
+      } else {
+        toast.error(`Media access failed: ${err.message}`);
+      }
+      
       throw error;
     }
   };
@@ -577,22 +716,40 @@ const AnonymousChat: React.FC = () => {
       ]
     };
 
+    console.log('Creating peer connection with config:', configuration);
+    
+    if (!window.RTCPeerConnection) {
+      throw new Error('RTCPeerConnection is not supported in this browser');
+    }
+
     const pc = new RTCPeerConnection(configuration);
+    console.log('Peer connection created:', pc);
 
     pc.onicecandidate = (event) => {
+      console.log('ICE candidate event:', event);
       if (event.candidate && socket) {
+        console.log('Sending ICE candidate:', event.candidate);
         socket.emit('webrtc-ice-candidate', { candidate: event.candidate });
       }
     };
 
     pc.ontrack = (event) => {
-      console.log('Received remote stream');
+      console.log('Received remote stream:', event);
       const [remoteStream] = event.streams;
+      console.log('Remote stream:', remoteStream);
       setRemoteStream(remoteStream);
       
       if (remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = remoteStream;
       }
+    };
+
+    pc.oniceconnectionstatechange = () => {
+      console.log('ICE connection state changed:', pc.iceConnectionState);
+    };
+
+    pc.onconnectionstatechange = () => {
+      console.log('Connection state changed:', pc.connectionState);
     };
 
     setPeerConnection(pc);
@@ -646,23 +803,43 @@ const AnonymousChat: React.FC = () => {
   };
 
   const endCall = () => {
-    // Stop local media
+    console.log('=== ENDING CALL ===');
+    
+    // Stop local media streams
     if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
+      console.log('Stopping local media tracks...');
+      localStream.getTracks().forEach(track => {
+        console.log('Stopping track:', track.kind, track.label);
+        track.stop();
+      });
       setLocalStream(null);
+    }
+
+    // Clear video elements
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = null;
+    }
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = null;
     }
 
     // Close peer connection
     if (peerConnection) {
+      console.log('Closing peer connection...');
       peerConnection.close();
       setPeerConnection(null);
     }
 
+    // Reset all call-related state
     setRemoteStream(null);
     setIsCallActive(false);
     setCallType(null);
     setIsMuted(false);
     setIsVideoOff(false);
+    setIncomingCall(null);
+    
+    console.log('✅ Call ended and cleaned up');
+    toast.success('Call ended');
   };
 
   const toggleMute = () => {
@@ -745,6 +922,12 @@ const AnonymousChat: React.FC = () => {
                     </>
                   )}
                 </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Debug: User: {user ? `${user.userName} (${user.role})` : 'None'} | 
+                  Room Status: {roomInfo?.status || 'None'} | 
+                  Call Active: {isCallActive ? 'Yes' : 'No'} |
+                  Show Buttons: {user && roomInfo?.status === 'connected' ? 'Yes' : 'No'}
+                </div>
               </div>
             </div>
 
@@ -752,7 +935,10 @@ const AnonymousChat: React.FC = () => {
               {user && roomInfo?.status === 'connected' && (
                 <>
                   <button
-                    onClick={startVoiceCall}
+                    onClick={() => {
+                      console.log('Voice call button clicked!');
+                      startVoiceCall();
+                    }}
                     className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-lg transition-all duration-200"
                     title="Voice call"
                     disabled={isCallActive}
@@ -760,7 +946,10 @@ const AnonymousChat: React.FC = () => {
                     <FontAwesomeIcon icon={faPhone as IconProp} />
                   </button>
                   <button
-                    onClick={startVideoCall}
+                    onClick={() => {
+                      console.log('Video call button clicked!');
+                      startVideoCall();
+                    }}
                     className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-lg transition-all duration-200"
                     title="Video call"
                     disabled={isCallActive}
@@ -769,6 +958,8 @@ const AnonymousChat: React.FC = () => {
                   </button>
                 </>
               )}
+              
+              {/* Remove debug test button for production */}
               
               {user && (
                 <button
@@ -1156,32 +1347,57 @@ const AnonymousChat: React.FC = () => {
             animate={{ opacity: 1 }}
           >
             <div className="relative w-full h-full">
-              {/* Remote Video */}
+              {/* Remote Video - Full Screen */}
               <video
                 ref={remoteVideoRef}
                 autoPlay
                 playsInline
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover bg-gray-900"
+                style={{ backgroundColor: '#1a1a1a' }}
               />
               
               {/* Local Video (Picture-in-Picture) */}
-              {callType === 'video' && (
+              {callType === 'video' && localStream && (
                 <video
                   ref={localVideoRef}
                   autoPlay
                   playsInline
                   muted
-                  className="absolute top-4 right-4 w-32 h-24 bg-gray-800 rounded-lg object-cover border-2 border-gray-600"
+                  className="absolute top-4 right-4 w-48 h-36 bg-gray-800 rounded-lg object-cover border-2 border-gray-600 shadow-lg"
                 />
+              )}
+
+              {/* Call Status Indicator */}
+              {!remoteStream && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                  <div className="text-center text-white">
+                    <div className="animate-pulse mb-4">
+                      <FontAwesomeIcon 
+                        icon={callType === 'video' ? faVideo as IconProp : faPhone as IconProp} 
+                        className="text-6xl text-amber-400" 
+                      />
+                    </div>
+                    <p className="text-xl font-medium">
+                      {callType === 'video' ? 'Video Call' : 'Voice Call'}
+                    </p>
+                    <p className="text-gray-300 mt-2">
+                      Waiting for {roomInfo?.hostName && roomInfo?.guestName ? 
+                        `${user?.role === 'host' ? roomInfo.guestName : roomInfo.hostName}` : 
+                        'other user'
+                      } to join...
+                    </p>
+                  </div>
+                </div>
               )}
 
               {/* Call Controls */}
               <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-4">
                 <button
                   onClick={toggleMute}
-                  className={`p-4 rounded-full transition-colors ${
+                  className={`p-4 rounded-full transition-colors shadow-lg ${
                     isMuted ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'
                   }`}
+                  title={isMuted ? 'Unmute' : 'Mute'}
                 >
                   <FontAwesomeIcon 
                     icon={isMuted ? faTimes as IconProp : faPhone as IconProp} 
@@ -1192,9 +1408,10 @@ const AnonymousChat: React.FC = () => {
                 {callType === 'video' && (
                   <button
                     onClick={toggleVideo}
-                    className={`p-4 rounded-full transition-colors ${
+                    className={`p-4 rounded-full transition-colors shadow-lg ${
                       isVideoOff ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'
                     }`}
+                    title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
                   >
                     <FontAwesomeIcon 
                       icon={isVideoOff ? faTimes as IconProp : faVideo as IconProp} 
@@ -1205,10 +1422,14 @@ const AnonymousChat: React.FC = () => {
 
                 <button
                   onClick={() => {
+                    console.log('End call button clicked');
                     endCall();
-                    if (socket) socket.emit('reject-call');
+                    if (socket) {
+                      socket.emit('end-call');
+                    }
                   }}
-                  className="p-4 rounded-full bg-red-500 hover:bg-red-600 transition-colors"
+                  className="p-4 rounded-full bg-red-500 hover:bg-red-600 transition-colors shadow-lg"
+                  title="End call"
                 >
                   <FontAwesomeIcon icon={faTimes as IconProp} className="text-white text-xl" />
                 </button>
@@ -1216,7 +1437,7 @@ const AnonymousChat: React.FC = () => {
 
               {/* Call Info */}
               <div className="absolute top-8 left-1/2 transform -translate-x-1/2 text-center">
-                <div className="bg-black bg-opacity-50 rounded-lg p-4">
+                <div className="bg-black bg-opacity-50 rounded-lg p-4 backdrop-blur-sm">
                   <p className="text-white text-lg font-medium">
                     {callType === 'video' ? 'Video Call' : 'Voice Call'}
                   </p>
@@ -1226,6 +1447,11 @@ const AnonymousChat: React.FC = () => {
                       'Connecting...'
                     }
                   </p>
+                  <div className="text-xs text-gray-400 mt-1">
+                    {isCallActive ? (
+                      remoteStream ? 'Connected' : 'Waiting for response...'
+                    ) : 'Connecting...'}
+                  </div>
                 </div>
               </div>
             </div>

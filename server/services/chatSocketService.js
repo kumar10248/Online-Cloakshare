@@ -17,7 +17,7 @@ class ChatSocketService {
   constructor(server) {
     this.io = new Server(server, {
       cors: {
-        origin: ["http://localhost:5173", "http://localhost:5174", "https://online-cloakshare-client.vercel.app"],
+        origin: ["http://localhost:5173", "http://localhost:5174", "https://cloakshare.devashish.top", "https://online-cloakshare-client.vercel.app"],
         methods: ["GET", "POST"],
         credentials: true
       },
@@ -442,6 +442,39 @@ class ChatSocketService {
         } catch (error) {
           console.error('Error rejecting call:', error);
           socket.emit('error', { message: 'Failed to reject call' });
+        }
+      });
+
+      // Handle explicit call end
+      socket.on('end-call', async (data) => {
+        try {
+          const user = this.connectedUsers.get(socket.id);
+
+          if (!user) {
+            socket.emit('error', { message: 'You are not in a room' });
+            return;
+          }
+
+          const chatRoom = await ChatRoom.findOne({ roomId: user.roomId, status: 'connected' });
+          
+          if (!chatRoom) {
+            socket.emit('error', { message: 'Room not found' });
+            return;
+          }
+
+          await chatRoom.endCall();
+
+          // Notify both users
+          this.io.to(user.roomId).emit('call-ended', {
+            reason: 'ended',
+            endedBy: user.userName
+          });
+
+          console.log(`Call ended by ${user.userName} in room ${user.roomId}`);
+
+        } catch (error) {
+          console.error('Error ending call:', error);
+          socket.emit('error', { message: 'Failed to end call' });
         }
       });
 
