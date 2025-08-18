@@ -15,7 +15,7 @@ const app = express();
 const server = http.createServer(app);
 
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5174", "https://online-cloakshare-client.vercel.app"],
+  origin: ["http://localhost:5173", "http://localhost:5174", "https://cloakshare.devashish.top"],
   methods: ["GET", "POST"],
   credentials: true
 }));

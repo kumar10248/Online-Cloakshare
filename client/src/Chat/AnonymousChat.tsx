@@ -100,14 +100,22 @@ const AnonymousChat: React.FC = () => {
 
   // Initialize socket connection
   useEffect(() => {
-    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    const socketInstance = io(baseURL, {
-      transports: ['websocket'],
-      upgrade: true
+    // Use different URLs for Socket.IO server
+    const socketURL = import.meta.env.VITE_SOCKET_URL || 
+                     import.meta.env.VITE_API_URL || 
+                     'http://localhost:8000';
+    
+    console.log('Attempting to connect to Socket.IO server:', socketURL);
+    
+    const socketInstance = io(socketURL, {
+      transports: ['websocket', 'polling'],
+      upgrade: true,
+      timeout: 20000,
+      forceNew: true
     });
 
     socketInstance.on('connect', () => {
-      console.log('Connected to chat server');
+      console.log('Connected to chat server at:', socketURL);
       setIsConnected(true);
     });
 
@@ -116,6 +124,23 @@ const AnonymousChat: React.FC = () => {
       setIsConnected(false);
       setUser(null);
       setRoomInfo(null);
+    });
+
+    socketInstance.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+      setIsConnected(false);
+      toast.error('Failed to connect to chat server. Please check your internet connection.');
+    });
+
+    socketInstance.on('reconnect', (attemptNumber) => {
+      console.log('Reconnected to chat server after', attemptNumber, 'attempts');
+      setIsConnected(true);
+      toast.success('Reconnected to chat server');
+    });
+
+    socketInstance.on('reconnect_error', (error) => {
+      console.error('Reconnection failed:', error);
+      toast.error('Unable to reconnect to chat server');
     });
 
     // Chat events
