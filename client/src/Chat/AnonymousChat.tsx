@@ -119,16 +119,21 @@ const AnonymousChat: React.FC = () => {
       transports: ['websocket', 'polling'],
       upgrade: true,
       timeout: 20000,
-      forceNew: true
+      forceNew: true,
+      autoConnect: true,
+      reconnection: true,
+      reconnectionAttempts: 3,
+      reconnectionDelay: 1000
     });
 
     socketInstance.on('connect', () => {
-      console.log('Connected to chat server at:', socketURL);
+      console.log('✅ Connected to chat server (ID: ' + socketInstance.id + ')');
       setIsConnected(true);
+      toast.success('Connected to chat server');
     });
 
-    socketInstance.on('disconnect', () => {
-      console.log('Disconnected from chat server');
+    socketInstance.on('disconnect', (reason) => {
+      console.log('❌ Disconnected from chat server. Reason:', reason);
       setIsConnected(false);
       setUser(null);
       setRoomInfo(null);
@@ -248,17 +253,17 @@ const AnonymousChat: React.FC = () => {
 
     // WebRTC signaling handlers
     socketInstance.on('webrtc-offer', async (data) => {
-      console.log('Received WebRTC offer');
+      console.log('📡 Received WebRTC offer');
       await handleWebRTCOffer(data.offer, data.callType);
     });
 
     socketInstance.on('webrtc-answer', async (data) => {
-      console.log('Received WebRTC answer');
+      console.log('📡 Received WebRTC answer');
       await handleWebRTCAnswer(data.answer);
     });
 
     socketInstance.on('webrtc-ice-candidate', async (data) => {
-      console.log('Received ICE candidate');
+      console.log('🧊 Received ICE candidate');
       await handleICECandidate(data.candidate);
     });
 
@@ -573,9 +578,15 @@ const AnonymousChat: React.FC = () => {
       toast.error('Not connected to chat server');
       return;
     }
+    
     try {
-      console.log('Starting video call...');
+      console.log('📹 Starting video call...');
+      toast.loading('Getting camera access...');
+      
       const stream = await setupLocalMedia('video');
+      console.log('✅ Got video stream:', stream);
+      toast.success('Camera access granted!');
+      
       const pc = createPeerConnection();
 
       // Add local stream to peer connection
@@ -589,10 +600,13 @@ const AnonymousChat: React.FC = () => {
 
       socket.emit('initiate-video-call');
       socket.emit('webrtc-offer', { offer, callType: 'video' });
-      toast.loading('Initiating video call...');
+      
+      console.log('✅ Video call initiated');
+      toast.success('Video call initiated! Waiting for response...');
     } catch (error) {
-      console.error('Error starting video call:', error);
-      toast.error('Failed to access camera/microphone');
+      console.error('❌ Video call failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Video call failed: ${errorMessage}`);
     }
   };
 
@@ -716,40 +730,39 @@ const AnonymousChat: React.FC = () => {
       ]
     };
 
-    console.log('Creating peer connection with config:', configuration);
+    console.log('🔗 Creating peer connection with config:', configuration);
     
     if (!window.RTCPeerConnection) {
       throw new Error('RTCPeerConnection is not supported in this browser');
     }
 
     const pc = new RTCPeerConnection(configuration);
-    console.log('Peer connection created:', pc);
+    console.log('🔗 Peer connection created successfully');
 
     pc.onicecandidate = (event) => {
-      console.log('ICE candidate event:', event);
       if (event.candidate && socket) {
-        console.log('Sending ICE candidate:', event.candidate);
+        console.log('🧊 Sending ICE candidate');
         socket.emit('webrtc-ice-candidate', { candidate: event.candidate });
       }
     };
 
     pc.ontrack = (event) => {
-      console.log('Received remote stream:', event);
+      console.log('📺 Received remote stream');
       const [remoteStream] = event.streams;
-      console.log('Remote stream:', remoteStream);
       setRemoteStream(remoteStream);
       
       if (remoteVideoRef.current) {
+        console.log('📺 Setting remote video element');
         remoteVideoRef.current.srcObject = remoteStream;
       }
     };
 
     pc.oniceconnectionstatechange = () => {
-      console.log('ICE connection state changed:', pc.iceConnectionState);
+      console.log('🔗 ICE connection state:', pc.iceConnectionState);
     };
 
     pc.onconnectionstatechange = () => {
-      console.log('Connection state changed:', pc.connectionState);
+      console.log('🔗 Connection state:', pc.connectionState);
     };
 
     setPeerConnection(pc);
@@ -758,6 +771,7 @@ const AnonymousChat: React.FC = () => {
 
   const handleWebRTCOffer = async (offer: RTCSessionDescriptionInit, callType: 'voice' | 'video') => {
     try {
+      console.log('📡 Handling WebRTC offer for ' + callType + ' call');
       const stream = await setupLocalMedia(callType);
       const pc = createPeerConnection();
 
@@ -775,8 +789,10 @@ const AnonymousChat: React.FC = () => {
       }
 
       setIsCallActive(true);
+      setCallType(callType);
+      toast.success(`${callType} call connected`);
     } catch (error) {
-      console.error('Error handling WebRTC offer:', error);
+      console.error('❌ Failed to handle WebRTC offer:', error);
       toast.error('Failed to establish call connection');
     }
   };
@@ -785,10 +801,12 @@ const AnonymousChat: React.FC = () => {
     try {
       if (peerConnection) {
         await peerConnection.setRemoteDescription(answer);
+        console.log('✅ WebRTC answer processed');
         setIsCallActive(true);
       }
     } catch (error) {
-      console.error('Error handling WebRTC answer:', error);
+      console.error('❌ Failed to handle WebRTC answer:', error);
+      toast.error('Failed to process call response');
     }
   };
 
@@ -796,9 +814,10 @@ const AnonymousChat: React.FC = () => {
     try {
       if (peerConnection) {
         await peerConnection.addIceCandidate(candidate);
+        console.log('🧊 ICE candidate added');
       }
     } catch (error) {
-      console.error('Error handling ICE candidate:', error);
+      console.error('❌ Failed to add ICE candidate:', error);
     }
   };
 
