@@ -1,0 +1,339 @@
+/* Anonymous Chat Component Styles */
+
+.anonymous-chat {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Custom scrollbar for messages */
+.anonymous-chat .messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.anonymous-chat .messages-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.anonymous-chat .messages-container::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.5);
+  border-radius: 3px;
+}
+
+.anonymous-chat .messages-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.7);
+}
+
+/* Typing indicator animation */
+@keyframes typing {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-10px);
+  }
+}
+
+.typing-dot {
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+/* File drag and drop */
+.file-drop-zone {
+  transition: all 0.3s ease;
+  border: 2px dashed transparent;
+}
+
+.file-drop-zone.drag-over {
+  border-color: #f59e0b;
+  background-color: rgba(245, 158, 11, 0.1);
+}
+
+/* Message animations */
+.message-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.message-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+/* Voice call visualization */
+.voice-wave {
+  width: 4px;
+  height: 20px;
+  background: #f59e0b;
+  margin: 0 2px;
+  border-radius: 2px;
+  animation: wave 1.5s ease-in-out infinite;
+}
+
+.voice-wave:nth-child(1) { animation-delay: 0s; }
+.voice-wave:nth-child(2) { animation-delay: 0.1s; }
+.voice-wave:nth-child(3) { animation-delay: 0.2s; }
+.voice-wave:nth-child(4) { animation-delay: 0.3s; }
+.voice-wave:nth-child(5) { animation-delay: 0.4s; }
+
+@keyframes wave {
+  0%, 40%, 100% {
+    transform: scaleY(0.4);
+  }
+  20% {
+    transform: scaleY(1);
+  }
+}
+
+/* Connection status indicator */
+.connection-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+}
+
+/* Message bubble styles */
+.message-bubble {
+  position: relative;
+  word-wrap: break-word;
+  max-width: 75%;
+}
+
+.message-bubble::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.message-bubble.own::before {
+  right: -8px;
+  top: 15px;
+  border-width: 8px 0 8px 8px;
+  border-color: transparent transparent transparent #f59e0b;
+}
+
+.message-bubble.other::before {
+  left: -8px;
+  top: 15px;
+  border-width: 8px 8px 8px 0;
+  border-color: transparent #374151 transparent transparent;
+}
+
+/* File upload progress */
+.upload-progress {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  height: 4px;
+}
+
+.upload-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #ea580c);
+  transition: width 0.3s ease;
+}
+
+/* Emoji picker styles */
+.emoji-picker {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.emoji-item {
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  text-align: center;
+  font-size: 18px;
+}
+
+.emoji-item:hover {
+  background-color: rgba(245, 158, 11, 0.2);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .anonymous-chat .chat-container {
+    height: 100vh;
+    border-radius: 0;
+  }
+  
+  .message-bubble {
+    max-width: 85%;
+  }
+  
+  .chat-input {
+    padding: 12px;
+  }
+}
+
+/* Dark mode enhancements */
+.dark .anonymous-chat {
+  color-scheme: dark;
+}
+
+/* Accessibility */
+.anonymous-chat button:focus-visible {
+  outline: 2px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+.anonymous-chat input:focus-visible {
+  outline: 2px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+/* Loading states */
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #f59e0b;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Notification badges */
+.notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Call controls */
+.call-controls {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 12px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.call-control-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.call-control-btn.mute {
+  background: #ef4444;
+}
+
+.call-control-btn.unmute {
+  background: #6b7280;
+}
+
+.call-control-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Security indicators */
+.security-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.encryption-indicator {
+  color: #22c55e;
+  font-size: 10px;
+}
+
+/* Room info styles */
+.room-info {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+}
+
+.room-code {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 18px;
+  letter-spacing: 2px;
+  color: #f59e0b;
+}
+
+/* Anonymous mode indicators */
+.anonymous-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #8b5cf6;
+  font-size: 12px;
+}
+
+.incognito-mode {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

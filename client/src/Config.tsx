@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseURL = "https://online-cloakshare.onrender.com";
+const baseURL = import.meta.env.VITE_API_URL || "https://online-cloakshare.onrender.com";
 
 const getData = async (url: string, customHeaders = {}) => {
   const headers = {
@@ -16,4 +16,4 @@ const postData = async (url: string, body: any, options:any) => {
   return response.data;
 };
 
-export { getData, postData };
+export { getData, postData, baseURL };

@@ -20,6 +20,7 @@ import { faGithub, faLinkedin, faTwitter } from "@fortawesome/free-brands-svg-ic
 import { motion } from "framer-motion";
 import { Toaster, toast } from "react-hot-toast";
 import cloakShareLogo from "../assets/cloakshare-logo-large.svg";
+import AnonymousChat from "../Chat/AnonymousChat";
 
 interface ApiResponse {
   code?: string;
@@ -970,6 +971,9 @@ const Home: React.FC = () => {
           },
         }}
       />
+
+      {/* Anonymous Chat Component */}
+      <AnonymousChat />
     </div>
   );
 };

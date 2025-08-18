@@ -1,154 +1,173 @@
-// routes/convertRoutes.js
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const fs = require('fs');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
-const { convertPdfToWord } = require('../services/pdfToWordService');
+const fs = require('fs');
 
-// Set up multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 100 * 1024 * 1024 // 100MB limit
   },
-  filename: (req, file, cb) => {
-    // Create a unique filename with original extension
-    const uniqueFilename = `${uuidv4()}-${file.originalname}`;
-    cb(null, uniqueFilename);
-  }
-});
-
-// Filter to only accept PDF files
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'application/pdf') {
-    cb(null, true);
-  } else {
-    cb(new Error('Only PDF files are allowed'), false);
-  }
-};
-
-// Set up multer upload with file size limit of 20MB
-const upload = multer({ 
-  storage: storage,
-  fileFilter: fileFilter,
-  limits: { fileSize: 20 * 1024 * 1024 } // 20MB
-});
-
-// Error handling middleware for multer
-const handleMulterError = (err, req, res, next) => {
-  if (err instanceof multer.MulterError) {
-    // A Multer error occurred when uploading
-    if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ error: 'File size exceeds the 20MB limit' });
-    }
-    return res.status(400).json({ error: `Upload error: ${err.message}` });
-  } else if (err) {
-    // An unknown error occurred
-    return res.status(400).json({ error: err.message });
-  }
-  // If no error, continue
-  next();
-};
-
-// PDF to Word conversion endpoint
-router.post('/pdf-to-word', upload.single('file'), handleMulterError, async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-
-    const pdfFilePath = req.file.path;
-    const outputDir = path.join(__dirname, '../downloads');
+  fileFilter: (req, file, cb) => {
+    // Allow common file types that might need conversion
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ];
     
-    // Create downloads directory if it doesn't exist
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('File type not supported for conversion'), false);
+    }
+  }
+});
+
+// Text-to-file conversion endpoint
+router.post('/text-to-file', (req, res) => {
+  try {
+    const { text, filename = 'converted.txt', format = 'txt' } = req.body;
+    
+    if (!text) {
+      return res.status(400).json({ error: 'Text content is required' });
     }
 
-    // Generate output filename
-    const originalFilename = req.file.originalname;
-    const outputFilename = originalFilename.replace(/\.pdf$/i, '') + '.docx';
-    const outputPath = path.join(outputDir, `${uuidv4()}-${outputFilename}`);
+    let contentType = 'text/plain';
+    let convertedContent = text;
 
-    // Convert PDF to Word
-    await convertPdfToWord(pdfFilePath, outputPath);
-
-    // Check if conversion was successful by verifying the output file exists
-    if (!fs.existsSync(outputPath)) {
-      throw new Error('Conversion failed: Output file not created');
+    switch (format.toLowerCase()) {
+      case 'txt':
+        contentType = 'text/plain';
+        break;
+      case 'json':
+        contentType = 'application/json';
+        try {
+          convertedContent = JSON.stringify({ content: text }, null, 2);
+        } catch (e) {
+          convertedContent = text;
+        }
+        break;
+      case 'html':
+        contentType = 'text/html';
+        convertedContent = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Converted Text</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <pre>${text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+</body>
+</html>`;
+        break;
+      case 'md':
+        contentType = 'text/markdown';
+        break;
+      default:
+        contentType = 'text/plain';
     }
 
-    // Get file stats for the response
-    const stats = fs.statSync(outputPath);
-
-    // Generate a download URL
-    const downloadUrl = `/api/convert/download/${path.basename(outputPath)}`;
-
-    // Return success response with download URL and file info
-    res.status(200).json({
-      success: true,
-      message: 'PDF successfully converted to Word',
-      file: {
-        name: outputFilename,
-        size: stats.size,
-        createdAt: stats.birthtime,
-        downloadUrl
-      }
-    });
-
-    // Schedule file deletion after 1 hour
-    setTimeout(() => {
-      try {
-        if (fs.existsSync(pdfFilePath)) fs.unlinkSync(pdfFilePath);
-        if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
-      } catch (error) {
-        console.error('Error deleting temporary files:', error);
-      }
-    }, 60 * 60 * 1000); // 1 hour
+    const buffer = Buffer.from(convertedContent, 'utf8');
+    
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', buffer.length);
+    
+    res.send(buffer);
 
   } catch (error) {
-    console.error('PDF to Word conversion error:', error);
-    
-    // Clean up the uploaded file if conversion failed
-    if (req.file && fs.existsSync(req.file.path)) {
-      try {
-        fs.unlinkSync(req.file.path);
-      } catch (cleanupError) {
-        console.error('Error cleaning up uploaded file:', cleanupError);
-      }
-    }
-    
-    res.status(500).json({ 
-      error: 'Failed to convert PDF to Word', 
-      details: error.message 
-    });
+    console.error('Text conversion error:', error);
+    res.status(500).json({ error: 'Failed to convert text' });
   }
 });
 
-// Download route for converted files
-router.get('/download/:filename', (req, res) => {
-  const filename = req.params.filename;
-  const filePath = path.join(__dirname, '../downloads', filename);
+// File format information endpoint
+router.get('/supported-formats', (req, res) => {
+  try {
+    const supportedFormats = {
+      input: [
+        { extension: 'txt', description: 'Text files', mimetype: 'text/plain' },
+        { extension: 'pdf', description: 'PDF documents', mimetype: 'application/pdf' },
+        { extension: 'doc', description: 'Word documents', mimetype: 'application/msword' },
+        { extension: 'docx', description: 'Word documents (newer)', mimetype: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+        { extension: 'jpg', description: 'JPEG images', mimetype: 'image/jpeg' },
+        { extension: 'png', description: 'PNG images', mimetype: 'image/png' },
+        { extension: 'gif', description: 'GIF images', mimetype: 'image/gif' }
+      ],
+      output: [
+        { extension: 'txt', description: 'Plain text' },
+        { extension: 'json', description: 'JSON format' },
+        { extension: 'html', description: 'HTML format' },
+        { extension: 'md', description: 'Markdown format' }
+      ]
+    };
 
-  // Check if file exists
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).json({ error: 'File not found or has expired' });
+    res.json({
+      success: true,
+      formats: supportedFormats
+    });
+
+  } catch (error) {
+    console.error('Error getting supported formats:', error);
+    res.status(500).json({ error: 'Failed to get supported formats' });
   }
+});
 
-  // Extract original filename from the unique filename
-  const originalFilename = filename.substring(filename.indexOf('-') + 1);
+// File info endpoint
+router.post('/file-info', upload.single('file'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file provided' });
+    }
 
-  // Set appropriate headers for file download
-  res.setHeader('Content-Disposition', `attachment; filename="${originalFilename}"`);
-  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    const fileInfo = {
+      originalName: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      extension: path.extname(req.file.originalname).toLowerCase(),
+      sizeFormatted: formatFileSize(req.file.size)
+    };
+
+    res.json({
+      success: true,
+      fileInfo
+    });
+
+  } catch (error) {
+    console.error('File info error:', error);
+    res.status(500).json({ error: 'Failed to get file information' });
+  }
+});
+
+// Utility function to format file size
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
   
-  // Send file
-  res.sendFile(filePath);
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Health check
+router.get('/health', (req, res) => {
+  res.json({
+    success: true,
+    service: 'Conversion Service',
+    status: 'healthy',
+    timestamp: new Date().toISOString()
+  });
 });
 
 module.exports = router;

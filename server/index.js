@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const http = require('http');
 dotenv.config();
 const bodyParser = require('body-parser');
 
@@ -8,10 +9,16 @@ const convertRoutes = require('./routes/convertRoutes');
 const saveRoutes = require('./routes/saveRoutes');
 const showRoutes = require('./routes/showRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
-
+const chatRoutes = require('./routes/chat');
 
 const app = express();
-app.use(cors());
+const server = http.createServer(app);
+
+app.use(cors({
+  origin: ["http://localhost:5173", "http://localhost:5174", "https://online-cloakshare-client.vercel.app"],
+  methods: ["GET", "POST"],
+  credentials: true
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -24,17 +31,20 @@ app.get('/api',(req,res)=>{
 
 require('./connection');
 
+// Initialize Chat Socket Service
+const ChatSocketService = require('./services/chatSocketService');
+const chatService = new ChatSocketService(server);
+
 const ClipRoute = require('./routes/ClipRoute');
 app.use('/api/save', saveRoutes);
 app.use('/api/show', showRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/convert', convertRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.use('/', ClipRoute);
 
-
-
-
-app.listen(PORT, ()=>{
+server.listen(PORT, ()=>{
     console.log(`Server is running on port ${PORT}`);
+    console.log('Chat service initialized');
 });
