@@ -346,6 +346,28 @@ const AnonymousChat: React.FC = () => {
       toast.success('Call accepted! Connecting...');
     });
 
+    // Optimized ICE server configuration
+    const getIceServers = (): RTCIceServer[] => [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      // Metered TURN servers (free tier)
+      {
+        urls: 'turn:a.relay.metered.ca:80',
+        username: 'e8dd65b92f6c7a4e6d6b6e1a',
+        credential: 'uWdWNmkhvyqTxrQE'
+      },
+      {
+        urls: 'turn:a.relay.metered.ca:443',
+        username: 'e8dd65b92f6c7a4e6d6b6e1a',
+        credential: 'uWdWNmkhvyqTxrQE'
+      },
+      {
+        urls: 'turn:a.relay.metered.ca:443?transport=tcp',
+        username: 'e8dd65b92f6c7a4e6d6b6e1a',
+        credential: 'uWdWNmkhvyqTxrQE'
+      }
+    ];
+
     // CALLER receives this after receiver accepts - now send the WebRTC offer
     socketInstance.on('send-webrtc-offer', async (data) => {
       console.log('📡 Received signal to send WebRTC offer');
@@ -393,37 +415,25 @@ const AnonymousChat: React.FC = () => {
           localVideoRef.current.play().catch(e => console.log('Local video play:', e));
         }
         
-        // Create peer connection with better ICE servers
-        const configuration: RTCConfiguration = {
-          iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            { urls: 'stun:stun2.l.google.com:19302' },
-            { urls: 'stun:stun3.l.google.com:19302' },
-            { urls: 'stun:stun4.l.google.com:19302' },
-            { urls: 'stun:stun.stunprotocol.org:3478' },
-            // Free TURN servers for better NAT traversal
-            {
-              urls: 'turn:openrelay.metered.ca:80',
-              username: 'openrelayproject',
-              credential: 'openrelayproject'
-            },
-            {
-              urls: 'turn:openrelay.metered.ca:443',
-              username: 'openrelayproject',
-              credential: 'openrelayproject'
-            }
-          ],
+        // Create peer connection with optimized config
+        const pc = new RTCPeerConnection({
+          iceServers: getIceServers(),
           iceCandidatePoolSize: 10,
           bundlePolicy: 'max-bundle',
           rtcpMuxPolicy: 'require'
-        };
-        
-        const pc = new RTCPeerConnection(configuration);
+        });
         peerConnectionRef.current = pc;
         setPeerConnection(pc);
 
-        // ICE candidate handler with batching
+        // Connection timeout - if not connected in 15 seconds, show error
+        const connectionTimeout = setTimeout(() => {
+          if (!pc || pc.iceConnectionState !== 'connected') {
+            console.log('⏰ Connection timeout');
+            toast.error('Connection taking too long. Try again.');
+          }
+        }, 15000);
+
+        // ICE candidate handler - send immediately (trickle ICE)
         pc.onicecandidate = (event) => {
           if (event.candidate) {
             console.log('🧊 Sending ICE candidate (caller):', event.candidate.type);
@@ -452,11 +462,15 @@ const AnonymousChat: React.FC = () => {
           console.log('ICE state (caller):', pc.iceConnectionState);
           if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
             console.log('✅ ICE Connected (caller)');
+            clearTimeout(connectionTimeout);
             setIsCallConnected(true);
             setCallStatus('connected');
             setIsInitiatingCall(false);
+          } else if (pc.iceConnectionState === 'checking') {
+            console.log('🔄 ICE Checking...');
           } else if (pc.iceConnectionState === 'failed') {
             console.log('❌ ICE Failed - attempting restart');
+            clearTimeout(connectionTimeout);
             pc.restartIce();
             toast.error('Connection failed, retrying...');
           } else if (pc.iceConnectionState === 'disconnected') {
@@ -464,11 +478,20 @@ const AnonymousChat: React.FC = () => {
           }
         };
 
+        // ICE gathering state - for debugging
+        pc.onicegatheringstatechange = () => {
+          console.log('ICE gathering state (caller):', pc.iceGatheringState);
+        };
+
         pc.onconnectionstatechange = () => {
           console.log('Connection state (caller):', pc.connectionState);
           if (pc.connectionState === 'connected') {
+            clearTimeout(connectionTimeout);
             setIsCallConnected(true);
             setCallStatus('connected');
+          } else if (pc.connectionState === 'failed') {
+            clearTimeout(connectionTimeout);
+            toast.error('Connection failed');
           }
         };
 
@@ -501,34 +524,22 @@ const AnonymousChat: React.FC = () => {
       try {
         const { offer, callType: incomingCallType } = data;
         
-        // Create peer connection with better ICE servers
-        const configuration: RTCConfiguration = {
-          iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            { urls: 'stun:stun2.l.google.com:19302' },
-            { urls: 'stun:stun3.l.google.com:19302' },
-            { urls: 'stun:stun4.l.google.com:19302' },
-            { urls: 'stun:stun.stunprotocol.org:3478' },
-            // Free TURN servers for better NAT traversal
-            {
-              urls: 'turn:openrelay.metered.ca:80',
-              username: 'openrelayproject',
-              credential: 'openrelayproject'
-            },
-            {
-              urls: 'turn:openrelay.metered.ca:443',
-              username: 'openrelayproject',
-              credential: 'openrelayproject'
-            }
-          ],
+        // Create peer connection with optimized config
+        const pc = new RTCPeerConnection({
+          iceServers: getIceServers(),
           iceCandidatePoolSize: 10,
           bundlePolicy: 'max-bundle',
           rtcpMuxPolicy: 'require'
-        };
-        
-        const pc = new RTCPeerConnection(configuration);
+        });
         peerConnectionRef.current = pc;
+
+        // Connection timeout
+        const connectionTimeout = setTimeout(() => {
+          if (!pc || pc.iceConnectionState !== 'connected') {
+            console.log('⏰ Connection timeout (receiver)');
+            toast.error('Connection taking too long. Try again.');
+          }
+        }, 15000);
         
         pc.onicecandidate = (event) => {
           if (event.candidate) {
@@ -557,11 +568,15 @@ const AnonymousChat: React.FC = () => {
           console.log('ICE state (receiver):', pc.iceConnectionState);
           if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
             console.log('✅ ICE Connected (receiver)');
+            clearTimeout(connectionTimeout);
             setIsCallConnected(true);
             setCallStatus('connected');
             setIsInitiatingCall(false);
+          } else if (pc.iceConnectionState === 'checking') {
+            console.log('🔄 ICE Checking...');
           } else if (pc.iceConnectionState === 'failed') {
             console.log('❌ ICE Failed - attempting restart');
+            clearTimeout(connectionTimeout);
             pc.restartIce();
             toast.error('Connection failed, retrying...');
           } else if (pc.iceConnectionState === 'disconnected') {
@@ -569,11 +584,19 @@ const AnonymousChat: React.FC = () => {
           }
         };
 
+        pc.onicegatheringstatechange = () => {
+          console.log('ICE gathering state (receiver):', pc.iceGatheringState);
+        };
+
         pc.onconnectionstatechange = () => {
           console.log('Connection state (receiver):', pc.connectionState);
           if (pc.connectionState === 'connected') {
+            clearTimeout(connectionTimeout);
             setIsCallConnected(true);
             setCallStatus('connected');
+          } else if (pc.connectionState === 'failed') {
+            clearTimeout(connectionTimeout);
+            toast.error('Connection failed');
           }
         };
         
