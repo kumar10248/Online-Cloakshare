@@ -399,14 +399,27 @@ class ChatSocketService {
             return;
           }
 
+          const callType = chatRoom.callSession.callType;
+          const callerId = chatRoom.callSession.initiatedBy;
+
           // Notify both users that call is accepted
           this.io.to(user.roomId).emit('call-accepted', {
-            callType: chatRoom.callSession.callType,
+            callType: callType,
+            acceptedBy: user.userName,
             participants: [
               { id: chatRoom.hostSocketId, name: chatRoom.hostName },
               { id: chatRoom.guestSocketId, name: chatRoom.guestName }
             ]
           });
+
+          // Tell the CALLER to send the WebRTC offer now
+          // The caller is the one who initiated the call
+          const callerSocketId = callerId === chatRoom.hostSocketId ? chatRoom.hostSocketId : chatRoom.guestSocketId;
+          this.io.to(callerSocketId).emit('send-webrtc-offer', {
+            callType: callType
+          });
+
+          console.log(`Call accepted by ${user.userName}, telling caller to send offer`);
 
         } catch (error) {
           console.error('Error accepting call:', error);

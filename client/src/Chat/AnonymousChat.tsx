@@ -21,7 +21,16 @@ import {
   faImage,
   faFilePdf,
   faFileWord,
-  faFileExcel
+  faFileExcel,
+  faMicrophone,
+  faMicrophoneSlash,
+  faVideoSlash,
+  faPhoneSlash,
+  faExpand,
+  faCompress,
+  faVolumeUp,
+  faVolumeMute,
+  faPhoneAlt
 } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-hot-toast';
 import './AnonymousChat.css';
@@ -83,28 +92,101 @@ const AnonymousChat: React.FC = () => {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
+  const [callDuration, setCallDuration] = useState(0);
+  const [isCallConnected, setIsCallConnected] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isSpeakerOn, setIsSpeakerOn] = useState(true);
+  const [isInitiatingCall, setIsInitiatingCall] = useState(false);
+  const [callStatus, setCallStatus] = useState<'idle' | 'initiating' | 'ringing' | 'connecting' | 'connected' | 'ended'>('idle');
+  const callTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Use remoteStream to avoid TypeScript warning
+  // Refs - declare before useEffects that use them
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
+  const callContainerRef = useRef<HTMLDivElement>(null);
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
+
+  // Set remote video/audio when remoteStream changes
   React.useEffect(() => {
-    if (remoteStream && remoteVideoRef.current) {
-      remoteVideoRef.current.srcObject = remoteStream;
+    if (remoteStream) {
+      console.log('📺 Setting remote stream:', remoteStream.getTracks());
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = remoteStream;
+        // Ensure video plays
+        remoteVideoRef.current.play().catch(e => console.log('Remote video play error:', e));
+      }
+      if (remoteAudioRef.current) {
+        remoteAudioRef.current.srcObject = remoteStream;
+        remoteAudioRef.current.play().catch(e => console.log('Remote audio play error:', e));
+      }
     }
   }, [remoteStream]);
 
   // Set local video when localStream changes
   React.useEffect(() => {
     if (localStream && localVideoRef.current && callType === 'video') {
-      console.log('Setting local video from useEffect:', localStream);
+      console.log('📹 Setting local video from useEffect:', localStream.getTracks());
       localVideoRef.current.srcObject = localStream;
+      localVideoRef.current.play().catch(e => console.log('Local video play error:', e));
     }
   }, [localStream, callType]);
 
-  // Refs
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const localVideoRef = useRef<HTMLVideoElement>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  // Call timer effect
+  useEffect(() => {
+    if (isCallConnected) {
+      callTimerRef.current = setInterval(() => {
+        setCallDuration(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (callTimerRef.current) {
+        clearInterval(callTimerRef.current);
+        callTimerRef.current = null;
+      }
+      setCallDuration(0);
+    }
+    return () => {
+      if (callTimerRef.current) {
+        clearInterval(callTimerRef.current);
+      }
+    };
+  }, [isCallConnected]);
+
+  // Format call duration
+  const formatCallDuration = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    if (hrs > 0) {
+      return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Toggle fullscreen
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement && callContainerRef.current) {
+      callContainerRef.current.requestFullscreen();
+      setIsFullscreen(true);
+    } else if (document.fullscreenElement) {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  // Listen for fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   // Initialize socket connection
   useEffect(() => {
@@ -214,23 +296,19 @@ const AnonymousChat: React.FC = () => {
 
     // Call events
     socketInstance.on('incoming-voice-call', (data) => {
+      console.log('📞 Incoming voice call from:', data.callerName);
       setIncomingCall({ ...data, callType: 'voice' });
     });
 
     socketInstance.on('incoming-video-call', (data) => {
+      console.log('📹 Incoming video call from:', data.callerName);
       setIncomingCall({ ...data, callType: 'video' });
-    });
-
-    socketInstance.on('call-accepted', (data) => {
-      setIsCallActive(true);
-      // setCallType(data.callType);
-      setIncomingCall(null);
-      toast.success(`${data.callType} call started!`);
     });
 
     socketInstance.on('call-initiated', (data) => {
       console.log('Call initiated:', data);
-      toast.success(`${data.callType} call initiated! Waiting for response...`);
+      setCallStatus('ringing');
+      toast.success(`Calling... Waiting for response`);
     });
 
     socketInstance.on('call-ended', (data) => {
@@ -238,8 +316,13 @@ const AnonymousChat: React.FC = () => {
       setIsCallActive(false);
       setCallType(null);
       setIncomingCall(null);
+      setIsCallConnected(false);
+      setCallStatus('ended');
+      setIsInitiatingCall(false);
       endCall();
       toast(`Call ended: ${data.reason || 'Call terminated'}`);
+      // Reset status after a moment
+      setTimeout(() => setCallStatus('idle'), 2000);
     });
 
     socketInstance.on('call-rejected', (data) => {
@@ -247,25 +330,230 @@ const AnonymousChat: React.FC = () => {
       setIsCallActive(false);
       setCallType(null);
       setIncomingCall(null);
+      setIsCallConnected(false);
+      setCallStatus('ended');
+      setIsInitiatingCall(false);
       endCall();
-      toast.error('Call was rejected');
+      toast.error('Call was declined');
+      setTimeout(() => setCallStatus('idle'), 2000);
     });
 
-    // WebRTC signaling handlers
+    // When call is accepted by receiver
+    socketInstance.on('call-accepted', () => {
+      console.log('📞 Call accepted by receiver');
+      setCallStatus('connecting');
+      setIncomingCall(null);
+      toast.success('Call accepted! Connecting...');
+    });
+
+    // CALLER receives this after receiver accepts - now send the WebRTC offer
+    socketInstance.on('send-webrtc-offer', async (data) => {
+      console.log('📡 Received signal to send WebRTC offer');
+      try {
+        const { callType: acceptedCallType } = data;
+        
+        // Get local media
+        const constraints: MediaStreamConstraints = {
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+          video: acceptedCallType === 'video' ? { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' } : false
+        };
+        
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        localStreamRef.current = stream;
+        setLocalStream(stream);
+        setCallType(acceptedCallType);
+        
+        // Set local video immediately for video calls
+        if (acceptedCallType === 'video' && localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+          localVideoRef.current.play().catch(e => console.log('Local video play:', e));
+        }
+        
+        // Create peer connection
+        const configuration: RTCConfiguration = {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun3.l.google.com:19302' }
+          ]
+        };
+        
+        const pc = new RTCPeerConnection(configuration);
+        peerConnectionRef.current = pc;
+        setPeerConnection(pc);
+
+        pc.onicecandidate = (event) => {
+          if (event.candidate) {
+            console.log('🧊 Sending ICE candidate (caller)');
+            socketInstance.emit('webrtc-ice-candidate', { candidate: event.candidate });
+          }
+        };
+
+        pc.ontrack = (event) => {
+          console.log('📺 Received remote track (caller)');
+          const [remoteStreamData] = event.streams;
+          setRemoteStream(remoteStreamData);
+          setIsCallConnected(true);
+          setCallStatus('connected');
+          setIsInitiatingCall(false);
+          toast.success('Call connected!');
+        };
+
+        pc.oniceconnectionstatechange = () => {
+          console.log('ICE state (caller):', pc.iceConnectionState);
+          if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+            toast.error('Connection lost');
+          }
+        };
+
+        // Add local tracks
+        stream.getTracks().forEach(track => {
+          pc.addTrack(track, stream);
+        });
+
+        // Create and send offer
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        socketInstance.emit('webrtc-offer', { offer, callType: acceptedCallType });
+        console.log('✅ Sent WebRTC offer');
+        
+      } catch (error) {
+        console.error('❌ Error creating WebRTC offer:', error);
+        toast.error('Failed to start call. Check microphone/camera permissions.');
+        cleanupCall();
+      }
+    });
+
+    // WebRTC signaling handlers - receiver gets offer AFTER accepting
     socketInstance.on('webrtc-offer', async (data) => {
-      console.log('📡 Received WebRTC offer');
-      await handleWebRTCOffer(data.offer, data.callType);
+      console.log('📡 Received WebRTC offer from caller');
+      try {
+        const { offer, callType: incomingCallType } = data;
+        
+        // Create peer connection
+        const configuration: RTCConfiguration = {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun3.l.google.com:19302' }
+          ]
+        };
+        
+        const pc = new RTCPeerConnection(configuration);
+        peerConnectionRef.current = pc;
+        
+        pc.onicecandidate = (event) => {
+          if (event.candidate) {
+            console.log('🧊 Sending ICE candidate (receiver)');
+            socketInstance.emit('webrtc-ice-candidate', { candidate: event.candidate });
+          }
+        };
+
+        pc.ontrack = (event) => {
+          console.log('📺 Received remote track');
+          const [stream] = event.streams;
+          setRemoteStream(stream);
+          setIsCallConnected(true);
+          setCallStatus('connected');
+          setIsInitiatingCall(false);
+          toast.success('Call connected!');
+        };
+
+        pc.oniceconnectionstatechange = () => {
+          console.log('ICE state (receiver):', pc.iceConnectionState);
+          if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+            toast.error('Connection lost');
+          }
+        };
+        
+        // Get local media
+        const constraints: MediaStreamConstraints = {
+          audio: { echoCancellation: true, noiseSuppression: true },
+          video: incomingCallType === 'video' ? { width: { ideal: 1280 }, height: { ideal: 720 } } : false
+        };
+        
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        localStreamRef.current = stream;
+        setLocalStream(stream);
+        setCallType(incomingCallType);
+        
+        // Set local video immediately for video calls
+        if (incomingCallType === 'video' && localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+          localVideoRef.current.play().catch(e => console.log('Local video play:', e));
+        }
+        
+        // Add local tracks to peer connection
+        stream.getTracks().forEach(track => {
+          pc.addTrack(track, stream);
+        });
+        
+        // Set remote description (the offer)
+        await pc.setRemoteDescription(new RTCSessionDescription(offer));
+        
+        // Process any pending ICE candidates
+        for (const candidate of pendingCandidatesRef.current) {
+          await pc.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+        pendingCandidatesRef.current = [];
+        
+        // Create and send answer
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        
+        socketInstance.emit('webrtc-answer', { answer });
+        
+        setIsCallActive(true);
+        setIncomingCall(null);
+        setCallStatus('connecting');
+        setPeerConnection(pc);
+        
+        console.log('✅ Sent WebRTC answer');
+      } catch (error) {
+        console.error('❌ Error handling WebRTC offer:', error);
+        toast.error('Failed to connect call. Check microphone/camera permissions.');
+      }
     });
 
     socketInstance.on('webrtc-answer', async (data) => {
-      console.log('📡 Received WebRTC answer');
-      await handleWebRTCAnswer(data.answer);
+      console.log('📡 Received WebRTC answer from receiver');
+      try {
+        const pc = peerConnectionRef.current;
+        if (pc && pc.signalingState !== 'stable') {
+          await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+          console.log('✅ Set remote description from answer');
+          
+          // Process any pending ICE candidates
+          for (const candidate of pendingCandidatesRef.current) {
+            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          }
+          pendingCandidatesRef.current = [];
+        }
+      } catch (error) {
+        console.error('❌ Error handling WebRTC answer:', error);
+      }
     });
 
     socketInstance.on('webrtc-ice-candidate', async (data) => {
       console.log('🧊 Received ICE candidate');
-      await handleICECandidate(data.candidate);
+      try {
+        const pc = peerConnectionRef.current;
+        if (pc && pc.remoteDescription) {
+          await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+        } else {
+          // Store candidate for later
+          pendingCandidatesRef.current.push(data.candidate);
+        }
+      } catch (error) {
+        console.error('❌ Error adding ICE candidate:', error);
+      }
     });
+
+    // When the caller should send the offer (after receiver accepts)
+    // Note: This is now handled by 'send-webrtc-offer' event
 
     socketInstance.on('error', (data) => {
       console.error('Socket error:', data);
@@ -492,134 +780,83 @@ const AnonymousChat: React.FC = () => {
 
   // Voice call
   const startVoiceCall = async () => {
-    console.log('=== START VOICE CALL FUNCTION ===');
-    console.log('1. Function called');
-    console.log('2. Socket exists:', !!socket);
-    console.log('3. Socket connected:', socket?.connected);
-    console.log('4. User exists:', !!user);
-    console.log('5. User details:', user);
-    console.log('6. RoomInfo:', roomInfo);
-    console.log('7. isConnected:', isConnected);
+    console.log('=== START VOICE CALL ===');
     
-    if (!socket) {
-      console.log('❌ ERROR: No socket');
-      toast.error('No socket connection');
+    if (!socket || !socket.connected || !user || !isConnected) {
+      toast.error('Not connected to chat server');
       return;
     }
     
-    if (!socket.connected) {
-      console.log('❌ ERROR: Socket not connected');
-      toast.error('Socket not connected');
-      return;
-    }
-    
-    if (!user) {
-      console.log('❌ ERROR: No user');
-      toast.error('Not logged into chat');
-      return;
-    }
-    
-    if (!isConnected) {
-      console.log('❌ ERROR: Not connected flag false');
-      toast.error('Connection status shows disconnected');
+    if (isInitiatingCall || isCallActive) {
+      toast.error('A call is already in progress');
       return;
     }
     
     try {
-      console.log('8. ✅ All checks passed, starting media setup...');
-      toast.loading('Getting microphone access...');
+      setIsInitiatingCall(true);
+      setCallStatus('initiating');
+      setCallType('voice');
       
-      const stream = await setupLocalMedia('voice');
-      console.log('9. ✅ Got local media stream:', stream);
-      toast.success('Microphone access granted!');
+      // Just emit the call initiation - WebRTC setup happens after receiver accepts
+      socket.emit('initiate-voice-call', {});
       
-      console.log('10. Creating peer connection...');
-      const pc = createPeerConnection();
-      console.log('11. ✅ Created peer connection:', pc);
-
-      // Add local stream to peer connection
-      console.log('12. Adding tracks to peer connection...');
-      stream.getTracks().forEach((track, index) => {
-        console.log(`Adding track ${index}:`, track);
-        pc.addTrack(track, stream);
-      });
-      console.log('13. ✅ All tracks added');
-
-      // Create offer
-      console.log('14. Creating WebRTC offer...');
-      const offer = await pc.createOffer();
-      console.log('15. ✅ Created offer:', offer);
-      
-      console.log('16. Setting local description...');
-      await pc.setLocalDescription(offer);
-      console.log('17. ✅ Set local description');
-
-      console.log('18. Emitting Socket.IO events...');
-      console.log('19. Emitting initiate-voice-call...');
-      socket.emit('initiate-voice-call');
-      
-      console.log('20. Emitting webrtc-offer...');
-      socket.emit('webrtc-offer', { offer, callType: 'voice' });
-      
-      console.log('21. ✅ All events emitted successfully!');
-      toast.success('Voice call initiated! Waiting for response...');
+      setIsCallActive(true);
+      setCallStatus('ringing');
+      toast.success('Calling...');
+      console.log('✅ Voice call initiated, waiting for acceptance');
       
     } catch (error) {
-      console.error('❌ ERROR in startVoiceCall:', error);
+      console.error('❌ Voice call failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       toast.error(`Voice call failed: ${errorMessage}`);
+      cleanupCall();
     }
   };
 
   // Video call
   const startVideoCall = async () => {
-    if (!socket || !user) {
+    console.log('=== START VIDEO CALL ===');
+    
+    if (!socket || !socket.connected || !user || !isConnected) {
       toast.error('Not connected to chat server');
       return;
     }
     
+    if (isInitiatingCall || isCallActive) {
+      toast.error('A call is already in progress');
+      return;
+    }
+    
     try {
-      console.log('📹 Starting video call...');
-      toast.loading('Getting camera access...');
+      setIsInitiatingCall(true);
+      setCallStatus('initiating');
+      setCallType('video');
       
-      const stream = await setupLocalMedia('video');
-      console.log('✅ Got video stream:', stream);
-      toast.success('Camera access granted!');
+      // Just emit the call initiation - WebRTC setup happens after receiver accepts
+      socket.emit('initiate-video-call', {});
       
-      const pc = createPeerConnection();
-
-      // Add local stream to peer connection
-      stream.getTracks().forEach(track => {
-        pc.addTrack(track, stream);
-      });
-
-      // Create offer
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-
-      socket.emit('initiate-video-call');
-      socket.emit('webrtc-offer', { offer, callType: 'video' });
+      setIsCallActive(true);
+      setCallStatus('ringing');
+      toast.success('Calling...');
+      console.log('✅ Video call initiated, waiting for acceptance');
       
-      console.log('✅ Video call initiated');
-      toast.success('Video call initiated! Waiting for response...');
     } catch (error) {
       console.error('❌ Video call failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       toast.error(`Video call failed: ${errorMessage}`);
+      cleanupCall();
     }
   };
 
-  // Accept call
+  // Accept call - when user clicks accept, the WebRTC offer handler will set everything up
   const acceptCall = async () => {
     if (!socket || !incomingCall) return;
-    try {
-      await setupLocalMedia(incomingCall.callType);
-      socket.emit('accept-call');
-    } catch (error) {
-      console.error('Error accepting call:', error);
-      toast.error('Failed to access camera/microphone');
-    }
+    setCallStatus('connecting');
+    toast.loading('Connecting...', { id: 'call-accept' });
+    setCallType(incomingCall.callType);
+    socket.emit('accept-call');
+    // Note: The actual WebRTC setup happens in the webrtc-offer handler
+    toast.dismiss('call-accept');
   };
 
   // Reject call
@@ -627,208 +864,22 @@ const AnonymousChat: React.FC = () => {
     if (!socket || !incomingCall) return;
     socket.emit('reject-call');
     setIncomingCall(null);
-  };
-
-  // WebRTC Functions
-  const setupLocalMedia = async (type: 'voice' | 'video') => {
-    console.log(`=== SETUP LOCAL MEDIA (${type}) ===`);
-    
-    try {
-      const constraints: MediaStreamConstraints = {
-        audio: true,
-        video: type === 'video'
-      };
-
-      console.log('1. Media constraints:', constraints);
-      console.log('2. Checking navigator.mediaDevices...');
-      console.log('3. navigator.mediaDevices exists:', !!navigator.mediaDevices);
-      console.log('4. getUserMedia exists:', !!navigator.mediaDevices?.getUserMedia);
-      
-      if (!navigator.mediaDevices) {
-        throw new Error('navigator.mediaDevices is not available');
-      }
-      
-      if (!navigator.mediaDevices.getUserMedia) {
-        throw new Error('getUserMedia is not supported in this browser');
-      }
-      
-      console.log('5. Requesting media access...');
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      
-      console.log('6. ✅ Got media stream:', stream);
-      console.log('7. Stream ID:', stream.id);
-      console.log('8. Audio tracks:', stream.getAudioTracks().length);
-      console.log('9. Video tracks:', stream.getVideoTracks().length);
-      
-      stream.getAudioTracks().forEach((track, index) => {
-        console.log(`Audio track ${index}:`, {
-          id: track.id,
-          label: track.label,
-          enabled: track.enabled,
-          muted: track.muted,
-          readyState: track.readyState
-        });
-      });
-      
-      if (type === 'video') {
-        stream.getVideoTracks().forEach((track, index) => {
-          console.log(`Video track ${index}:`, {
-            id: track.id,
-            label: track.label,
-            enabled: track.enabled,
-            muted: track.muted,
-            readyState: track.readyState
-          });
-        });
-      }
-      
-      console.log('10. Setting local stream state...');
-      setLocalStream(stream);
-      setCallType(type);
-      
-      if (type === 'video') {
-        console.log('11. Setting up local video display...');
-        // Use a timeout to ensure the ref is ready
-        setTimeout(() => {
-          if (localVideoRef.current) {
-            console.log('Setting local video ref srcObject...');
-            localVideoRef.current.srcObject = stream;
-          } else {
-            console.log('Local video ref not ready yet');
-          }
-        }, 100);
-      }
-
-      console.log('12. ✅ setupLocalMedia completed successfully');
-      return stream;
-      
-    } catch (error) {
-      console.error('❌ ERROR in setupLocalMedia:', error);
-      const err = error as Error;
-      console.error('Error name:', err.name);
-      console.error('Error message:', err.message);
-      
-      if (err.name === 'NotAllowedError') {
-        toast.error('Microphone access denied. Please allow access and try again.');
-      } else if (err.name === 'NotFoundError') {
-        toast.error('No microphone found. Please connect a microphone and try again.');
-      } else if (err.name === 'NotSupportedError') {
-        toast.error('Media devices not supported in this browser.');
-      } else {
-        toast.error(`Media access failed: ${err.message}`);
-      }
-      
-      throw error;
-    }
-  };
-
-  const createPeerConnection = () => {
-    const configuration: RTCConfiguration = {
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' }
-      ]
-    };
-
-    console.log('🔗 Creating peer connection with config:', configuration);
-    
-    if (!window.RTCPeerConnection) {
-      throw new Error('RTCPeerConnection is not supported in this browser');
-    }
-
-    const pc = new RTCPeerConnection(configuration);
-    console.log('🔗 Peer connection created successfully');
-
-    pc.onicecandidate = (event) => {
-      if (event.candidate && socket) {
-        console.log('🧊 Sending ICE candidate');
-        socket.emit('webrtc-ice-candidate', { candidate: event.candidate });
-      }
-    };
-
-    pc.ontrack = (event) => {
-      console.log('📺 Received remote stream');
-      const [remoteStream] = event.streams;
-      setRemoteStream(remoteStream);
-      
-      if (remoteVideoRef.current) {
-        console.log('📺 Setting remote video element');
-        remoteVideoRef.current.srcObject = remoteStream;
-      }
-    };
-
-    pc.oniceconnectionstatechange = () => {
-      console.log('🔗 ICE connection state:', pc.iceConnectionState);
-    };
-
-    pc.onconnectionstatechange = () => {
-      console.log('🔗 Connection state:', pc.connectionState);
-    };
-
-    setPeerConnection(pc);
-    return pc;
-  };
-
-  const handleWebRTCOffer = async (offer: RTCSessionDescriptionInit, callType: 'voice' | 'video') => {
-    try {
-      console.log('📡 Handling WebRTC offer for ' + callType + ' call');
-      const stream = await setupLocalMedia(callType);
-      const pc = createPeerConnection();
-
-      // Add local stream to peer connection
-      stream.getTracks().forEach(track => {
-        pc.addTrack(track, stream);
-      });
-
-      await pc.setRemoteDescription(offer);
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-
-      if (socket) {
-        socket.emit('webrtc-answer', { answer });
-      }
-
-      setIsCallActive(true);
-      setCallType(callType);
-      toast.success(`${callType} call connected`);
-    } catch (error) {
-      console.error('❌ Failed to handle WebRTC offer:', error);
-      toast.error('Failed to establish call connection');
-    }
-  };
-
-  const handleWebRTCAnswer = async (answer: RTCSessionDescriptionInit) => {
-    try {
-      if (peerConnection) {
-        await peerConnection.setRemoteDescription(answer);
-        console.log('✅ WebRTC answer processed');
-        setIsCallActive(true);
-      }
-    } catch (error) {
-      console.error('❌ Failed to handle WebRTC answer:', error);
-      toast.error('Failed to process call response');
-    }
-  };
-
-  const handleICECandidate = async (candidate: RTCIceCandidateInit) => {
-    try {
-      if (peerConnection) {
-        await peerConnection.addIceCandidate(candidate);
-        console.log('🧊 ICE candidate added');
-      }
-    } catch (error) {
-      console.error('❌ Failed to add ICE candidate:', error);
-    }
+    setCallStatus('idle');
+    toast('Call declined');
   };
 
   const endCall = () => {
     console.log('=== ENDING CALL ===');
     
     // Stop local media streams
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => {
+        track.stop();
+      });
+      localStreamRef.current = null;
+    }
     if (localStream) {
-      console.log('Stopping local media tracks...');
       localStream.getTracks().forEach(track => {
-        console.log('Stopping track:', track.kind, track.label);
         track.stop();
       });
       setLocalStream(null);
@@ -843,11 +894,17 @@ const AnonymousChat: React.FC = () => {
     }
 
     // Close peer connection
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
     if (peerConnection) {
-      console.log('Closing peer connection...');
       peerConnection.close();
       setPeerConnection(null);
     }
+
+    // Clear pending candidates
+    pendingCandidatesRef.current = [];
 
     // Reset all call-related state
     setRemoteStream(null);
@@ -856,29 +913,71 @@ const AnonymousChat: React.FC = () => {
     setIsMuted(false);
     setIsVideoOff(false);
     setIncomingCall(null);
+    setIsCallConnected(false);
+    setCallStatus('idle');
+    setIsInitiatingCall(false);
+    setCallDuration(0);
     
-    console.log('✅ Call ended and cleaned up');
-    toast.success('Call ended');
+    // Exit fullscreen if active
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    }
+  };
+
+  const cleanupCall = () => {
+    endCall();
+  };
+
+  const handleEndCall = () => {
+    endCall();
+    if (socket) {
+      socket.emit('end-call');
+    }
   };
 
   const toggleMute = () => {
-    if (localStream) {
-      const audioTrack = localStream.getAudioTracks()[0];
+    const stream = localStreamRef.current || localStream;
+    if (stream) {
+      const audioTrack = stream.getAudioTracks()[0];
       if (audioTrack) {
         audioTrack.enabled = !audioTrack.enabled;
         setIsMuted(!audioTrack.enabled);
+        toast(audioTrack.enabled ? 'Microphone unmuted' : 'Microphone muted', { icon: audioTrack.enabled ? '🎤' : '🔇' });
       }
     }
   };
 
   const toggleVideo = () => {
-    if (localStream) {
-      const videoTrack = localStream.getVideoTracks()[0];
+    const stream = localStreamRef.current || localStream;
+    if (stream) {
+      const videoTrack = stream.getVideoTracks()[0];
       if (videoTrack) {
         videoTrack.enabled = !videoTrack.enabled;
         setIsVideoOff(!videoTrack.enabled);
+        toast(videoTrack.enabled ? 'Camera on' : 'Camera off', { icon: videoTrack.enabled ? '📹' : '📷' });
       }
     }
+  };
+
+  const toggleSpeaker = () => {
+    // Toggle both video and audio elements for speaker
+    const newMutedState = isSpeakerOn;
+    
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.muted = newMutedState;
+    }
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.muted = newMutedState;
+    }
+    
+    setIsSpeakerOn(!newMutedState);
+    toast(newMutedState ? 'Speaker off' : 'Speaker on', { icon: newMutedState ? '🔇' : '🔊' });
+  };
+
+  // Get other user's name for display
+  const getOtherUserName = () => {
+    if (!roomInfo || !user) return 'Other user';
+    return user.role === 'host' ? roomInfo.guestName : roomInfo.hostName;
   };
 
   // Format timestamp
@@ -941,12 +1040,6 @@ const AnonymousChat: React.FC = () => {
                     </>
                   )}
                 </div>
-                <div className="text-xs text-gray-400 mt-1">
-                  Debug: User: {user ? `${user.userName} (${user.role})` : 'None'} | 
-                  Room Status: {roomInfo?.status || 'None'} | 
-                  Call Active: {isCallActive ? 'Yes' : 'No'} |
-                  Show Buttons: {user && roomInfo?.status === 'connected' ? 'Yes' : 'No'}
-                </div>
               </div>
             </div>
 
@@ -954,31 +1047,31 @@ const AnonymousChat: React.FC = () => {
               {user && roomInfo?.status === 'connected' && (
                 <>
                   <button
-                    onClick={() => {
-                      console.log('Voice call button clicked!');
-                      startVoiceCall();
-                    }}
-                    className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-lg transition-all duration-200"
+                    onClick={startVoiceCall}
+                    className={`text-white p-2 rounded-lg transition-all duration-200 ${
+                      isCallActive || isInitiatingCall 
+                        ? 'bg-gray-500 cursor-not-allowed opacity-50' 
+                        : 'bg-white bg-opacity-20 hover:bg-opacity-30 hover:scale-105'
+                    }`}
                     title="Voice call"
-                    disabled={isCallActive}
+                    disabled={isCallActive || isInitiatingCall}
                   >
                     <FontAwesomeIcon icon={faPhone as IconProp} />
                   </button>
                   <button
-                    onClick={() => {
-                      console.log('Video call button clicked!');
-                      startVideoCall();
-                    }}
-                    className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-lg transition-all duration-200"
+                    onClick={startVideoCall}
+                    className={`text-white p-2 rounded-lg transition-all duration-200 ${
+                      isCallActive || isInitiatingCall 
+                        ? 'bg-gray-500 cursor-not-allowed opacity-50' 
+                        : 'bg-white bg-opacity-20 hover:bg-opacity-30 hover:scale-105'
+                    }`}
                     title="Video call"
-                    disabled={isCallActive}
+                    disabled={isCallActive || isInitiatingCall}
                   >
                     <FontAwesomeIcon icon={faVideo as IconProp} />
                   </button>
                 </>
               )}
-              
-              {/* Remove debug test button for production */}
               
               {user && (
                 <button
@@ -1324,155 +1417,360 @@ const AnonymousChat: React.FC = () => {
         {/* Incoming Call Modal */}
         {incomingCall && (
           <motion.div
-            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-60"
+            className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[100]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
             <motion.div
-              className="bg-gray-800 rounded-2xl p-6 text-center space-y-4 max-w-sm w-full mx-4"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
+              className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 text-center space-y-6 max-w-sm w-full mx-4 border border-gray-700 shadow-2xl"
+              initial={{ scale: 0.8, opacity: 0, y: 50 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             >
-              <FontAwesomeIcon 
-                icon={incomingCall.callType === 'video' ? faVideo as IconProp : faPhone as IconProp} 
-                className="text-amber-400 text-4xl" 
-              />
-              <h3 className="text-white text-xl font-bold">Incoming {incomingCall.callType} call</h3>
-              <p className="text-gray-400">from {incomingCall.callerName}</p>
-              
-              <div className="flex space-x-4">
-                <button
-                  onClick={rejectCall}
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white p-3 rounded-lg transition-colors"
+              {/* Animated caller avatar */}
+              <div className="relative">
+                <motion.div
+                  className="w-24 h-24 mx-auto rounded-full bg-gradient-to-r from-amber-500 to-orange-600 flex items-center justify-center"
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
                 >
-                  Decline
-                </button>
-                <button
-                  onClick={acceptCall}
-                  className="flex-1 bg-green-500 hover:bg-green-600 text-white p-3 rounded-lg transition-colors"
-                >
-                  Accept
-                </button>
+                  <FontAwesomeIcon 
+                    icon={faUserSecret as IconProp} 
+                    className="text-white text-4xl" 
+                  />
+                </motion.div>
+                {/* Ripple effect */}
+                <motion.div
+                  className="absolute inset-0 mx-auto w-24 h-24 rounded-full border-2 border-amber-500"
+                  animate={{ scale: [1, 1.5], opacity: [0.8, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
+                <motion.div
+                  className="absolute inset-0 mx-auto w-24 h-24 rounded-full border-2 border-amber-500"
+                  animate={{ scale: [1, 1.5], opacity: [0.8, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
+                />
               </div>
+
+              {/* Call type icon */}
+              <div className="flex items-center justify-center space-x-2 text-amber-400">
+                <FontAwesomeIcon 
+                  icon={incomingCall.callType === 'video' ? faVideo as IconProp : faPhoneAlt as IconProp} 
+                  className="text-2xl" 
+                />
+                <span className="text-lg font-medium">
+                  Incoming {incomingCall.callType === 'video' ? 'Video' : 'Voice'} Call
+                </span>
+              </div>
+
+              <div>
+                <h3 className="text-white text-2xl font-bold">{incomingCall.callerName}</h3>
+                <p className="text-gray-400 text-sm mt-1">is calling you...</p>
+              </div>
+              
+              <div className="flex justify-center space-x-6 pt-4">
+                <motion.button
+                  onClick={rejectCall}
+                  className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-lg shadow-red-500/30 transition-all"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FontAwesomeIcon icon={faPhoneSlash as IconProp} className="text-2xl" />
+                </motion.button>
+                <motion.button
+                  onClick={acceptCall}
+                  className="w-16 h-16 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center shadow-lg shadow-green-500/30 transition-all"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 0.5, repeat: Infinity }}
+                >
+                  <FontAwesomeIcon icon={faPhone as IconProp} className="text-2xl" />
+                </motion.button>
+              </div>
+
+              <p className="text-gray-500 text-xs">
+                {incomingCall.callType === 'video' ? 'Camera and microphone will be used' : 'Microphone will be used'}
+              </p>
             </motion.div>
           </motion.div>
         )}
 
-        {/* Video Call Overlay */}
+        {/* Video/Voice Call Overlay */}
         {isCallActive && (
           <motion.div
-            className="fixed inset-0 bg-black z-70"
+            ref={callContainerRef}
+            className="fixed inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black z-[100]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <div className="relative w-full h-full">
-              {/* Remote Video - Full Screen */}
-              <video
-                ref={remoteVideoRef}
-                autoPlay
-                playsInline
-                className="w-full h-full object-cover bg-gray-900"
-                style={{ backgroundColor: '#1a1a1a' }}
-              />
-              
-              {/* Local Video (Picture-in-Picture) */}
-              {callType === 'video' && localStream && (
-                <video
-                  ref={localVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="absolute top-4 right-4 w-48 h-36 bg-gray-800 rounded-lg object-cover border-2 border-gray-600 shadow-lg"
-                />
-              )}
-
-              {/* Call Status Indicator */}
-              {!remoteStream && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                  <div className="text-center text-white">
-                    <div className="animate-pulse mb-4">
-                      <FontAwesomeIcon 
-                        icon={callType === 'video' ? faVideo as IconProp : faPhone as IconProp} 
-                        className="text-6xl text-amber-400" 
-                      />
-                    </div>
-                    <p className="text-xl font-medium">
+            <div className="relative w-full h-full flex flex-col">
+              {/* Call Header */}
+              <motion.div 
+                className="absolute top-0 left-0 right-0 z-20 p-4 bg-gradient-to-b from-black/70 to-transparent"
+                initial={{ y: -50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="flex items-center justify-between max-w-4xl mx-auto">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-3 h-3 rounded-full ${isCallConnected ? 'bg-green-500 animate-pulse' : 'bg-yellow-500 animate-pulse'}`}></div>
+                    <span className="text-white font-medium">
                       {callType === 'video' ? 'Video Call' : 'Voice Call'}
-                    </p>
-                    <p className="text-gray-300 mt-2">
-                      Waiting for {roomInfo?.hostName && roomInfo?.guestName ? 
-                        `${user?.role === 'host' ? roomInfo.guestName : roomInfo.hostName}` : 
-                        'other user'
-                      } to join...
-                    </p>
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center space-x-4">
+                    {isCallConnected && (
+                      <div className="bg-black/50 rounded-full px-4 py-2 flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                        <span className="text-white font-mono text-sm">{formatCallDuration(callDuration)}</span>
+                      </div>
+                    )}
+                    
+                    <button
+                      onClick={toggleFullscreen}
+                      className="text-white/70 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-all"
+                      title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+                    >
+                      <FontAwesomeIcon icon={isFullscreen ? faCompress as IconProp : faExpand as IconProp} />
+                    </button>
                   </div>
                 </div>
-              )}
+              </motion.div>
 
-              {/* Call Controls */}
-              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-4">
-                <button
-                  onClick={toggleMute}
-                  className={`p-4 rounded-full transition-colors shadow-lg ${
-                    isMuted ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'
-                  }`}
-                  title={isMuted ? 'Unmute' : 'Mute'}
-                >
-                  <FontAwesomeIcon 
-                    icon={isMuted ? faTimes as IconProp : faPhone as IconProp} 
-                    className="text-white text-xl"
-                  />
-                </button>
-
-                {callType === 'video' && (
-                  <button
-                    onClick={toggleVideo}
-                    className={`p-4 rounded-full transition-colors shadow-lg ${
-                      isVideoOff ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'
-                    }`}
-                    title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
-                  >
-                    <FontAwesomeIcon 
-                      icon={isVideoOff ? faTimes as IconProp : faVideo as IconProp} 
-                      className="text-white text-xl"
+              {/* Main Video/Audio Area */}
+              <div className="flex-1 flex items-center justify-center relative">
+                {callType === 'video' ? (
+                  <>
+                    {/* Remote Video - Full Screen */}
+                    <video
+                      ref={remoteVideoRef}
+                      autoPlay
+                      playsInline
+                      className="w-full h-full object-cover"
+                      style={{ backgroundColor: '#1a1a1a' }}
                     />
-                  </button>
+                    
+                    {/* Local Video (Picture-in-Picture) */}
+                    {localStream && (
+                      <motion.div
+                        className="absolute top-20 right-4 w-48 h-36 md:w-56 md:h-42 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl bg-gray-900"
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                        drag
+                        dragConstraints={{ top: 20, left: -200, right: 0, bottom: -100 }}
+                      >
+                        <video
+                          ref={localVideoRef}
+                          autoPlay
+                          playsInline
+                          muted
+                          className={`w-full h-full object-cover ${isVideoOff ? 'hidden' : ''}`}
+                        />
+                        {isVideoOff && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                            <FontAwesomeIcon icon={faVideoSlash as IconProp} className="text-white/50 text-2xl" />
+                          </div>
+                        )}
+                        <div className="absolute bottom-2 left-2 bg-black/60 rounded px-2 py-1">
+                          <span className="text-white text-xs">You</span>
+                        </div>
+                      </motion.div>
+                    )}
+                  </>
+                ) : (
+                  /* Voice Call UI */
+                  <div className="flex flex-col items-center justify-center space-y-8">
+                    {/* Voice wave animation */}
+                    <div className="relative">
+                      <motion.div
+                        className="w-32 h-32 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 flex items-center justify-center"
+                        animate={isCallConnected ? { scale: [1, 1.05, 1] } : {}}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-white text-5xl" />
+                      </motion.div>
+                      
+                      {/* Audio visualizer rings */}
+                      {isCallConnected && (
+                        <>
+                          <motion.div
+                            className="absolute inset-0 rounded-full border-2 border-amber-500/50"
+                            animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          />
+                          <motion.div
+                            className="absolute inset-0 rounded-full border-2 border-amber-500/50"
+                            animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
+                            transition={{ duration: 2, repeat: Infinity, delay: 0.7 }}
+                          />
+                        </>
+                      )}
+                    </div>
+                    
+                    <div className="text-center">
+                      <h2 className="text-white text-2xl font-bold">{getOtherUserName()}</h2>
+                      <p className="text-gray-400 mt-1">
+                        {callStatus === 'ringing' && 'Calling...'}
+                        {callStatus === 'connecting' && 'Connecting...'}
+                        {callStatus === 'connected' && formatCallDuration(callDuration)}
+                        {callStatus === 'initiating' && 'Starting call...'}
+                      </p>
+                    </div>
+
+                    {/* Voice activity indicator */}
+                    {isCallConnected && (
+                      <div className="flex items-center space-x-1">
+                        {[...Array(5)].map((_, i) => (
+                          <motion.div
+                            key={i}
+                            className="w-1 bg-amber-500 rounded-full"
+                            animate={{ height: ['8px', '24px', '8px'] }}
+                            transition={{ 
+                              duration: 0.8, 
+                              repeat: Infinity, 
+                              delay: i * 0.1,
+                              ease: 'easeInOut'
+                            }}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
 
-                <button
-                  onClick={() => {
-                    console.log('End call button clicked');
-                    endCall();
-                    if (socket) {
-                      socket.emit('end-call');
-                    }
-                  }}
-                  className="p-4 rounded-full bg-red-500 hover:bg-red-600 transition-colors shadow-lg"
-                  title="End call"
-                >
-                  <FontAwesomeIcon icon={faTimes as IconProp} className="text-white text-xl" />
-                </button>
+                {/* Connecting Overlay */}
+                {!isCallConnected && (
+                  <motion.div 
+                    className="absolute inset-0 flex items-center justify-center bg-black/60"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    <div className="text-center space-y-4">
+                      <motion.div
+                        className="w-20 h-20 mx-auto rounded-full border-4 border-amber-500 border-t-transparent"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      />
+                      <p className="text-white text-lg font-medium">
+                        {callStatus === 'ringing' && `Calling ${getOtherUserName()}...`}
+                        {callStatus === 'connecting' && 'Connecting...'}
+                        {callStatus === 'initiating' && 'Starting call...'}
+                      </p>
+                      <p className="text-gray-400 text-sm">Please wait</p>
+                    </div>
+                  </motion.div>
+                )}
               </div>
 
-              {/* Call Info */}
-              <div className="absolute top-8 left-1/2 transform -translate-x-1/2 text-center">
-                <div className="bg-black bg-opacity-50 rounded-lg p-4 backdrop-blur-sm">
-                  <p className="text-white text-lg font-medium">
-                    {callType === 'video' ? 'Video Call' : 'Voice Call'}
-                  </p>
-                  <p className="text-gray-300 text-sm">
-                    {roomInfo?.hostName && roomInfo?.guestName ? 
-                      `${user?.role === 'host' ? roomInfo.guestName : roomInfo.hostName}` : 
-                      'Connecting...'
-                    }
-                  </p>
-                  <div className="text-xs text-gray-400 mt-1">
-                    {isCallActive ? (
-                      remoteStream ? 'Connected' : 'Waiting for response...'
-                    ) : 'Connecting...'}
-                  </div>
+              {/* Hidden audio element for remote audio playback */}
+              <audio
+                ref={remoteAudioRef}
+                autoPlay
+                playsInline
+                style={{ display: 'none' }}
+              />
+
+              {/* Call Controls */}
+              <motion.div 
+                className="absolute bottom-0 left-0 right-0 z-20 p-6 bg-gradient-to-t from-black/80 to-transparent"
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="flex items-center justify-center space-x-4 max-w-md mx-auto">
+                  {/* Mute Button */}
+                  <motion.button
+                    onClick={toggleMute}
+                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
+                      isMuted 
+                        ? 'bg-red-500 hover:bg-red-600 shadow-red-500/30' 
+                        : 'bg-gray-700 hover:bg-gray-600 shadow-black/30'
+                    }`}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    title={isMuted ? 'Unmute microphone' : 'Mute microphone'}
+                  >
+                    <FontAwesomeIcon 
+                      icon={isMuted ? faMicrophoneSlash as IconProp : faMicrophone as IconProp} 
+                      className="text-white text-xl"
+                    />
+                  </motion.button>
+
+                  {/* Video Toggle (only for video calls) */}
+                  {callType === 'video' && (
+                    <motion.button
+                      onClick={toggleVideo}
+                      className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
+                        isVideoOff 
+                          ? 'bg-red-500 hover:bg-red-600 shadow-red-500/30' 
+                          : 'bg-gray-700 hover:bg-gray-600 shadow-black/30'
+                      }`}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      title={isVideoOff ? 'Turn on camera' : 'Turn off camera'}
+                    >
+                      <FontAwesomeIcon 
+                        icon={isVideoOff ? faVideoSlash as IconProp : faVideo as IconProp} 
+                        className="text-white text-xl"
+                      />
+                    </motion.button>
+                  )}
+
+                  {/* Speaker Toggle */}
+                  <motion.button
+                    onClick={toggleSpeaker}
+                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
+                      !isSpeakerOn 
+                        ? 'bg-red-500 hover:bg-red-600 shadow-red-500/30' 
+                        : 'bg-gray-700 hover:bg-gray-600 shadow-black/30'
+                    }`}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    title={isSpeakerOn ? 'Mute speaker' : 'Unmute speaker'}
+                  >
+                    <FontAwesomeIcon 
+                      icon={isSpeakerOn ? faVolumeUp as IconProp : faVolumeMute as IconProp} 
+                      className="text-white text-xl"
+                    />
+                  </motion.button>
+
+                  {/* End Call Button */}
+                  <motion.button
+                    onClick={handleEndCall}
+                    className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center transition-all shadow-lg shadow-red-500/30"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    title="End call"
+                  >
+                    <FontAwesomeIcon icon={faPhoneSlash as IconProp} className="text-white text-2xl" />
+                  </motion.button>
                 </div>
-              </div>
+
+                {/* Call info footer */}
+                <div className="text-center mt-4">
+                  <p className="text-gray-500 text-xs">
+                    {isCallConnected ? 'Secure peer-to-peer connection' : 'Establishing connection...'}
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Remote User Name Tag (for video calls) */}
+              {callType === 'video' && isCallConnected && (
+                <motion.div
+                  className="absolute bottom-28 left-4 bg-black/60 rounded-lg px-3 py-2"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-white text-sm font-medium">{getOtherUserName()}</span>
+                  </div>
+                </motion.div>
+              )}
             </div>
           </motion.div>
         )}
