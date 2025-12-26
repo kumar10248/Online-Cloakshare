@@ -406,7 +406,11 @@ const AnonymousChat: React.FC = () => {
 
         pc.oniceconnectionstatechange = () => {
           console.log('ICE state (caller):', pc.iceConnectionState);
-          if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+          if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+            console.log('✅ ICE Connected (caller)');
+            setIsCallConnected(true);
+            setCallStatus('connected');
+          } else if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
             toast.error('Connection lost');
           }
         };
@@ -468,7 +472,11 @@ const AnonymousChat: React.FC = () => {
 
         pc.oniceconnectionstatechange = () => {
           console.log('ICE state (receiver):', pc.iceConnectionState);
-          if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+          if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+            console.log('✅ ICE Connected (receiver)');
+            setIsCallConnected(true);
+            setCallStatus('connected');
+          } else if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
             toast.error('Connection lost');
           }
         };
