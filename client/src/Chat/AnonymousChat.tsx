@@ -30,7 +30,8 @@ import {
   faCompress,
   faVolumeUp,
   faVolumeMute,
-  faPhoneAlt
+  faPhoneAlt,
+  faSyncAlt
 } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-hot-toast';
 import './AnonymousChat.css';
@@ -98,6 +99,7 @@ const AnonymousChat: React.FC = () => {
   const [isSpeakerOn, setIsSpeakerOn] = useState(true);
   const [isInitiatingCall, setIsInitiatingCall] = useState(false);
   const [callStatus, setCallStatus] = useState<'idle' | 'initiating' | 'ringing' | 'connecting' | 'connected' | 'ended'>('idle');
+  const [isFrontCamera, setIsFrontCamera] = useState(true);
   const callTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Refs - declare before useEffects that use them
@@ -989,6 +991,70 @@ const AnonymousChat: React.FC = () => {
     toast(newMutedState ? 'Speaker off' : 'Speaker on', { icon: newMutedState ? '🔇' : '🔊' });
   };
 
+  // Switch between front and back camera
+  const switchCamera = async () => {
+    if (callType !== 'video') return;
+    
+    try {
+      const newFacingMode = isFrontCamera ? 'environment' : 'user';
+      
+      // Get new video stream with different camera
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true },
+        video: { 
+          width: { ideal: 1280 }, 
+          height: { ideal: 720 }, 
+          facingMode: newFacingMode 
+        }
+      });
+      
+      const newVideoTrack = newStream.getVideoTracks()[0];
+      const newAudioTrack = newStream.getAudioTracks()[0];
+      
+      // Replace track in peer connection
+      const pc = peerConnectionRef.current;
+      if (pc) {
+        const senders = pc.getSenders();
+        
+        // Replace video track
+        const videoSender = senders.find(s => s.track?.kind === 'video');
+        if (videoSender && newVideoTrack) {
+          await videoSender.replaceTrack(newVideoTrack);
+        }
+        
+        // Keep audio track (don't replace it to maintain mute state)
+        // Stop the new audio track since we're not using it
+        newAudioTrack?.stop();
+      }
+      
+      // Stop old video track
+      const oldStream = localStreamRef.current;
+      if (oldStream) {
+        oldStream.getVideoTracks().forEach(track => track.stop());
+      }
+      
+      // Update local stream with new video track
+      if (oldStream) {
+        // Remove old video tracks
+        oldStream.getVideoTracks().forEach(track => oldStream.removeTrack(track));
+        // Add new video track
+        oldStream.addTrack(newVideoTrack);
+      }
+      
+      // Update local video element
+      if (localVideoRef.current && oldStream) {
+        localVideoRef.current.srcObject = oldStream;
+      }
+      
+      setIsFrontCamera(!isFrontCamera);
+      toast.success(isFrontCamera ? 'Switched to back camera' : 'Switched to front camera', { icon: '🔄' });
+      
+    } catch (error) {
+      console.error('Error switching camera:', error);
+      toast.error('Failed to switch camera');
+    }
+  };
+
   // Get other user's name for display
   const getOtherUserName = () => {
     if (!roomInfo || !user) return 'Other user';
@@ -1729,6 +1795,22 @@ const AnonymousChat: React.FC = () => {
                     >
                       <FontAwesomeIcon 
                         icon={isVideoOff ? faVideoSlash as IconProp : faVideo as IconProp} 
+                        className="text-white text-xl"
+                      />
+                    </motion.button>
+                  )}
+
+                  {/* Switch Camera (only for video calls) */}
+                  {callType === 'video' && (
+                    <motion.button
+                      onClick={switchCamera}
+                      className="w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg bg-gray-700 hover:bg-gray-600 shadow-black/30"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      title={isFrontCamera ? 'Switch to back camera' : 'Switch to front camera'}
+                    >
+                      <FontAwesomeIcon 
+                        icon={faSyncAlt as IconProp} 
                         className="text-white text-xl"
                       />
                     </motion.button>
