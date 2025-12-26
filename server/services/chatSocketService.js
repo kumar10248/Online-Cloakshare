@@ -299,39 +299,46 @@ class ChatSocketService {
       // Handle voice call initiation
       socket.on('initiate-voice-call', async (data) => {
         try {
-          console.log('Voice call initiation received');
+          console.log('=== VOICE CALL INITIATION ===');
+          console.log('Socket ID:', socket.id);
+          
           const user = this.connectedUsers.get(socket.id);
+          console.log('User:', user);
 
           if (!user) {
-            console.log('User not found for voice call');
+            console.log('ERROR: User not found for voice call');
             socket.emit('error', { message: 'You are not in a room' });
             return;
           }
 
           const chatRoom = await ChatRoom.findOne({ roomId: user.roomId, status: 'connected' });
+          console.log('ChatRoom found:', chatRoom ? 'yes' : 'no');
           
           if (!chatRoom) {
-            console.log('Room not found for voice call');
+            console.log('ERROR: Room not found for voice call');
             socket.emit('error', { message: 'Room not found or not connected' });
             return;
           }
 
-          if (chatRoom.callSession.isActive) {
-            console.log('Call already in progress');
+          if (chatRoom.callSession && chatRoom.callSession.isActive) {
+            console.log('ERROR: Call already in progress');
             socket.emit('error', { message: 'Call is already in progress' });
             return;
           }
 
-          await chatRoom.startCall('voice', user.userId);
-          console.log(`Voice call started by ${user.userName} in room ${user.roomId}`);
+          // Store the caller's socket ID
+          await chatRoom.startCall('voice', socket.id);
+          console.log(`Voice call started by ${user.userName} (${socket.id}) in room ${user.roomId}`);
 
           // Notify the other user
           socket.to(user.roomId).emit('incoming-voice-call', {
-            callerId: user.userId,
+            callerId: socket.id,
             callerName: user.userName
           });
+          console.log('Sent incoming-voice-call to room:', user.roomId);
 
           socket.emit('call-initiated', { callType: 'voice' });
+          console.log('Sent call-initiated to caller');
 
         } catch (error) {
           console.error('Error initiating voice call:', error);
@@ -342,39 +349,46 @@ class ChatSocketService {
       // Handle video call initiation
       socket.on('initiate-video-call', async (data) => {
         try {
-          console.log('Video call initiation received');
+          console.log('=== VIDEO CALL INITIATION ===');
+          console.log('Socket ID:', socket.id);
+          
           const user = this.connectedUsers.get(socket.id);
+          console.log('User:', user);
 
           if (!user) {
-            console.log('User not found for video call');
+            console.log('ERROR: User not found for video call');
             socket.emit('error', { message: 'You are not in a room' });
             return;
           }
 
           const chatRoom = await ChatRoom.findOne({ roomId: user.roomId, status: 'connected' });
+          console.log('ChatRoom found:', chatRoom ? 'yes' : 'no');
           
           if (!chatRoom) {
-            console.log('Room not found for video call');
+            console.log('ERROR: Room not found for video call');
             socket.emit('error', { message: 'Room not found or not connected' });
             return;
           }
 
-          if (chatRoom.callSession.isActive) {
-            console.log('Call already in progress');
+          if (chatRoom.callSession && chatRoom.callSession.isActive) {
+            console.log('ERROR: Call already in progress');
             socket.emit('error', { message: 'Call is already in progress' });
             return;
           }
 
-          await chatRoom.startCall('video', user.userId);
-          console.log(`Video call started by ${user.userName} in room ${user.roomId}`);
+          // Store the caller's socket ID
+          await chatRoom.startCall('video', socket.id);
+          console.log(`Video call started by ${user.userName} (${socket.id}) in room ${user.roomId}`);
 
           // Notify the other user
           socket.to(user.roomId).emit('incoming-video-call', {
-            callerId: user.userId,
+            callerId: socket.id,
             callerName: user.userName
           });
+          console.log('Sent incoming-video-call to room:', user.roomId);
 
           socket.emit('call-initiated', { callType: 'video' });
+          console.log('Sent call-initiated to caller');
 
         } catch (error) {
           console.error('Error initiating video call:', error);
@@ -385,7 +399,11 @@ class ChatSocketService {
       // Handle call acceptance
       socket.on('accept-call', async (data) => {
         try {
+          console.log('=== CALL ACCEPTANCE ===');
+          console.log('Acceptor Socket ID:', socket.id);
+          
           const user = this.connectedUsers.get(socket.id);
+          console.log('User:', user);
 
           if (!user) {
             socket.emit('error', { message: 'You are not in a room' });
@@ -393,33 +411,35 @@ class ChatSocketService {
           }
 
           const chatRoom = await ChatRoom.findOne({ roomId: user.roomId, status: 'connected' });
+          console.log('ChatRoom:', chatRoom ? 'found' : 'not found');
+          console.log('CallSession:', chatRoom?.callSession);
           
-          if (!chatRoom || !chatRoom.callSession.isActive) {
+          if (!chatRoom || !chatRoom.callSession || !chatRoom.callSession.isActive) {
+            console.log('ERROR: No active call found');
             socket.emit('error', { message: 'No active call found' });
             return;
           }
 
           const callType = chatRoom.callSession.callType;
-          const callerId = chatRoom.callSession.initiatedBy;
+          const callerSocketId = chatRoom.callSession.initiator;
+          
+          console.log('Call type:', callType);
+          console.log('Caller socket ID:', callerSocketId);
+          console.log('Host socket:', chatRoom.hostSocketId);
+          console.log('Guest socket:', chatRoom.guestSocketId);
 
           // Notify both users that call is accepted
           this.io.to(user.roomId).emit('call-accepted', {
             callType: callType,
-            acceptedBy: user.userName,
-            participants: [
-              { id: chatRoom.hostSocketId, name: chatRoom.hostName },
-              { id: chatRoom.guestSocketId, name: chatRoom.guestName }
-            ]
+            acceptedBy: user.userName
           });
+          console.log('Sent call-accepted to room');
 
           // Tell the CALLER to send the WebRTC offer now
-          // The caller is the one who initiated the call
-          const callerSocketId = callerId === chatRoom.hostSocketId ? chatRoom.hostSocketId : chatRoom.guestSocketId;
           this.io.to(callerSocketId).emit('send-webrtc-offer', {
             callType: callType
           });
-
-          console.log(`Call accepted by ${user.userName}, telling caller to send offer`);
+          console.log(`Sent send-webrtc-offer to caller: ${callerSocketId}`);
 
         } catch (error) {
           console.error('Error accepting call:', error);

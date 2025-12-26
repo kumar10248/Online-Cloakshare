@@ -352,6 +352,10 @@ const AnonymousChat: React.FC = () => {
       try {
         const { callType: acceptedCallType } = data;
         
+        // Ensure call state is set
+        setIsCallActive(true);
+        setCallStatus('connecting');
+        
         // Get local media
         const constraints: MediaStreamConstraints = {
           audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
@@ -506,12 +510,13 @@ const AnonymousChat: React.FC = () => {
         
         socketInstance.emit('webrtc-answer', { answer });
         
+        // Ensure call state is set
         setIsCallActive(true);
         setIncomingCall(null);
         setCallStatus('connecting');
         setPeerConnection(pc);
         
-        console.log('✅ Sent WebRTC answer');
+        console.log('✅ Sent WebRTC answer, isCallActive set to true');
       } catch (error) {
         console.error('❌ Error handling WebRTC offer:', error);
         toast.error('Failed to connect call. Check microphone/camera permissions.');
@@ -851,12 +856,14 @@ const AnonymousChat: React.FC = () => {
   // Accept call - when user clicks accept, the WebRTC offer handler will set everything up
   const acceptCall = async () => {
     if (!socket || !incomingCall) return;
+    console.log('📞 Accepting call:', incomingCall.callType);
     setCallStatus('connecting');
-    toast.loading('Connecting...', { id: 'call-accept' });
     setCallType(incomingCall.callType);
+    setIsCallActive(true); // Show call UI immediately
+    setIsInitiatingCall(false);
     socket.emit('accept-call');
+    toast.success('Connecting...');
     // Note: The actual WebRTC setup happens in the webrtc-offer handler
-    toast.dismiss('call-accept');
   };
 
   // Reject call
