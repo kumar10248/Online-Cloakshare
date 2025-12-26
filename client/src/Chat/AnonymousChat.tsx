@@ -356,13 +356,33 @@ const AnonymousChat: React.FC = () => {
         setIsCallActive(true);
         setCallStatus('connecting');
         
-        // Get local media
-        const constraints: MediaStreamConstraints = {
-          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-          video: acceptedCallType === 'video' ? { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' } : false
-        };
+        // Get local media first with fallback constraints
+        let stream: MediaStream;
+        try {
+          const constraints: MediaStreamConstraints = {
+            audio: { 
+              echoCancellation: true, 
+              noiseSuppression: true, 
+              autoGainControl: true,
+              sampleRate: 48000
+            },
+            video: acceptedCallType === 'video' ? { 
+              width: { ideal: 1280, min: 640 }, 
+              height: { ideal: 720, min: 480 }, 
+              facingMode: 'user',
+              frameRate: { ideal: 30, min: 15 }
+            } : false
+          };
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (mediaError) {
+          console.warn('Failed with ideal constraints, trying basic:', mediaError);
+          // Fallback to basic constraints
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: acceptedCallType === 'video'
+          });
+        }
         
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         localStreamRef.current = stream;
         setLocalStream(stream);
         setCallType(acceptedCallType);
@@ -373,35 +393,59 @@ const AnonymousChat: React.FC = () => {
           localVideoRef.current.play().catch(e => console.log('Local video play:', e));
         }
         
-        // Create peer connection
+        // Create peer connection with better ICE servers
         const configuration: RTCConfiguration = {
           iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
             { urls: 'stun:stun1.l.google.com:19302' },
             { urls: 'stun:stun2.l.google.com:19302' },
-            { urls: 'stun:stun3.l.google.com:19302' }
-          ]
+            { urls: 'stun:stun3.l.google.com:19302' },
+            { urls: 'stun:stun4.l.google.com:19302' },
+            { urls: 'stun:stun.stunprotocol.org:3478' },
+            // Free TURN servers for better NAT traversal
+            {
+              urls: 'turn:openrelay.metered.ca:80',
+              username: 'openrelayproject',
+              credential: 'openrelayproject'
+            },
+            {
+              urls: 'turn:openrelay.metered.ca:443',
+              username: 'openrelayproject',
+              credential: 'openrelayproject'
+            }
+          ],
+          iceCandidatePoolSize: 10,
+          bundlePolicy: 'max-bundle',
+          rtcpMuxPolicy: 'require'
         };
         
         const pc = new RTCPeerConnection(configuration);
         peerConnectionRef.current = pc;
         setPeerConnection(pc);
 
+        // ICE candidate handler with batching
         pc.onicecandidate = (event) => {
           if (event.candidate) {
-            console.log('🧊 Sending ICE candidate (caller)');
+            console.log('🧊 Sending ICE candidate (caller):', event.candidate.type);
             socketInstance.emit('webrtc-ice-candidate', { candidate: event.candidate });
           }
         };
 
+        // Track handler for receiving remote media
         pc.ontrack = (event) => {
-          console.log('📺 Received remote track (caller)');
-          const [remoteStreamData] = event.streams;
-          setRemoteStream(remoteStreamData);
-          setIsCallConnected(true);
-          setCallStatus('connected');
-          setIsInitiatingCall(false);
-          toast.success('Call connected!');
+          console.log('📺 Received remote track (caller):', event.track.kind);
+          if (event.streams && event.streams[0]) {
+            setRemoteStream(event.streams[0]);
+            // Set video element directly
+            if (remoteVideoRef.current) {
+              remoteVideoRef.current.srcObject = event.streams[0];
+              remoteVideoRef.current.play().catch(e => console.log('Remote video play:', e));
+            }
+            if (remoteAudioRef.current) {
+              remoteAudioRef.current.srcObject = event.streams[0];
+              remoteAudioRef.current.play().catch(e => console.log('Remote audio play:', e));
+            }
+          }
         };
 
         pc.oniceconnectionstatechange = () => {
@@ -410,21 +454,38 @@ const AnonymousChat: React.FC = () => {
             console.log('✅ ICE Connected (caller)');
             setIsCallConnected(true);
             setCallStatus('connected');
-          } else if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+            setIsInitiatingCall(false);
+          } else if (pc.iceConnectionState === 'failed') {
+            console.log('❌ ICE Failed - attempting restart');
+            pc.restartIce();
+            toast.error('Connection failed, retrying...');
+          } else if (pc.iceConnectionState === 'disconnected') {
             toast.error('Connection lost');
           }
         };
 
-        // Add local tracks
+        pc.onconnectionstatechange = () => {
+          console.log('Connection state (caller):', pc.connectionState);
+          if (pc.connectionState === 'connected') {
+            setIsCallConnected(true);
+            setCallStatus('connected');
+          }
+        };
+
+        // Add local tracks BEFORE creating offer
         stream.getTracks().forEach(track => {
+          console.log('Adding track:', track.kind);
           pc.addTrack(track, stream);
         });
 
-        // Create and send offer
-        const offer = await pc.createOffer();
+        // Create and send offer with proper options
+        const offer = await pc.createOffer({
+          offerToReceiveAudio: true,
+          offerToReceiveVideo: acceptedCallType === 'video'
+        });
         await pc.setLocalDescription(offer);
 
-        socketInstance.emit('webrtc-offer', { offer, callType: acceptedCallType });
+        socketInstance.emit('webrtc-offer', { offer: pc.localDescription, callType: acceptedCallType });
         console.log('✅ Sent WebRTC offer');
         
       } catch (error) {
@@ -440,14 +501,30 @@ const AnonymousChat: React.FC = () => {
       try {
         const { offer, callType: incomingCallType } = data;
         
-        // Create peer connection
+        // Create peer connection with better ICE servers
         const configuration: RTCConfiguration = {
           iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
             { urls: 'stun:stun1.l.google.com:19302' },
             { urls: 'stun:stun2.l.google.com:19302' },
-            { urls: 'stun:stun3.l.google.com:19302' }
-          ]
+            { urls: 'stun:stun3.l.google.com:19302' },
+            { urls: 'stun:stun4.l.google.com:19302' },
+            { urls: 'stun:stun.stunprotocol.org:3478' },
+            // Free TURN servers for better NAT traversal
+            {
+              urls: 'turn:openrelay.metered.ca:80',
+              username: 'openrelayproject',
+              credential: 'openrelayproject'
+            },
+            {
+              urls: 'turn:openrelay.metered.ca:443',
+              username: 'openrelayproject',
+              credential: 'openrelayproject'
+            }
+          ],
+          iceCandidatePoolSize: 10,
+          bundlePolicy: 'max-bundle',
+          rtcpMuxPolicy: 'require'
         };
         
         const pc = new RTCPeerConnection(configuration);
@@ -455,19 +532,25 @@ const AnonymousChat: React.FC = () => {
         
         pc.onicecandidate = (event) => {
           if (event.candidate) {
-            console.log('🧊 Sending ICE candidate (receiver)');
+            console.log('🧊 Sending ICE candidate (receiver):', event.candidate.type);
             socketInstance.emit('webrtc-ice-candidate', { candidate: event.candidate });
           }
         };
 
         pc.ontrack = (event) => {
-          console.log('📺 Received remote track');
-          const [stream] = event.streams;
-          setRemoteStream(stream);
-          setIsCallConnected(true);
-          setCallStatus('connected');
-          setIsInitiatingCall(false);
-          toast.success('Call connected!');
+          console.log('📺 Received remote track (receiver):', event.track.kind);
+          if (event.streams && event.streams[0]) {
+            setRemoteStream(event.streams[0]);
+            // Set video/audio elements directly
+            if (remoteVideoRef.current) {
+              remoteVideoRef.current.srcObject = event.streams[0];
+              remoteVideoRef.current.play().catch(e => console.log('Remote video play:', e));
+            }
+            if (remoteAudioRef.current) {
+              remoteAudioRef.current.srcObject = event.streams[0];
+              remoteAudioRef.current.play().catch(e => console.log('Remote audio play:', e));
+            }
+          }
         };
 
         pc.oniceconnectionstatechange = () => {
@@ -476,18 +559,49 @@ const AnonymousChat: React.FC = () => {
             console.log('✅ ICE Connected (receiver)');
             setIsCallConnected(true);
             setCallStatus('connected');
-          } else if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+            setIsInitiatingCall(false);
+          } else if (pc.iceConnectionState === 'failed') {
+            console.log('❌ ICE Failed - attempting restart');
+            pc.restartIce();
+            toast.error('Connection failed, retrying...');
+          } else if (pc.iceConnectionState === 'disconnected') {
             toast.error('Connection lost');
           }
         };
-        
-        // Get local media
-        const constraints: MediaStreamConstraints = {
-          audio: { echoCancellation: true, noiseSuppression: true },
-          video: incomingCallType === 'video' ? { width: { ideal: 1280 }, height: { ideal: 720 } } : false
+
+        pc.onconnectionstatechange = () => {
+          console.log('Connection state (receiver):', pc.connectionState);
+          if (pc.connectionState === 'connected') {
+            setIsCallConnected(true);
+            setCallStatus('connected');
+          }
         };
         
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        // Get local media with fallback
+        let stream: MediaStream;
+        try {
+          const constraints: MediaStreamConstraints = {
+            audio: { 
+              echoCancellation: true, 
+              noiseSuppression: true,
+              autoGainControl: true,
+              sampleRate: 48000
+            },
+            video: incomingCallType === 'video' ? { 
+              width: { ideal: 1280, min: 640 }, 
+              height: { ideal: 720, min: 480 },
+              frameRate: { ideal: 30, min: 15 }
+            } : false
+          };
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (mediaError) {
+          console.warn('Failed with ideal constraints, trying basic:', mediaError);
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: incomingCallType === 'video'
+          });
+        }
+        
         localStreamRef.current = stream;
         setLocalStream(stream);
         setCallType(incomingCallType);
@@ -498,8 +612,9 @@ const AnonymousChat: React.FC = () => {
           localVideoRef.current.play().catch(e => console.log('Local video play:', e));
         }
         
-        // Add local tracks to peer connection
+        // Add local tracks BEFORE setting remote description
         stream.getTracks().forEach(track => {
+          console.log('Adding track:', track.kind);
           pc.addTrack(track, stream);
         });
         
@@ -508,7 +623,11 @@ const AnonymousChat: React.FC = () => {
         
         // Process any pending ICE candidates
         for (const candidate of pendingCandidatesRef.current) {
-          await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          } catch (e) {
+            console.warn('Failed to add pending ICE candidate:', e);
+          }
         }
         pendingCandidatesRef.current = [];
         
@@ -516,7 +635,7 @@ const AnonymousChat: React.FC = () => {
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
         
-        socketInstance.emit('webrtc-answer', { answer });
+        socketInstance.emit('webrtc-answer', { answer: pc.localDescription });
         
         // Ensure call state is set
         setIsCallActive(true);
@@ -535,15 +654,21 @@ const AnonymousChat: React.FC = () => {
       console.log('📡 Received WebRTC answer from receiver');
       try {
         const pc = peerConnectionRef.current;
-        if (pc && pc.signalingState !== 'stable') {
+        if (pc && pc.signalingState === 'have-local-offer') {
           await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
           console.log('✅ Set remote description from answer');
           
           // Process any pending ICE candidates
           for (const candidate of pendingCandidatesRef.current) {
-            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+            try {
+              await pc.addIceCandidate(new RTCIceCandidate(candidate));
+            } catch (e) {
+              console.warn('Failed to add pending ICE candidate:', e);
+            }
           }
           pendingCandidatesRef.current = [];
+        } else {
+          console.warn('Cannot set answer, signaling state:', pc?.signalingState);
         }
       } catch (error) {
         console.error('❌ Error handling WebRTC answer:', error);
@@ -554,7 +679,7 @@ const AnonymousChat: React.FC = () => {
       console.log('🧊 Received ICE candidate');
       try {
         const pc = peerConnectionRef.current;
-        if (pc && pc.remoteDescription) {
+        if (pc && pc.remoteDescription && pc.remoteDescription.type) {
           await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
         } else {
           // Store candidate for later
