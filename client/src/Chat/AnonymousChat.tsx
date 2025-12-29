@@ -30,7 +30,8 @@ import {
   faCompress,
   faVolumeUp,
   faVolumeMute,
-  faPhoneAlt
+  faPhoneAlt,
+  faSyncAlt
 } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-hot-toast';
 import './AnonymousChat.css';
@@ -98,6 +99,9 @@ const AnonymousChat: React.FC = () => {
   const [isSpeakerOn, setIsSpeakerOn] = useState(true);
   const [isInitiatingCall, setIsInitiatingCall] = useState(false);
   const [callStatus, setCallStatus] = useState<'idle' | 'initiating' | 'ringing' | 'connecting' | 'connected' | 'ended'>('idle');
+  const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
+  const [currentFacingMode, setCurrentFacingMode] = useState<'user' | 'environment'>('user');
+  const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
   const callTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Refs - declare before useEffects that use them
@@ -355,6 +359,12 @@ const AnonymousChat: React.FC = () => {
         // Ensure call state is set
         setIsCallActive(true);
         setCallStatus('connecting');
+        
+        // Enumerate video devices for camera switching
+        if (acceptedCallType === 'video') {
+          await enumerateVideoDevices();
+          setCurrentFacingMode('user');
+        }
         
         // Get local media first with fallback constraints
         let stream: MediaStream;
@@ -996,6 +1006,13 @@ const AnonymousChat: React.FC = () => {
     setCallType(incomingCall.callType);
     setIsCallActive(true); // Show call UI immediately
     setIsInitiatingCall(false);
+    
+    // Enumerate video devices for camera switching
+    if (incomingCall.callType === 'video') {
+      await enumerateVideoDevices();
+      setCurrentFacingMode('user');
+    }
+    
     socket.emit('accept-call');
     toast.success('Connecting...');
     // Note: The actual WebRTC setup happens in the webrtc-offer handler
@@ -1114,6 +1131,119 @@ const AnonymousChat: React.FC = () => {
     
     setIsSpeakerOn(!newMutedState);
     toast(newMutedState ? 'Speaker off' : 'Speaker on', { icon: newMutedState ? '🔇' : '🔊' });
+  };
+
+  // Enumerate available video devices
+  const enumerateVideoDevices = async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoInputs = devices.filter(device => device.kind === 'videoinput');
+      console.log('📷 Available video devices:', videoInputs);
+      setVideoDevices(videoInputs);
+      return videoInputs;
+    } catch (error) {
+      console.error('Failed to enumerate devices:', error);
+      return [];
+    }
+  };
+
+  // Switch camera (front/back)
+  const switchCamera = async () => {
+    if (isSwitchingCamera || !isCallActive || callType !== 'video') return;
+    
+    setIsSwitchingCamera(true);
+    const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+    
+    try {
+      // Get new stream with different camera
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: { exact: newFacingMode },
+          width: { ideal: 1280, min: 320 },
+          height: { ideal: 720, min: 240 },
+          frameRate: { ideal: 30, min: 15 }
+        }
+      });
+      
+      const newVideoTrack = newStream.getVideoTracks()[0];
+      const currentStream = localStreamRef.current;
+      
+      if (currentStream && peerConnectionRef.current) {
+        // Get the current video track
+        const currentVideoTrack = currentStream.getVideoTracks()[0];
+        
+        // Find the sender for the video track and replace it
+        const senders = peerConnectionRef.current.getSenders();
+        const videoSender = senders.find(sender => sender.track?.kind === 'video');
+        
+        if (videoSender) {
+          await videoSender.replaceTrack(newVideoTrack);
+        }
+        
+        // Stop the old video track
+        if (currentVideoTrack) {
+          currentVideoTrack.stop();
+        }
+        
+        // Update the local stream - remove old video track and add new one
+        currentStream.removeTrack(currentVideoTrack);
+        currentStream.addTrack(newVideoTrack);
+        
+        // Update local video display
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = currentStream;
+        }
+        
+        setCurrentFacingMode(newFacingMode);
+        toast.success(newFacingMode === 'user' ? 'Switched to front camera' : 'Switched to back camera');
+      }
+    } catch (error) {
+      console.error('Failed to switch camera:', error);
+      // If exact facingMode fails, try without exact constraint
+      try {
+        const fallbackStream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {
+            facingMode: newFacingMode,
+            width: { ideal: 1280, min: 320 },
+            height: { ideal: 720, min: 240 }
+          }
+        });
+        
+        const newVideoTrack = fallbackStream.getVideoTracks()[0];
+        const currentStream = localStreamRef.current;
+        
+        if (currentStream && peerConnectionRef.current) {
+          const currentVideoTrack = currentStream.getVideoTracks()[0];
+          const senders = peerConnectionRef.current.getSenders();
+          const videoSender = senders.find(sender => sender.track?.kind === 'video');
+          
+          if (videoSender) {
+            await videoSender.replaceTrack(newVideoTrack);
+          }
+          
+          if (currentVideoTrack) {
+            currentVideoTrack.stop();
+          }
+          
+          currentStream.removeTrack(currentVideoTrack);
+          currentStream.addTrack(newVideoTrack);
+          
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = currentStream;
+          }
+          
+          setCurrentFacingMode(newFacingMode);
+          toast.success(newFacingMode === 'user' ? 'Switched to front camera' : 'Switched to back camera');
+        }
+      } catch (fallbackError) {
+        console.error('Camera switch failed completely:', fallbackError);
+        toast.error('Unable to switch camera');
+      }
+    } finally {
+      setIsSwitchingCamera(false);
+    }
   };
 
   // Get other user's name for display
@@ -1731,8 +1861,13 @@ const AnonymousChat: React.FC = () => {
                             <FontAwesomeIcon icon={faVideoSlash as IconProp} className="text-white/50 text-2xl" />
                           </div>
                         )}
-                        <div className="absolute bottom-2 left-2 bg-black/60 rounded px-2 py-1">
+                        <div className="absolute bottom-2 left-2 bg-black/60 rounded px-2 py-1 flex items-center space-x-1">
                           <span className="text-white text-xs">You</span>
+                          {videoDevices.length > 1 && (
+                            <span className="text-gray-400 text-xs">
+                              ({currentFacingMode === 'user' ? 'Front' : 'Back'})
+                            </span>
+                          )}
                         </div>
                       </motion.div>
                     )}
@@ -1872,6 +2007,27 @@ const AnonymousChat: React.FC = () => {
                       <FontAwesomeIcon 
                         icon={isVideoOff ? faVideoSlash as IconProp : faVideo as IconProp} 
                         className="text-white text-xl"
+                      />
+                    </motion.button>
+                  )}
+
+                  {/* Camera Switch Button (only for video calls with multiple cameras) */}
+                  {callType === 'video' && videoDevices.length > 1 && (
+                    <motion.button
+                      onClick={switchCamera}
+                      disabled={isSwitchingCamera}
+                      className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
+                        isSwitchingCamera 
+                          ? 'bg-gray-600 cursor-not-allowed' 
+                          : 'bg-gray-700 hover:bg-gray-600 shadow-black/30'
+                      }`}
+                      whileHover={!isSwitchingCamera ? { scale: 1.1 } : {}}
+                      whileTap={!isSwitchingCamera ? { scale: 0.95 } : {}}
+                      title={currentFacingMode === 'user' ? 'Switch to back camera' : 'Switch to front camera'}
+                    >
+                      <FontAwesomeIcon 
+                        icon={faSyncAlt as IconProp} 
+                        className={`text-white text-xl ${isSwitchingCamera ? 'animate-spin' : ''}`}
                       />
                     </motion.button>
                   )}
