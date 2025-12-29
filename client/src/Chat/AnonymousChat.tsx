@@ -1688,7 +1688,7 @@ const AnonymousChat: React.FC = () => {
                       ref={remoteVideoRef}
                       autoPlay
                       playsInline
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                       style={{ backgroundColor: '#1a1a1a' }}
                     />
                     
@@ -1707,7 +1707,8 @@ const AnonymousChat: React.FC = () => {
                           autoPlay
                           playsInline
                           muted
-                          className={`w-full h-full object-cover ${isVideoOff ? 'hidden' : ''}`}
+                          className={`w-full h-full object-contain ${isVideoOff ? 'hidden' : ''}`}
+                          style={{ backgroundColor: '#1a1a1a' }}
                         />
                         {isVideoOff && (
                           <div className="absolute inset-0 flex items-center justify-center bg-gray-800">

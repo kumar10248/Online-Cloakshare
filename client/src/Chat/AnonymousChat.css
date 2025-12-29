@@ -298,7 +298,8 @@
 .remote-video {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background-color: #1a1a1a;
 }
 
 .local-video-pip {
@@ -326,7 +327,8 @@
 .local-video-pip video {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background-color: #1a1a1a;
 }
 
 /* Voice call animation */
