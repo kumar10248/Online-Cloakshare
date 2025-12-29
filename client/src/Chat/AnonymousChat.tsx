@@ -367,10 +367,11 @@ const AnonymousChat: React.FC = () => {
               sampleRate: 48000
             },
             video: acceptedCallType === 'video' ? { 
-              width: { ideal: 1280, min: 640 }, 
-              height: { ideal: 720, min: 480 }, 
+              width: { ideal: 1280, min: 320 }, 
+              height: { ideal: 720, min: 240 }, 
               facingMode: 'user',
-              frameRate: { ideal: 30, min: 15 }
+              frameRate: { ideal: 30, min: 15 },
+              aspectRatio: { ideal: 16/9 }
             } : false
           };
           stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -588,9 +589,10 @@ const AnonymousChat: React.FC = () => {
               sampleRate: 48000
             },
             video: incomingCallType === 'video' ? { 
-              width: { ideal: 1280, min: 640 }, 
-              height: { ideal: 720, min: 480 },
-              frameRate: { ideal: 30, min: 15 }
+              width: { ideal: 1280, min: 320 }, 
+              height: { ideal: 720, min: 240 },
+              frameRate: { ideal: 30, min: 15 },
+              aspectRatio: { ideal: 16/9 }
             } : false
           };
           stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -1641,10 +1643,11 @@ const AnonymousChat: React.FC = () => {
           <motion.div
             ref={callContainerRef}
             className="fixed inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black z-[100]"
+            style={{ width: '100vw', height: '100vh', minHeight: '-webkit-fill-available' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <div className="relative w-full h-full flex flex-col">
+            <div className="relative w-full h-full flex flex-col" style={{ height: '100%' }}>
               {/* Call Header */}
               <motion.div 
                 className="absolute top-0 left-0 right-0 z-20 p-4 bg-gradient-to-b from-black/70 to-transparent"
@@ -1680,7 +1683,7 @@ const AnonymousChat: React.FC = () => {
               </motion.div>
 
               {/* Main Video/Audio Area */}
-              <div className="flex-1 flex items-center justify-center relative">
+              <div className="absolute inset-0 flex items-center justify-center" style={{ top: 0, bottom: 0, left: 0, right: 0 }}>
                 {callType === 'video' ? (
                   <>
                     {/* Remote Video - Full Screen */}
@@ -1688,14 +1691,27 @@ const AnonymousChat: React.FC = () => {
                       ref={remoteVideoRef}
                       autoPlay
                       playsInline
-                      className="w-full h-full object-contain"
-                      style={{ backgroundColor: '#1a1a1a' }}
+                      className="absolute inset-0 w-full h-full"
+                      style={{ 
+                        backgroundColor: '#1a1a1a',
+                        objectFit: 'contain',
+                        maxWidth: '100%',
+                        maxHeight: '100%'
+                      }}
                     />
                     
                     {/* Local Video (Picture-in-Picture) */}
                     {localStream && (
                       <motion.div
-                        className="absolute top-20 right-4 w-48 h-36 md:w-56 md:h-42 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl bg-gray-900"
+                        className="absolute z-30 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl bg-gray-900"
+                        style={{
+                          top: '80px',
+                          right: '16px',
+                          width: 'min(30vw, 150px)',
+                          height: 'min(22.5vw, 112px)',
+                          minWidth: '100px',
+                          minHeight: '75px'
+                        }}
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ delay: 0.3 }}

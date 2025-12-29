@@ -198,6 +198,39 @@
   .chat-input {
     padding: 12px;
   }
+
+  /* Video call mobile fixes */
+  .video-call-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    height: -webkit-fill-available;
+    height: 100dvh;
+  }
+
+  .remote-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .local-video-pip {
+    width: min(30vw, 120px) !important;
+    height: min(22.5vw, 90px) !important;
+    top: 70px !important;
+    right: 10px !important;
+  }
+
+  .local-video-pip video {
+    object-fit: contain;
+  }
 }
 
 /* Dark mode enhancements */
