@@ -999,7 +999,7 @@ const Home: React.FC = () => {
                 <span>•</span>
                 <a href="#" className="hover:text-amber-400 transition-colors">Terms of Service</a>
                 <span>•</span>
-                <a href="#" className="hover:text-amber-400 transition-colors">Contact</a>
+                <a href="https://devashish.top" className="hover:text-amber-400 transition-colors">Contact</a>
               </div>
             </div>
             
