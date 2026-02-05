@@ -190,8 +190,16 @@ const Home: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white font-sans">
+      {/* Skip to main content link for accessibility */}
+      <a 
+        href="#main-content" 
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-amber-500 focus:text-white focus:rounded-lg focus:font-semibold"
+      >
+        Skip to main content
+      </a>
+      
       {/* Header */}
-      <header className="bg-gradient-to-r from-amber-500 to-orange-600 shadow-xl">
+      <header className="bg-gradient-to-r from-amber-500 to-orange-600 shadow-xl" role="banner">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-wrap items-center justify-between">
             <div className="flex items-center">
@@ -203,7 +211,8 @@ const Home: React.FC = () => {
               >
                 <img 
                   src={cloakShareLogo} 
-                  alt="CloakShare Logo" 
+                  alt="" 
+                  aria-hidden="true"
                   className="w-12 h-12 drop-shadow-lg"
                 />
               </motion.div>
@@ -213,7 +222,7 @@ const Home: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                ONLINE <span className="text-gray-900">CLOAKSHARE</span>
+                <span className="sr-only">CloakShare - </span>ONLINE <span className="text-gray-900">CLOAKSHARE</span>
               </motion.h1>
             </div>
 
@@ -226,6 +235,9 @@ const Home: React.FC = () => {
               <button
                 onClick={() => setShowUtilities(!showUtilities)}
                 className="px-6 py-3 bg-white text-amber-600 rounded-xl shadow-lg hover:bg-amber-700 hover:text-white hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-semibold flex items-center"
+                aria-expanded={showUtilities}
+                aria-controls="utilities-panel"
+                aria-label={showUtilities ? 'Hide utilities menu' : 'Show utilities menu'}
               >
                 <FontAwesomeIcon icon={faExchangeAlt as IconProp} className="mr-2" />
                 Utilities
@@ -242,12 +254,14 @@ const Home: React.FC = () => {
 
           {/* Enhanced Utility buttons */}
           {showUtilities && (
-            <motion.div
+            <motion.nav
+              id="utilities-panel"
               className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.4 }}
+              aria-label="PDF utility tools"
             >
               {[
                 { name: "PDF to Word", icon: faFileAlt },
@@ -264,11 +278,11 @@ const Home: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                 >
-                  <FontAwesomeIcon icon={tool.icon as IconProp} className="text-xs" />
+                  <FontAwesomeIcon icon={tool.icon as IconProp} className="text-xs" aria-hidden="true" />
                   <span>{tool.name}</span>
                 </motion.button>
               ))}
-            </motion.div>
+            </motion.nav>
           )}
         </div>
       </header>
@@ -288,7 +302,7 @@ const Home: React.FC = () => {
       </motion.div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-6 lg:py-12">
+      <main id="main-content" className="container mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-6 lg:py-12" role="main">
         {/* Hero Section */}
         <motion.div 
           className="text-center mb-8 lg:mb-12"
@@ -327,8 +341,11 @@ const Home: React.FC = () => {
             <button
               onClick={() => setShowGuide(!showGuide)}
               className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl shadow-lg hover:from-amber-600 hover:to-orange-700 hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-semibold flex items-center mx-auto"
+              aria-expanded={showGuide}
+              aria-controls="user-guide-section"
+              aria-label={showGuide ? 'Hide user guide' : 'Show user guide'}
             >
-              <FontAwesomeIcon icon={faRocket as IconProp} className="mr-2" />
+              <FontAwesomeIcon icon={faRocket as IconProp} className="mr-2" aria-hidden="true" />
               {showGuide ? 'Hide User Guide' : 'Show User Guide'}
               <motion.div
                 animate={{ rotate: showGuide ? 180 : 0 }}
@@ -343,12 +360,14 @@ const Home: React.FC = () => {
 
         {/* User Guide Section */}
         {showGuide && (
-          <motion.div 
+          <motion.section 
+            id="user-guide-section"
             className="mb-8 lg:mb-12"
             initial={{ opacity: 0, y: 30, height: 0 }}
             animate={{ opacity: 1, y: 0, height: "auto" }}
             exit={{ opacity: 0, y: -30, height: 0 }}
             transition={{ duration: 0.6 }}
+            aria-label="User guide for CloakShare"
           >
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 lg:p-8 border border-gray-700 shadow-2xl">
               <div className="text-center mb-8">
@@ -495,28 +514,33 @@ const Home: React.FC = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </motion.section>
         )}
 
         <div className="flex flex-col lg:flex-row xl:flex-row gap-4 sm:gap-6 lg:gap-8 min-h-[600px] sm:min-h-[650px] lg:min-h-[700px]">
           {/* Left Section - Send */}
-          <motion.div 
+          <motion.section 
             className="w-full lg:w-1/2 xl:w-1/2 flex"
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
+            aria-labelledby="send-section-heading"
           >
             <div className="bg-gray-800 bg-opacity-50 rounded-xl lg:rounded-2xl p-4 sm:p-6 lg:p-8 backdrop-blur-sm shadow-2xl border border-gray-700 hover:border-amber-500 transition-all duration-300 flex flex-col w-full min-h-[600px] sm:min-h-[650px]">
               <div className="flex items-center mb-6 lg:mb-8">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center mr-3 sm:mr-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center mr-3 sm:mr-4" aria-hidden="true">
                   <FontAwesomeIcon icon={faUpload as IconProp} className="text-white text-lg sm:text-xl" />
                 </div>
-                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-amber-400">Send to CloakShare</h2>
+                <h2 id="send-section-heading" className="text-xl sm:text-2xl lg:text-3xl font-bold text-amber-400">Send to CloakShare</h2>
               </div>
 
             {/* Enhanced Tab buttons */}
-            <div className="flex mb-6 lg:mb-8 bg-gray-700 bg-opacity-40 rounded-xl p-2 border border-gray-600">
+            <div className="flex mb-6 lg:mb-8 bg-gray-700 bg-opacity-40 rounded-xl p-2 border border-gray-600" role="tablist" aria-label="Content type selection">
               <button
+                role="tab"
+                aria-selected={isText}
+                aria-controls="text-panel"
+                id="text-tab"
                 className={`flex-1 py-2 sm:py-3 rounded-xl transition-all duration-300 flex items-center justify-center font-medium text-sm sm:text-base ${
                   isText ? "bg-amber-500 text-white shadow-lg transform scale-105" : "text-gray-300 hover:bg-gray-600"
                 }`}
@@ -526,11 +550,15 @@ const Home: React.FC = () => {
                   setCodeText("");
                 }}
               >
-                <FontAwesomeIcon icon={faFont as IconProp} className="mr-1 sm:mr-2 text-xs sm:text-sm" />
+                <FontAwesomeIcon icon={faFont as IconProp} className="mr-1 sm:mr-2 text-xs sm:text-sm" aria-hidden="true" />
                 <span className="hidden sm:inline">Text</span>
                 <span className="sm:hidden">Text</span>
               </button>
               <button
+                role="tab"
+                aria-selected={isFile}
+                aria-controls="file-panel"
+                id="file-tab"
                 className={`flex-1 py-2 sm:py-3 rounded-xl transition-all duration-300 flex items-center justify-center font-medium text-sm sm:text-base ${
                   isFile ? "bg-amber-500 text-white shadow-lg transform scale-105" : "text-gray-300 hover:bg-gray-600"
                 }`}
@@ -540,7 +568,7 @@ const Home: React.FC = () => {
                   setCodeText("");
                 }}
               >
-                <FontAwesomeIcon icon={faFileAlt as IconProp} className="mr-1 sm:mr-2 text-xs sm:text-sm" />
+                <FontAwesomeIcon icon={faFileAlt as IconProp} className="mr-1 sm:mr-2 text-xs sm:text-sm" aria-hidden="true" />
                 <span className="hidden sm:inline">File</span>
                 <span className="sm:hidden">File</span>
               </button>
@@ -553,34 +581,42 @@ const Home: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
+              role="tabpanel"
+              id="text-panel"
+              aria-labelledby="text-tab"
             >
                 <div className="relative">
+                  <label htmlFor="text-input" className="sr-only">Text content to share</label>
                   <textarea
+                    id="text-input"
                     placeholder="Enter text to share securely..."
                     className="w-full h-48 sm:h-56 lg:h-64 p-4 sm:p-6 rounded-xl bg-gray-900 bg-opacity-70 border border-gray-600 text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 outline-none resize-none transition-all duration-200 shadow-inner text-sm sm:text-base"
                     value={text}
                     onChange={(e) => setText(e.target.value)}
+                    aria-describedby="text-char-count"
                   />
-                  <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 text-xs text-gray-500">
+                  <div id="text-char-count" className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 text-xs text-gray-500" aria-live="polite">
                     {text.length} characters
                   </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 text-xs sm:text-sm bg-gray-900 bg-opacity-50 rounded-xl p-3 sm:p-4 border border-gray-600">
                   <div className="flex items-center space-x-2">
-                    <FontAwesomeIcon icon={faClock as IconProp} className="text-amber-400" />
-                    <span className="text-amber-300 font-medium">Expiration:</span>
+                    <FontAwesomeIcon icon={faClock as IconProp} className="text-amber-400" aria-hidden="true" />
+                    <label htmlFor="expiration-text" className="text-amber-300 font-medium">Expiration:</label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <input
                       type="text"
+                      id="expiration-text"
                       className="w-16 sm:w-20 px-2 sm:px-3 py-1 sm:py-2 rounded-lg bg-gray-800 border border-gray-600 text-white focus:border-amber-500 outline-none text-center font-mono text-xs sm:text-sm"
                       maxLength={4}
                       value={number}
                       onChange={handleErrorNumChange}
                       placeholder="1440"
+                      aria-describedby="expiration-text-hint"
                     />
-                    <span className="text-gray-400 text-xs sm:text-sm">minutes (max: 2880)</span>
+                    <span id="expiration-text-hint" className="text-gray-400 text-xs sm:text-sm">minutes (max: 2880)</span>
                   </div>
                 </div>
 
@@ -592,10 +628,12 @@ const Home: React.FC = () => {
                       ? "bg-gray-600 cursor-not-allowed"
                       : "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 transform hover:scale-105"
                   } text-white font-bold transition-all duration-200 flex items-center justify-center shadow-lg text-base sm:text-lg`}
+                  aria-busy={isLoadingSave}
+                  aria-label={isLoadingSave ? 'Saving text, please wait' : 'Save text securely'}
                 >
                   {isLoadingSave ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
@@ -603,7 +641,7 @@ const Home: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <FontAwesomeIcon icon={faFloppyDisk as IconProp} className="mr-3" />
+                      <FontAwesomeIcon icon={faFloppyDisk as IconProp} className="mr-3" aria-hidden="true" />
                       Save Securely
                     </>
                   )}
@@ -619,6 +657,9 @@ const Home: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
+                role="tabpanel"
+                id="file-panel"
+                aria-labelledby="file-tab"
               >
                 <div className="border-2 sm:border-3 border-dashed border-gray-600 rounded-xl sm:rounded-2xl p-6 sm:p-8 text-center hover:border-amber-500 hover:bg-amber-500 hover:bg-opacity-5 transition-all duration-300 cursor-pointer group">
                   <input
@@ -626,49 +667,52 @@ const Home: React.FC = () => {
                     id="fileInput"
                     className="hidden"
                     onChange={handleFileChange}
+                    aria-describedby="file-size-hint"
                   />
                   <label
                     htmlFor="fileInput"
                     className="cursor-pointer flex flex-col items-center justify-center"
                   >
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-amber-500 bg-opacity-20 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:bg-opacity-30 transition-all duration-300">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-amber-500 bg-opacity-20 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:bg-opacity-30 transition-all duration-300" aria-hidden="true">
                       <FontAwesomeIcon icon={faUpload as IconProp} className="text-2xl sm:text-3xl text-amber-400" />
                     </div>
                     <span className="text-lg sm:text-xl font-semibold text-gray-300 mb-2 block">
                       {selectedFileName || "Choose a file to upload"}
                     </span>
-                    <span className="text-xs sm:text-sm text-gray-500 bg-gray-800 bg-opacity-50 px-3 sm:px-4 py-1 sm:py-2 rounded-full">
+                    <span id="file-size-hint" className="text-xs sm:text-sm text-gray-500 bg-gray-800 bg-opacity-50 px-3 sm:px-4 py-1 sm:py-2 rounded-full">
                       Maximum file size: 100MB
                     </span>
                   </label>
                 </div>
 
                 {isLoadingSave && (
-                  <div className="space-y-2">
+                  <div className="space-y-2" role="progressbar" aria-valuenow={uploadProgress} aria-valuemin={0} aria-valuemax={100} aria-label="File upload progress">
                     <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
                       <div
                         className="bg-gradient-to-r from-amber-500 to-orange-600 h-3 rounded-full transition-all duration-500 shadow-lg"
                         style={{ width: `${uploadProgress}%` }}
                       ></div>
                     </div>
-                    <p className="text-sm text-gray-400 text-center font-mono">
+                    <p className="text-sm text-gray-400 text-center font-mono" aria-live="polite">
                       {uploadProgress}% uploaded
                     </p>
                   </div>
                 )}
 
                 <div className="flex items-center space-x-3 text-sm bg-gray-900 bg-opacity-50 rounded-xl p-4 border border-gray-600">
-                  <FontAwesomeIcon icon={faClock as IconProp} className="text-amber-400" />
-                  <span className="text-amber-300 font-medium">Expiration:</span>
+                  <FontAwesomeIcon icon={faClock as IconProp} className="text-amber-400" aria-hidden="true" />
+                  <label htmlFor="expiration-file" className="text-amber-300 font-medium">Expiration:</label>
                   <input
                     type="text"
+                    id="expiration-file"
                     className="w-20 px-3 py-2 rounded-lg bg-gray-800 border border-gray-600 text-white focus:border-amber-500 outline-none text-center font-mono"
                     maxLength={4}
                     value={number}
                     onChange={handleErrorNumChange}
                     placeholder="1440"
+                    aria-describedby="expiration-file-hint"
                   />
-                  <span className="text-gray-400">minutes (max: 2880)</span>
+                  <span id="expiration-file-hint" className="text-gray-400">minutes (max: 2880)</span>
                 </div>
 
                 <button
@@ -679,10 +723,12 @@ const Home: React.FC = () => {
                       ? "bg-gray-600 cursor-not-allowed"
                       : "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 transform hover:scale-105"
                   } text-white font-bold transition-all duration-200 flex items-center justify-center shadow-lg text-lg`}
+                  aria-busy={isLoadingSave}
+                  aria-label={isLoadingSave ? 'Uploading file, please wait' : 'Upload file securely'}
                 >
                   {isLoadingSave ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
@@ -690,7 +736,7 @@ const Home: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <FontAwesomeIcon icon={faUpload as IconProp} className="mr-3" />
+                      <FontAwesomeIcon icon={faUpload as IconProp} className="mr-3" aria-hidden="true" />
                       Upload Securely
                     </>
                   )}
@@ -705,23 +751,27 @@ const Home: React.FC = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, type: "spring" }}
                 className="mt-8 p-6 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl border-2 border-amber-500 shadow-2xl"
+                role="status"
+                aria-live="polite"
+                aria-label={`Your share code is ${codeText.split('').join(' ')}`}
               >
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                    <div className="w-3 h-3 bg-green-400 rounded-full" aria-hidden="true"></div>
                     <span className="text-gray-400 text-sm font-medium">Share this code:</span>
                   </div>
                   <button
                     onClick={() => handleCopy(codeText)}
                     className="px-4 py-2 bg-amber-500 bg-opacity-20 text-amber-400 rounded-lg hover:bg-opacity-30 transition-all duration-200 flex items-center space-x-2 border border-amber-500 border-opacity-30"
                     title="Copy to clipboard"
+                    aria-label={`Copy code ${codeText} to clipboard`}
                   >
-                    <FontAwesomeIcon icon={faCopy as IconProp} />
+                    <FontAwesomeIcon icon={faCopy as IconProp} aria-hidden="true" />
                     <span className="text-sm">Copy</span>
                   </button>
                 </div>
                 <div className="bg-black bg-opacity-50 rounded-xl p-6 border border-amber-500 border-opacity-30">
-                  <div className="text-4xl font-mono tracking-widest text-amber-400 text-center font-bold">
+                  <div className="text-4xl font-mono tracking-widest text-amber-400 text-center font-bold" aria-label={`Code: ${codeText.split('').join(' ')}`}>
                     {codeText}
                   </div>
                 </div>
@@ -731,21 +781,22 @@ const Home: React.FC = () => {
             {/* Spacer to maintain equal height */}
             <div className="flex-grow"></div>
             </div>
-          </motion.div>
+          </motion.section>
 
           {/* Right Section - Reveal */}
-          <motion.div 
+          <motion.section 
             className="w-full lg:w-1/2 xl:w-1/2 flex"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
+            aria-labelledby="reveal-section-heading"
           >
             <div className="bg-gray-800 bg-opacity-50 rounded-xl lg:rounded-2xl p-4 sm:p-6 lg:p-8 backdrop-blur-sm shadow-2xl border border-gray-700 hover:border-amber-500 transition-all duration-300 flex flex-col w-full min-h-[600px] sm:min-h-[650px]">
               <div className="flex items-center mb-6 lg:mb-8">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center mr-3 sm:mr-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center mr-3 sm:mr-4" aria-hidden="true">
                   <FontAwesomeIcon icon={faEye as IconProp} className="text-white text-lg sm:text-xl" />
                 </div>
-                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-amber-400">Reveal from CloakShare</h2>
+                <h2 id="reveal-section-heading" className="text-xl sm:text-2xl lg:text-3xl font-bold text-amber-400">Reveal from CloakShare</h2>
               </div>
 
             <motion.form 
@@ -756,15 +807,20 @@ const Home: React.FC = () => {
               transition={{ duration: 0.4 }}
             >
               <div className="relative">
+                <label htmlFor="code-input" className="sr-only">Enter your 4-digit share code</label>
                 <input
+                  id="code-input"
                   type="text"
                   placeholder="Enter your 4-digit code"
                   className="w-full py-4 sm:py-6 px-4 sm:px-6 rounded-xl bg-gray-900 bg-opacity-70 border border-gray-600 text-white text-lg sm:text-2xl text-center font-mono tracking-widest placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 outline-none transition-all duration-200 shadow-inner"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   maxLength={4}
+                  aria-describedby="code-hint"
+                  autoComplete="off"
                 />
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 opacity-0 hover:opacity-10 transition-opacity duration-300 pointer-events-none"></div>
+                <span id="code-hint" className="sr-only">Enter the 4-digit code you received from the sender</span>
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 opacity-0 hover:opacity-10 transition-opacity duration-300 pointer-events-none" aria-hidden="true"></div>
               </div>
 
               <button
@@ -775,10 +831,12 @@ const Home: React.FC = () => {
                     ? "bg-gray-600 cursor-not-allowed"
                     : "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 transform hover:scale-105"
                 } text-white font-bold transition-all duration-200 flex items-center justify-center shadow-lg text-base sm:text-lg`}
+                aria-busy={isLoadingShow}
+                aria-label={isLoadingShow ? 'Retrieving content, please wait' : 'Reveal shared content'}
               >
                 {isLoadingShow ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -786,7 +844,7 @@ const Home: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <FontAwesomeIcon icon={faEye as IconProp} className="mr-3" />
+                    <FontAwesomeIcon icon={faEye as IconProp} className="mr-3" aria-hidden="true" />
                     Reveal Content
                   </>
                 )}
@@ -800,27 +858,33 @@ const Home: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
                 className="mt-8"
+                role="status"
+                aria-live="polite"
               >
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                    <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse" aria-hidden="true"></div>
                     <span className="text-gray-400 text-sm font-medium">Retrieved content:</span>
                   </div>
                   <button
                     onClick={() => handleCopy(showText)}
                     className="px-4 py-2 bg-amber-500 bg-opacity-20 text-amber-400 rounded-lg hover:bg-opacity-30 transition-all duration-200 flex items-center space-x-2 border border-amber-500 border-opacity-30"
+                    aria-label="Copy retrieved content to clipboard"
                   >
-                    <FontAwesomeIcon icon={faCopy as IconProp} />
+                    <FontAwesomeIcon icon={faCopy as IconProp} aria-hidden="true" />
                     <span className="text-sm">Copy</span>
                   </button>
                 </div>
                 <div className="relative">
+                  <label htmlFor="revealed-content" className="sr-only">Retrieved content</label>
                   <textarea
+                    id="revealed-content"
                     className="w-full h-64 p-6 rounded-xl bg-gray-900 bg-opacity-70 border border-gray-600 text-white placeholder-gray-400 outline-none resize-none shadow-inner"
                     value={showText}
                     readOnly
+                    aria-label="Retrieved shared content"
                   />
-                  <div className="absolute top-4 right-4">
+                  <div className="absolute top-4 right-4" aria-hidden="true">
                     <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
                   </div>
                 </div>
@@ -830,12 +894,12 @@ const Home: React.FC = () => {
             {/* Spacer to maintain equal height */}
             <div className="flex-grow"></div>
             </div>
-          </motion.div>
+          </motion.section>
         </div>
-      </div>
+      </main>
 
       {/* Enhanced Footer */}
-      <footer className="bg-gradient-to-r from-gray-900 to-black border-t border-gray-800">
+      <footer className="bg-gradient-to-r from-gray-900 to-black border-t border-gray-800" role="contentinfo">
         <div className="container mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-8 sm:py-12">
           {/* Main Footer Content */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
@@ -845,7 +909,8 @@ const Home: React.FC = () => {
                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center mr-3">
                   <img 
                     src={cloakShareLogo} 
-                    alt="CloakShare Logo" 
+                    alt="" 
+                    aria-hidden="true"
                     className="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-md"
                   />
                 </div>
@@ -857,30 +922,30 @@ const Home: React.FC = () => {
               </p>
               <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                 <div className="flex items-center space-x-2 text-green-400">
-                  <FontAwesomeIcon icon={faShieldAlt as IconProp} />
+                  <FontAwesomeIcon icon={faShieldAlt as IconProp} aria-hidden="true" />
                   <span className="text-xs sm:text-sm">End-to-End Encrypted</span>
                 </div>
                 <div className="flex items-center space-x-2 text-blue-400">
-                  <FontAwesomeIcon icon={faClock as IconProp} />
+                  <FontAwesomeIcon icon={faClock as IconProp} aria-hidden="true" />
                   <span className="text-xs sm:text-sm">Auto-Delete</span>
                 </div>
               </div>
             </div>
 
             {/* Features */}
-            <div>
+            <nav aria-label="Features">
               <h4 className="text-lg font-semibold text-white mb-4">Features</h4>
-              <ul className="space-y-2 text-gray-400">
+              <ul className="space-y-2 text-gray-400" role="list">
                 <li className="hover:text-amber-400 transition-colors cursor-pointer">Text Sharing</li>
                 <li className="hover:text-amber-400 transition-colors cursor-pointer">File Upload</li>
                 <li className="hover:text-amber-400 transition-colors cursor-pointer">Auto Expiration</li>
                 <li className="hover:text-amber-400 transition-colors cursor-pointer">No Registration</li>
                 <li className="hover:text-amber-400 transition-colors cursor-pointer">Secure Transfer</li>
               </ul>
-            </div>
+            </nav>
 
             {/* Connect */}
-            <div>
+            <nav aria-label="Social links">
               <h4 className="text-lg font-semibold text-white mb-4">Connect</h4>
               <div className="space-y-3">
                 <a 
@@ -917,7 +982,7 @@ const Home: React.FC = () => {
                   <span>Twitter</span>
                 </a>
               </div>
-            </div>
+            </nav>
           </div>
 
           {/* Divider */}
@@ -939,9 +1004,9 @@ const Home: React.FC = () => {
             </div>
             
             <div className="flex items-center space-x-2 text-gray-500 text-sm">
-              <FontAwesomeIcon icon={faRocket as IconProp} className="text-amber-400" />
+              <FontAwesomeIcon icon={faRocket as IconProp} className="text-amber-400" aria-hidden="true" />
               <span>Made with</span>
-              <FontAwesomeIcon icon={faStar as IconProp} className="text-yellow-400" />
+              <FontAwesomeIcon icon={faStar as IconProp} className="text-yellow-400" aria-hidden="true" />
               <span>for secure sharing</span>
             </div>
           </div>

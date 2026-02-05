@@ -17,6 +17,28 @@
   gap: 30px;
   margin-top: 10px;
 }
+.footerImgButton {
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.footerImgButton:hover {
+  transform: scale(1.1);
+}
+.footerImgButton:focus {
+  outline: 2px solid #F59E0B;
+  outline-offset: 2px;
+}
+.footerImgButton:focus:not(:focus-visible) {
+  outline: none;
+}
+.footerImgButton:focus-visible {
+  outline: 2px solid #F59E0B;
+  outline-offset: 2px;
+}
 .footerImg {
   cursor: pointer;
 }

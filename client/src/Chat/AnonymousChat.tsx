@@ -1267,8 +1267,11 @@ const AnonymousChat: React.FC = () => {
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        aria-label="Open anonymous chat"
+        title="Open anonymous chat"
       >
-        <FontAwesomeIcon icon={faComment as IconProp} size="lg" />
+        <FontAwesomeIcon icon={faComment as IconProp} size="lg" aria-hidden="true" />
+        <span className="sr-only">Open anonymous chat</span>
       </motion.button>
     );
   }
@@ -1281,6 +1284,9 @@ const AnonymousChat: React.FC = () => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={(e) => e.target === e.currentTarget && setIsVisible(false)}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="chat-dialog-title"
       >
         <motion.div
           className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl h-[600px] flex flex-col overflow-hidden border border-gray-700"
@@ -1288,26 +1294,28 @@ const AnonymousChat: React.FC = () => {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          role="document"
         >
           {/* Header */}
           <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-4 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-white text-xl" />
+              <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-white text-xl" aria-hidden="true" />
               <div>
-                <h3 className="text-white font-bold text-lg">Anonymous Chat</h3>
+                <h3 id="chat-dialog-title" className="text-white font-bold text-lg">Anonymous Chat</h3>
                 <div className="flex items-center space-x-2 text-amber-100 text-sm">
-                  <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                  <span>{isConnected ? 'Connected' : 'Disconnected'}</span>
+                  <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} aria-hidden="true"></div>
+                  <span role="status" aria-live="polite">{isConnected ? 'Connected' : 'Disconnected'}</span>
                   {user && (
                     <>
-                      <span>•</span>
+                      <span aria-hidden="true">•</span>
                       <span>Room: {user.roomId}</span>
                       <button
                         onClick={copyRoomId}
                         className="text-amber-100 hover:text-white transition-colors"
                         title="Copy room code"
+                        aria-label={`Copy room code ${user.roomId} to clipboard`}
                       >
-                        <FontAwesomeIcon icon={faCopy as IconProp} />
+                        <FontAwesomeIcon icon={faCopy as IconProp} aria-hidden="true" />
                       </button>
                     </>
                   )}
@@ -1326,9 +1334,10 @@ const AnonymousChat: React.FC = () => {
                         : 'bg-white bg-opacity-20 hover:bg-opacity-30 hover:scale-105'
                     }`}
                     title="Voice call"
+                    aria-label="Start voice call"
                     disabled={isCallActive || isInitiatingCall}
                   >
-                    <FontAwesomeIcon icon={faPhone as IconProp} />
+                    <FontAwesomeIcon icon={faPhone as IconProp} aria-hidden="true" />
                   </button>
                   <button
                     onClick={startVideoCall}
@@ -1338,9 +1347,10 @@ const AnonymousChat: React.FC = () => {
                         : 'bg-white bg-opacity-20 hover:bg-opacity-30 hover:scale-105'
                     }`}
                     title="Video call"
+                    aria-label="Start video call"
                     disabled={isCallActive || isInitiatingCall}
                   >
-                    <FontAwesomeIcon icon={faVideo as IconProp} />
+                    <FontAwesomeIcon icon={faVideo as IconProp} aria-hidden="true" />
                   </button>
                 </>
               )}
@@ -1350,16 +1360,19 @@ const AnonymousChat: React.FC = () => {
                   onClick={leaveChat}
                   className="bg-red-500 bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-lg transition-all duration-200"
                   title="Leave chat"
+                  aria-label="Leave chat room"
                 >
-                  <FontAwesomeIcon icon={faSignOutAlt as IconProp} />
+                  <FontAwesomeIcon icon={faSignOutAlt as IconProp} aria-hidden="true" />
                 </button>
               )}
 
               <button
                 onClick={() => setIsVisible(false)}
                 className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-lg transition-all duration-200"
+                aria-label="Close chat dialog"
+                title="Close"
               >
-                <FontAwesomeIcon icon={faTimes as IconProp} />
+                <FontAwesomeIcon icon={faTimes as IconProp} aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -1369,32 +1382,42 @@ const AnonymousChat: React.FC = () => {
             <div className="flex-1 flex items-center justify-center p-8">
               <div className="w-full max-w-md space-y-6">
                 <div className="text-center">
-                  <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-amber-400 text-6xl mb-4" />
+                  <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-amber-400 text-6xl mb-4" aria-hidden="true" />
                   <h4 className="text-2xl font-bold text-white mb-2">Join Anonymous Chat</h4>
                   <p className="text-gray-400">Start chatting securely without revealing your identity</p>
                 </div>
 
                 <div className="space-y-4">
-                  <input
-                    type="text"
-                    placeholder="Enter your anonymous name"
-                    value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
-                    className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 outline-none"
-                    maxLength={50}
-                  />
+                  <div>
+                    <label htmlFor="anonymous-name" className="sr-only">Your anonymous name</label>
+                    <input
+                      id="anonymous-name"
+                      type="text"
+                      placeholder="Enter your anonymous name"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                      className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 outline-none"
+                      maxLength={50}
+                      aria-describedby="name-hint"
+                    />
+                    <span id="name-hint" className="sr-only">Choose a name to display in the chat</span>
+                  </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <button
                       onClick={createRoom}
                       disabled={isConnecting || !isConnected}
                       className="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-3 rounded-lg font-medium hover:from-amber-600 hover:to-orange-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-busy={isConnecting}
+                      aria-label={isConnecting ? 'Creating room, please wait' : 'Create a new chat room'}
                     >
                       {isConnecting ? 'Creating...' : 'Create Room'}
                     </button>
 
                     <div className="space-y-2">
+                      <label htmlFor="room-code" className="sr-only">Room code to join</label>
                       <input
+                        id="room-code"
                         type="text"
                         placeholder="Enter room code"
                         value={roomId}
@@ -1620,12 +1643,14 @@ const AnonymousChat: React.FC = () => {
                           onClick={sendFile}
                           disabled={!roomInfo?.hostName || !roomInfo?.guestName}
                           className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition-colors"
+                          aria-label="Send file"
                         >
                           Send
                         </button>
                         <button
                           onClick={cancelFileSelection}
                           className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                          aria-label="Cancel file selection"
                         >
                           Cancel
                         </button>
@@ -1641,6 +1666,7 @@ const AnonymousChat: React.FC = () => {
                     ref={fileInputRef}
                     onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
                     className="hidden"
+                    aria-label="Select file to share"
                   />
                   
                   <button
@@ -1648,12 +1674,15 @@ const AnonymousChat: React.FC = () => {
                     disabled={!roomInfo?.hostName || !roomInfo?.guestName}
                     className="bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white p-3 rounded-lg transition-colors"
                     title={roomInfo?.hostName && roomInfo?.guestName ? "Attach file" : "Wait for both users to join"}
+                    aria-label={roomInfo?.hostName && roomInfo?.guestName ? "Attach file to share" : "Waiting for user to join before you can attach files"}
                   >
-                    <FontAwesomeIcon icon={faPlus as IconProp} />
+                    <FontAwesomeIcon icon={faPlus as IconProp} aria-hidden="true" />
                   </button>
 
                   <div className="flex-1 relative">
+                    <label htmlFor="chat-message-input" className="sr-only">Type your message</label>
                     <input
+                      id="chat-message-input"
                       type="text"
                       value={currentMessage}
                       onChange={handleTyping}
@@ -1666,8 +1695,9 @@ const AnonymousChat: React.FC = () => {
                       className="w-full p-3 pr-12 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 outline-none"
                       maxLength={1000}
                       disabled={!roomInfo?.hostName || !roomInfo?.guestName}
+                      aria-describedby="message-char-count"
                     />
-                    <div className="absolute right-3 top-3 text-xs text-gray-400">
+                    <div id="message-char-count" className="absolute right-3 top-3 text-xs text-gray-400" aria-live="polite">
                       {currentMessage.length}/1000
                     </div>
                   </div>
@@ -1676,8 +1706,9 @@ const AnonymousChat: React.FC = () => {
                     onClick={sendMessage}
                     disabled={!currentMessage.trim()}
                     className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white p-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Send message"
                   >
-                    <FontAwesomeIcon icon={faPaperPlane as IconProp} />
+                    <FontAwesomeIcon icon={faPaperPlane as IconProp} aria-hidden="true" />
                   </button>
                 </div>
                 </div>

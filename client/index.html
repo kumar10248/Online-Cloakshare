@@ -2,29 +2,90 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="/favicon.svg" />
-    <link
-      rel="preconnect"
-      href="https://fonts.googleapis.com" />
-    <link
-      rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary Meta Tags -->
+    <title>CloakShare - Secure & Anonymous File and Text Sharing</title>
+    <meta name="title" content="CloakShare - Secure & Anonymous File and Text Sharing" />
+    <meta name="description" content="Share files and text securely with automatic expiration. No registration required. End-to-end encrypted, anonymous, and privacy-focused temporary sharing platform." />
+    <meta name="keywords" content="secure file sharing, anonymous sharing, temporary file hosting, encrypted file transfer, text sharing, auto-delete files, privacy, no registration" />
+    <meta name="author" content="Kumar Devashish" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#F59E0B" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://cloakshare.devashish.top" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://cloakshare.devashish.top" />
+    <meta property="og:title" content="CloakShare - Secure & Anonymous File and Text Sharing" />
+    <meta property="og:description" content="Share files and text securely with automatic expiration. No registration required. Privacy-focused temporary sharing." />
+    <meta property="og:image" content="/og-image.png" />
+    <meta property="og:site_name" content="CloakShare" />
+    <meta property="og:locale" content="en_US" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://cloakshare.devashish.top" />
+    <meta name="twitter:title" content="CloakShare - Secure & Anonymous File and Text Sharing" />
+    <meta name="twitter:description" content="Share files and text securely with automatic expiration. No registration required." />
+    <meta name="twitter:image" content="/og-image.png" />
+    <meta name="twitter:creator" content="@kumarDe10248" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
       rel="stylesheet" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0" />
-    <title>Online CloakShare</title>
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "CloakShare",
+        "description": "Secure, temporary file and text sharing with automatic expiration. No registration required.",
+        "url": "https://cloakshare.devashish.top",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Any",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Kumar Devashish",
+          "url": "https://github.com/kumar10248"
+        },
+        "featureList": [
+          "Secure file sharing",
+          "Text sharing",
+          "Automatic expiration",
+          "No registration required",
+          "End-to-end encryption",
+          "Anonymous sharing"
+        ]
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
-    <script
-      type="module"
-      src="/src/main.tsx"></script>
+    <noscript>
+      <div style="padding: 20px; text-align: center; background: #1a1a1a; color: #fff;">
+        <h1>JavaScript Required</h1>
+        <p>CloakShare requires JavaScript to function. Please enable JavaScript in your browser settings.</p>
+      </div>
+    </noscript>
+    <div id="root" role="application" aria-label="CloakShare Application"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

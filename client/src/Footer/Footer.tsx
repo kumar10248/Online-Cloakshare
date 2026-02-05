@@ -6,46 +6,61 @@ import twitter from "./twitter.png";
 const Footer = () => {
   const handleSocialMedia = (socialMedia: string) => {
     if (socialMedia === "instagram") {
-      window.open("https://www.instagram.com/mathmaverick_man", "_blank");
+      window.open("https://www.instagram.com/kumardevashish48", "_blank");
     } else if (socialMedia === "linkedin") {
       window.open("https://www.linkedin.com/in/kumar-devashishh", "_blank");
     } else if (socialMedia === "twitter") {
-      window.open("https://x.com/kumarde10248", "_blank");
+      window.open("https://x.com/kumarDe10248", "_blank");
     }
   };
   return (
-    <div className="footerMainDiv">
+    <footer className="footerMainDiv" role="contentinfo" aria-label="Site footer">
       <div className="footerText">Made with ❤️ by Devashish</div>
-      <div className="footerImgDiv">
-        <img
-          src={instagram}
-          alt="instagram"
-          width={25}
-          className="footerImg"
-          onClick={() => {
-            handleSocialMedia("instagram");
-          }}
-        />
-        <img
-          src={linkedin}
-          alt="linkedin"
-          width={25}
-          className="footerImg"
-          onClick={() => {
-            handleSocialMedia("linkedin");
-          }}
-        />
-        <img
-          src={twitter}
-          alt="twitter"
-          width={25}
-          className="footerImg footerImgTwit"
-          onClick={() => {
-            handleSocialMedia("twitter");
-          }}
-        />
-      </div>
-    </div>
+      <nav className="footerImgDiv" aria-label="Social media links">
+        <button
+          type="button"
+          onClick={() => handleSocialMedia("instagram")}
+          className="footerImgButton"
+          aria-label="Visit our Instagram page (opens in new tab)"
+        >
+          <img
+            src={instagram}
+            alt=""
+            width={25}
+            className="footerImg"
+            aria-hidden="true"
+          />
+        </button>
+        <button
+          type="button"
+          onClick={() => handleSocialMedia("linkedin")}
+          className="footerImgButton"
+          aria-label="Visit our LinkedIn page (opens in new tab)"
+        >
+          <img
+            src={linkedin}
+            alt=""
+            width={25}
+            className="footerImg"
+            aria-hidden="true"
+          />
+        </button>
+        <button
+          type="button"
+          onClick={() => handleSocialMedia("twitter")}
+          className="footerImgButton"
+          aria-label="Visit our Twitter page (opens in new tab)"
+        >
+          <img
+            src={twitter}
+            alt=""
+            width={25}
+            className="footerImg footerImgTwit"
+            aria-hidden="true"
+          />
+        </button>
+      </nav>
+    </footer>
   );
 };
 
