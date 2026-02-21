@@ -31,7 +31,8 @@ import {
   faVolumeUp,
   faVolumeMute,
   faPhoneAlt,
-  faSyncAlt
+  faSyncAlt,
+  faDesktop
 } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-hot-toast';
 import './AnonymousChat.css';
@@ -102,6 +103,8 @@ const AnonymousChat: React.FC = () => {
   const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
   const [currentFacingMode, setCurrentFacingMode] = useState<'user' | 'environment'>('user');
   const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const screenStreamRef = useRef<MediaStream | null>(null);
   const callTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Refs - declare before useEffects that use them
@@ -1030,6 +1033,15 @@ const AnonymousChat: React.FC = () => {
   const endCall = () => {
     console.log('=== ENDING CALL ===');
     
+    // Stop screen sharing stream if active
+    if (screenStreamRef.current) {
+      screenStreamRef.current.getTracks().forEach(track => {
+        track.stop();
+      });
+      screenStreamRef.current = null;
+    }
+    setIsScreenSharing(false);
+    
     // Stop local media streams
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => {
@@ -1131,6 +1143,101 @@ const AnonymousChat: React.FC = () => {
     
     setIsSpeakerOn(!newMutedState);
     toast(newMutedState ? 'Speaker off' : 'Speaker on', { icon: newMutedState ? '🔇' : '🔊' });
+  };
+
+  // Toggle screen sharing
+  const toggleScreenShare = async () => {
+    if (!peerConnectionRef.current || !localStreamRef.current) {
+      toast.error('Call not connected');
+      return;
+    }
+
+    try {
+      if (isScreenSharing) {
+        // Stop screen sharing and switch back to camera
+        if (screenStreamRef.current) {
+          screenStreamRef.current.getTracks().forEach(track => track.stop());
+          screenStreamRef.current = null;
+        }
+
+        // Get camera stream again
+        const cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1280, min: 320 },
+            height: { ideal: 720, min: 240 },
+            facingMode: currentFacingMode,
+            frameRate: { ideal: 30, min: 15 }
+          }
+        });
+
+        const newVideoTrack = cameraStream.getVideoTracks()[0];
+        const senders = peerConnectionRef.current.getSenders();
+        const videoSender = senders.find(sender => sender.track?.kind === 'video');
+
+        if (videoSender && newVideoTrack) {
+          await videoSender.replaceTrack(newVideoTrack);
+        }
+
+        // Update local stream
+        const currentStream = localStreamRef.current;
+        const oldVideoTrack = currentStream.getVideoTracks()[0];
+        if (oldVideoTrack) {
+          currentStream.removeTrack(oldVideoTrack);
+          oldVideoTrack.stop();
+        }
+        currentStream.addTrack(newVideoTrack);
+
+        // Update local video display
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = currentStream;
+        }
+
+        setIsScreenSharing(false);
+        toast.success('Switched back to camera');
+      } else {
+        // Start screen sharing
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({
+          video: {
+            cursor: 'always',
+            displaySurface: 'monitor'
+          } as MediaTrackConstraints,
+          audio: false
+        });
+
+        screenStreamRef.current = screenStream;
+        const screenTrack = screenStream.getVideoTracks()[0];
+
+        // Handle when user stops sharing via browser UI
+        screenTrack.onended = () => {
+          if (isScreenSharing) {
+            toggleScreenShare();
+          }
+        };
+
+        const senders = peerConnectionRef.current.getSenders();
+        const videoSender = senders.find(sender => sender.track?.kind === 'video');
+
+        if (videoSender) {
+          await videoSender.replaceTrack(screenTrack);
+        }
+
+        // Update local video display to show screen share
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = screenStream;
+        }
+
+        setIsScreenSharing(true);
+        toast.success('Screen sharing started');
+      }
+    } catch (error) {
+      console.error('Screen sharing error:', error);
+      if ((error as Error).name === 'NotAllowedError') {
+        toast.error('Screen sharing permission denied');
+      } else {
+        toast.error('Failed to toggle screen sharing');
+      }
+      setIsScreenSharing(false);
+    }
   };
 
   // Enumerate available video devices
@@ -1893,11 +2000,16 @@ const AnonymousChat: React.FC = () => {
                           </div>
                         )}
                         <div className="absolute bottom-2 left-2 bg-black/60 rounded px-2 py-1 flex items-center space-x-1">
-                          <span className="text-white text-xs">You</span>
-                          {videoDevices.length > 1 && (
+                          <span className="text-white text-xs">
+                            {isScreenSharing ? 'Screen' : 'You'}
+                          </span>
+                          {!isScreenSharing && videoDevices.length > 1 && (
                             <span className="text-gray-400 text-xs">
                               ({currentFacingMode === 'user' ? 'Front' : 'Back'})
                             </span>
+                          )}
+                          {isScreenSharing && (
+                            <span className="text-green-400 text-xs">(Sharing)</span>
                           )}
                         </div>
                       </motion.div>
@@ -2043,7 +2155,7 @@ const AnonymousChat: React.FC = () => {
                   )}
 
                   {/* Camera Switch Button (only for video calls with multiple cameras) */}
-                  {callType === 'video' && videoDevices.length > 1 && (
+                  {callType === 'video' && videoDevices.length > 1 && !isScreenSharing && (
                     <motion.button
                       onClick={switchCamera}
                       disabled={isSwitchingCamera}
@@ -2059,6 +2171,26 @@ const AnonymousChat: React.FC = () => {
                       <FontAwesomeIcon 
                         icon={faSyncAlt as IconProp} 
                         className={`text-white text-xl ${isSwitchingCamera ? 'animate-spin' : ''}`}
+                      />
+                    </motion.button>
+                  )}
+
+                  {/* Screen Share Button (only for video calls) */}
+                  {callType === 'video' && (
+                    <motion.button
+                      onClick={toggleScreenShare}
+                      className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
+                        isScreenSharing 
+                          ? 'bg-green-500 hover:bg-green-600 shadow-green-500/30' 
+                          : 'bg-gray-700 hover:bg-gray-600 shadow-black/30'
+                      }`}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      title={isScreenSharing ? 'Stop screen sharing' : 'Share screen'}
+                    >
+                      <FontAwesomeIcon 
+                        icon={faDesktop as IconProp} 
+                        className="text-white text-xl"
                       />
                     </motion.button>
                   )}
