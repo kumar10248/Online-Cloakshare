@@ -1422,7 +1422,7 @@ const AnonymousChat: React.FC = () => {
         aria-labelledby="chat-dialog-title"
       >
         <motion.div
-          className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl h-[600px] flex flex-col overflow-hidden border border-gray-700"
+          className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] max-h-[700px] flex flex-col overflow-hidden border border-gray-700"
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -1430,7 +1430,7 @@ const AnonymousChat: React.FC = () => {
           role="document"
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-4 flex items-center justify-between">
+          <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-3 flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-white text-xl" aria-hidden="true" />
               <div>
@@ -1512,15 +1512,15 @@ const AnonymousChat: React.FC = () => {
 
           {/* Connection/Login Screen */}
           {!user && (
-            <div className="flex-1 flex items-center justify-center p-8">
-              <div className="w-full max-w-md space-y-6">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+              <div className="w-full max-w-md mx-auto space-y-5">
                 <div className="text-center">
-                  <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-amber-400 text-6xl mb-4" aria-hidden="true" />
-                  <h4 className="text-2xl font-bold text-white mb-2">Join Anonymous Chat</h4>
-                  <p className="text-gray-400">Start chatting securely without revealing your identity</p>
+                  <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-amber-400 text-5xl mb-3" aria-hidden="true" />
+                  <h4 className="text-xl font-bold text-white mb-1">Join Anonymous Chat</h4>
+                  <p className="text-gray-400 text-sm">Start chatting securely without revealing your identity</p>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div>
                     <label htmlFor="anonymous-name" className="sr-only">Your anonymous name</label>
                     <input
@@ -1529,18 +1529,18 @@ const AnonymousChat: React.FC = () => {
                       placeholder="Enter your anonymous name"
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
-                      className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 outline-none"
+                      className="w-full p-2.5 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 outline-none text-sm"
                       maxLength={50}
                       aria-describedby="name-hint"
                     />
                     <span id="name-hint" className="sr-only">Choose a name to display in the chat</span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                       onClick={createRoom}
                       disabled={isConnecting || !isConnected}
-                      className="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-3 rounded-lg font-medium hover:from-amber-600 hover:to-orange-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-2.5 rounded-lg font-medium hover:from-amber-600 hover:to-orange-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                       aria-busy={isConnecting}
                       aria-label={isConnecting ? 'Creating room, please wait' : 'Create a new chat room'}
                     >
@@ -1555,13 +1555,13 @@ const AnonymousChat: React.FC = () => {
                         placeholder="Enter room code"
                         value={roomId}
                         onChange={(e) => setRoomId(e.target.value)}
-                        className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 outline-none"
+                        className="w-full p-2.5 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 outline-none text-sm"
                         maxLength={4}
                       />
                       <button
                         onClick={joinRoom}
                         disabled={isConnecting || !isConnected}
-                        className="w-full bg-gray-600 hover:bg-gray-700 text-white p-3 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full bg-gray-600 hover:bg-gray-700 text-white p-2.5 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                       >
                         {isConnecting ? 'Joining...' : 'Join Room'}
                       </button>
@@ -1569,31 +1569,29 @@ const AnonymousChat: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="text-center space-y-2">
-                  <div className="flex items-center space-x-4 text-sm text-gray-400">
-                    <div className="flex items-center space-x-1">
-                      <FontAwesomeIcon icon={faUserSecret as IconProp} />
-                      <span>Anonymous</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <FontAwesomeIcon icon={faEyeSlash as IconProp} />
-                      <span>No tracking</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <FontAwesomeIcon icon={faFileAlt as IconProp} />
-                      <span>File sharing</span>
-                    </div>
+                <div className="flex items-center justify-center flex-wrap gap-3 text-xs text-gray-400">
+                  <div className="flex items-center space-x-1">
+                    <FontAwesomeIcon icon={faUserSecret as IconProp} />
+                    <span>Anonymous</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <FontAwesomeIcon icon={faEyeSlash as IconProp} />
+                    <span>No tracking</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <FontAwesomeIcon icon={faFileAlt as IconProp} />
+                    <span>File sharing</span>
                   </div>
                 </div>
 
                 {/* Group Meeting Section */}
                 <div className="border-t border-gray-700 pt-4">
                   <div className="text-center">
-                    <p className="text-gray-400 text-sm mb-3">Or start a group video meeting</p>
+                    <p className="text-gray-400 text-xs mb-2">Or start a group video meeting</p>
                     <button
                       onClick={() => setShowGroupMeeting(true)}
                       disabled={!isConnected}
-                      className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-600 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 mx-auto"
+                      className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-5 py-2.5 rounded-lg font-medium hover:from-purple-600 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 mx-auto text-sm"
                     >
                       <FontAwesomeIcon icon={faUsersRectangle as IconProp} />
                       <span>Group Meeting</span>
