@@ -186,6 +186,13 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
   useEffect(() => {
     if (!socket) return;
 
+    // Error handler for meeting errors
+    const handleError = (data: { message: string }) => {
+      console.error('Meeting error:', data.message);
+      toast.error(data.message || 'An error occurred');
+    };
+    socket.on('error', handleError);
+
     // Meeting created
     socket.on('meeting-created', (data) => {
       console.log('Meeting created:', data);
@@ -372,6 +379,7 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
     });
 
     return () => {
+      socket.off('error', handleError);
       socket.off('meeting-created');
       socket.off('meeting-joined');
       socket.off('participant-joined');
@@ -405,7 +413,7 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
       return stream;
     } catch (error) {
       console.error('Error getting media:', error);
-      toast.error('Failed to access camera/microphone');
+      toast.error('Failed to access camera/microphone. Please check permissions.');
       return null;
     }
   };
@@ -417,10 +425,17 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
       return;
     }
 
-    if (!socket || !isConnected) {
-      toast.error('Not connected to server');
+    if (!socket) {
+      toast.error('Socket not initialized. Please refresh the page.');
       return;
     }
+
+    if (!isConnected) {
+      toast.error('Not connected to server. Please check your internet connection.');
+      return;
+    }
+
+    console.log('Creating meeting with socket:', socket.id);
 
     const stream = await getLocalStream();
     if (!stream) return;
@@ -439,10 +454,17 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
       return;
     }
 
-    if (!socket || !isConnected) {
-      toast.error('Not connected to server');
+    if (!socket) {
+      toast.error('Socket not initialized. Please refresh the page.');
       return;
     }
+
+    if (!isConnected) {
+      toast.error('Not connected to server. Please check your internet connection.');
+      return;
+    }
+
+    console.log('Joining meeting with socket:', socket.id, 'Meeting ID:', inputMeetingId.trim());
 
     const stream = await getLocalStream();
     if (!stream) return;
