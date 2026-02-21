@@ -1,5 +1,6 @@
 const { Server } = require('socket.io');
 const ChatRoom = require('../models/Chat');
+const Meeting = require('../models/Meeting');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -24,8 +25,10 @@ class ChatSocketService {
       maxHttpBufferSize: 10 * 1024 * 1024 // 10MB
     });
 
-    this.connectedUsers = new Map(); // socketId -> { roomId, userId, userName }
+    this.connectedUsers = new Map(); // socketId -> { roomId, oderId, userName }
     this.activeRooms = new Map(); // roomId -> { host, guest, callSession }
+    this.meetingParticipants = new Map(); // socketId -> { meetingId, userName, isHost }
+    this.activeMeetings = new Map(); // meetingId -> Set of socketIds
     
     this.setupSocketHandlers();
     this.startCleanupJob();
@@ -579,6 +582,263 @@ class ChatSocketService {
         }
       });
 
+      // ==================== GROUP MEETING HANDLERS ====================
+
+      // Create new meeting
+      socket.on('create-meeting', async (data) => {
+        try {
+          const { userName, meetingName, meetingType = 'video' } = data;
+          
+          if (!userName || userName.trim().length === 0) {
+            socket.emit('error', { message: 'User name is required' });
+            return;
+          }
+
+          // Generate unique meeting ID
+          let meetingId;
+          let existingMeeting;
+          do {
+            meetingId = Meeting.generateMeetingId();
+            existingMeeting = await Meeting.findActiveMeeting(meetingId);
+          } while (existingMeeting);
+
+          // Create new meeting
+          const meeting = new Meeting({
+            meetingId,
+            meetingName: meetingName?.trim() || `${userName.trim()}'s Meeting`,
+            hostName: userName.trim(),
+            hostSocketId: socket.id,
+            meetingType
+          });
+
+          // Add host as first participant
+          meeting.participants.push({
+            socketId: socket.id,
+            userName: userName.trim(),
+            isHost: true,
+            joinedAt: new Date()
+          });
+
+          meeting.status = 'active';
+          await meeting.save();
+
+          // Store participant info
+          this.meetingParticipants.set(socket.id, {
+            meetingId,
+            userName: userName.trim(),
+            isHost: true
+          });
+
+          // Track active meeting
+          if (!this.activeMeetings.has(meetingId)) {
+            this.activeMeetings.set(meetingId, new Set());
+          }
+          this.activeMeetings.get(meetingId).add(socket.id);
+
+          // Join socket room for meeting
+          socket.join(`meeting:${meetingId}`);
+
+          console.log(`Meeting created: ${meetingId} by ${userName}`);
+          
+          socket.emit('meeting-created', {
+            meetingId,
+            meetingName: meeting.meetingName,
+            userName: userName.trim(),
+            isHost: true,
+            participants: meeting.getParticipantList(),
+            meetingType
+          });
+
+        } catch (error) {
+          console.error('Error creating meeting:', error);
+          socket.emit('error', { message: 'Failed to create meeting' });
+        }
+      });
+
+      // Join existing meeting
+      socket.on('join-meeting', async (data) => {
+        try {
+          const { meetingId, userName } = data;
+
+          if (!meetingId || !userName || userName.trim().length === 0) {
+            socket.emit('error', { message: 'Meeting ID and user name are required' });
+            return;
+          }
+
+          const meeting = await Meeting.findActiveMeeting(meetingId);
+          
+          if (!meeting) {
+            socket.emit('error', { message: 'Meeting not found or has ended' });
+            return;
+          }
+
+          if (meeting.participants.length >= meeting.maxParticipants) {
+            socket.emit('error', { message: 'Meeting is full' });
+            return;
+          }
+
+          // Add participant to meeting
+          await meeting.addParticipant(socket.id, userName.trim(), false);
+          await meeting.addMessage('system', 'System', 'system', `${userName.trim()} joined the meeting`);
+
+          // Store participant info
+          this.meetingParticipants.set(socket.id, {
+            meetingId,
+            userName: userName.trim(),
+            isHost: false
+          });
+
+          // Track active meeting
+          if (!this.activeMeetings.has(meetingId)) {
+            this.activeMeetings.set(meetingId, new Set());
+          }
+          this.activeMeetings.get(meetingId).add(socket.id);
+
+          // Join socket room for meeting
+          socket.join(`meeting:${meetingId}`);
+
+          console.log(`User ${userName} joined meeting ${meetingId}`);
+
+          // Notify new participant
+          socket.emit('meeting-joined', {
+            meetingId,
+            meetingName: meeting.meetingName,
+            userName: userName.trim(),
+            isHost: false,
+            participants: meeting.getParticipantList(),
+            meetingType: meeting.meetingType,
+            messages: meeting.messages
+          });
+
+          // Notify existing participants about new user
+          socket.to(`meeting:${meetingId}`).emit('participant-joined', {
+            socketId: socket.id,
+            userName: userName.trim(),
+            participants: meeting.getParticipantList()
+          });
+
+        } catch (error) {
+          console.error('Error joining meeting:', error);
+          socket.emit('error', { message: error.message || 'Failed to join meeting' });
+        }
+      });
+
+      // Leave meeting
+      socket.on('leave-meeting', async () => {
+        await this.handleLeaveMeeting(socket);
+      });
+
+      // Meeting WebRTC signaling - offer to specific peer
+      socket.on('meeting-webrtc-offer', (data) => {
+        const participant = this.meetingParticipants.get(socket.id);
+        if (participant && data.targetSocketId) {
+          console.log(`Relaying meeting offer from ${socket.id} to ${data.targetSocketId}`);
+          this.io.to(data.targetSocketId).emit('meeting-webrtc-offer', {
+            offer: data.offer,
+            from: socket.id,
+            userName: participant.userName
+          });
+        }
+      });
+
+      // Meeting WebRTC signaling - answer to specific peer
+      socket.on('meeting-webrtc-answer', (data) => {
+        const participant = this.meetingParticipants.get(socket.id);
+        if (participant && data.targetSocketId) {
+          console.log(`Relaying meeting answer from ${socket.id} to ${data.targetSocketId}`);
+          this.io.to(data.targetSocketId).emit('meeting-webrtc-answer', {
+            answer: data.answer,
+            from: socket.id,
+            userName: participant.userName
+          });
+        }
+      });
+
+      // Meeting ICE candidate to specific peer
+      socket.on('meeting-ice-candidate', (data) => {
+        const participant = this.meetingParticipants.get(socket.id);
+        if (participant && data.targetSocketId) {
+          this.io.to(data.targetSocketId).emit('meeting-ice-candidate', {
+            candidate: data.candidate,
+            from: socket.id
+          });
+        }
+      });
+
+      // Meeting chat message
+      socket.on('meeting-message', async (data) => {
+        try {
+          const { message } = data;
+          const participant = this.meetingParticipants.get(socket.id);
+
+          if (!participant) {
+            socket.emit('error', { message: 'You are not in a meeting' });
+            return;
+          }
+
+          if (!message || message.trim().length === 0) {
+            return;
+          }
+
+          const meeting = await Meeting.findActiveMeeting(participant.meetingId);
+          
+          if (!meeting) {
+            socket.emit('error', { message: 'Meeting not found' });
+            return;
+          }
+
+          await meeting.addMessage(socket.id, participant.userName, 'text', message.trim());
+
+          // Broadcast message to all meeting participants
+          this.io.to(`meeting:${participant.meetingId}`).emit('meeting-new-message', {
+            senderId: socket.id,
+            senderName: participant.userName,
+            type: 'text',
+            content: message.trim(),
+            timestamp: new Date()
+          });
+
+        } catch (error) {
+          console.error('Error sending meeting message:', error);
+        }
+      });
+
+      // Toggle mute status
+      socket.on('meeting-toggle-mute', async (data) => {
+        const participant = this.meetingParticipants.get(socket.id);
+        if (participant) {
+          socket.to(`meeting:${participant.meetingId}`).emit('participant-mute-changed', {
+            socketId: socket.id,
+            isMuted: data.isMuted
+          });
+        }
+      });
+
+      // Toggle video status
+      socket.on('meeting-toggle-video', async (data) => {
+        const participant = this.meetingParticipants.get(socket.id);
+        if (participant) {
+          socket.to(`meeting:${participant.meetingId}`).emit('participant-video-changed', {
+            socketId: socket.id,
+            isVideoOff: data.isVideoOff
+          });
+        }
+      });
+
+      // Request to connect to a specific peer (for mesh network)
+      socket.on('meeting-request-peer-connection', (data) => {
+        const participant = this.meetingParticipants.get(socket.id);
+        if (participant && data.targetSocketId) {
+          // Tell the target to initiate connection
+          this.io.to(data.targetSocketId).emit('meeting-peer-connection-request', {
+            from: socket.id,
+            userName: participant.userName
+          });
+        }
+      });
+
+      // ==================== END GROUP MEETING HANDLERS ====================
+
       // Handle chat termination
       socket.on('terminate-chat', async () => {
         try {
@@ -617,6 +877,7 @@ class ChatSocketService {
       // Handle disconnection
       socket.on('disconnect', async () => {
         try {
+          // Handle chat room disconnection
           const user = this.connectedUsers.get(socket.id);
           
           if (user) {
@@ -630,7 +891,7 @@ class ChatSocketService {
 
               // Notify other user
               socket.to(user.roomId).emit('user-disconnected', {
-                userId: user.userId,
+                userId: user.oderId,
                 userName: user.userName
               });
 
@@ -654,11 +915,80 @@ class ChatSocketService {
             this.connectedUsers.delete(socket.id);
             this.cleanupRoom(user.roomId);
           }
+
+          // Handle meeting disconnection
+          await this.handleLeaveMeeting(socket, true);
+          
         } catch (error) {
           console.error('Error handling disconnect:', error);
         }
       });
     });
+  }
+
+  // Handle participant leaving meeting
+  async handleLeaveMeeting(socket, isDisconnect = false) {
+    try {
+      const participant = this.meetingParticipants.get(socket.id);
+      
+      if (!participant) return;
+
+      const { meetingId, userName, isHost } = participant;
+      
+      console.log(`User ${userName} leaving meeting ${meetingId}`);
+
+      const meeting = await Meeting.findActiveMeeting(meetingId);
+      
+      if (meeting) {
+        await meeting.removeParticipant(socket.id);
+        await meeting.addMessage('system', 'System', 'system', `${userName} left the meeting`);
+
+        // Notify other participants
+        socket.to(`meeting:${meetingId}`).emit('participant-left', {
+          socketId: socket.id,
+          userName,
+          isHost,
+          participants: meeting.getParticipantList()
+        });
+
+        // If host left and meeting still has participants, assign new host
+        if (isHost && meeting.participants.length > 0) {
+          const newHost = meeting.participants[0];
+          newHost.isHost = true;
+          await meeting.save();
+          
+          this.io.to(`meeting:${meetingId}`).emit('new-host-assigned', {
+            socketId: newHost.socketId,
+            userName: newHost.userName
+          });
+        }
+
+        // End meeting if no participants
+        if (meeting.participants.length === 0) {
+          meeting.status = 'ended';
+          await meeting.save();
+        }
+      }
+
+      // Clean up
+      this.meetingParticipants.delete(socket.id);
+      
+      if (this.activeMeetings.has(meetingId)) {
+        this.activeMeetings.get(meetingId).delete(socket.id);
+        if (this.activeMeetings.get(meetingId).size === 0) {
+          this.activeMeetings.delete(meetingId);
+        }
+      }
+
+      socket.leave(`meeting:${meetingId}`);
+
+      if (!isDisconnect) {
+        socket.emit('meeting-left', { meetingId });
+      }
+
+    } catch (error) {
+      console.error('Error handling leave meeting:', error);
+    }
   }
 
   cleanupRoom(roomId) {
@@ -681,6 +1011,12 @@ class ChatSocketService {
         if (result.deletedCount > 0) {
           console.log(`Cleaned up ${result.deletedCount} inactive rooms`);
         }
+        
+        // Also cleanup inactive meetings
+        const meetingResult = await Meeting.cleanupInactiveMeetings();
+        if (meetingResult.deletedCount > 0) {
+          console.log(`Cleaned up ${meetingResult.deletedCount} inactive meetings`);
+        }
       } catch (error) {
         console.error('Error in cleanup job:', error);
       }
@@ -693,6 +1029,10 @@ class ChatSocketService {
 
   getConnectedUsersCount() {
     return this.connectedUsers.size;
+  }
+
+  getActiveMeetingsCount() {
+    return this.activeMeetings.size;
   }
 }
 

@@ -32,10 +32,12 @@ import {
   faVolumeMute,
   faPhoneAlt,
   faSyncAlt,
-  faDesktop
+  faDesktop,
+  faUsersRectangle
 } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-hot-toast';
 import './AnonymousChat.css';
+import GroupMeeting from './GroupMeeting';
 
 // Types
 interface Message {
@@ -80,6 +82,7 @@ const AnonymousChat: React.FC = () => {
   const [currentMessage, setCurrentMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const [showGroupMeeting, setShowGroupMeeting] = useState(false);
 
   // File handling
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -1582,6 +1585,21 @@ const AnonymousChat: React.FC = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Group Meeting Section */}
+                <div className="border-t border-gray-700 pt-4">
+                  <div className="text-center">
+                    <p className="text-gray-400 text-sm mb-3">Or start a group video meeting</p>
+                    <button
+                      onClick={() => setShowGroupMeeting(true)}
+                      disabled={!isConnected}
+                      className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-600 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 mx-auto"
+                    >
+                      <FontAwesomeIcon icon={faUsersRectangle as IconProp} />
+                      <span>Group Meeting</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -2271,6 +2289,22 @@ const AnonymousChat: React.FC = () => {
                 </motion.div>
               )}
             </div>
+          </motion.div>
+        )}
+
+        {/* Group Meeting Modal */}
+        {showGroupMeeting && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[110]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <GroupMeeting
+              socket={socket}
+              isConnected={isConnected}
+              onClose={() => setShowGroupMeeting(false)}
+            />
           </motion.div>
         )}
       </motion.div>
