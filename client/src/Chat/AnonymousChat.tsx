@@ -104,6 +104,7 @@ const AnonymousChat: React.FC = () => {
   const [currentFacingMode, setCurrentFacingMode] = useState<'user' | 'environment'>('user');
   const [isSwitchingCamera, setIsSwitchingCamera] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [isScreenShareSupported, setIsScreenShareSupported] = useState(false);
   const screenStreamRef = useRef<MediaStream | null>(null);
   const callTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -193,6 +194,22 @@ const AnonymousChat: React.FC = () => {
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // Check if screen sharing is supported (not available on mobile browsers)
+  useEffect(() => {
+    const checkScreenShareSupport = () => {
+      // Check if getDisplayMedia is available
+      const hasGetDisplayMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia);
+      
+      // Additional check: detect mobile devices where screen sharing typically doesn't work
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      // Screen sharing is supported if getDisplayMedia exists AND it's not a mobile device
+      setIsScreenShareSupported(hasGetDisplayMedia && !isMobile);
+    };
+    
+    checkScreenShareSupport();
   }, []);
 
   // Initialize socket connection
@@ -1147,6 +1164,12 @@ const AnonymousChat: React.FC = () => {
 
   // Toggle screen sharing
   const toggleScreenShare = async () => {
+    // Check if screen sharing is supported
+    if (!isScreenShareSupported) {
+      toast.error('Screen sharing is not supported on mobile devices');
+      return;
+    }
+    
     if (!peerConnectionRef.current || !localStreamRef.current) {
       toast.error('Call not connected');
       return;
@@ -2175,8 +2198,8 @@ const AnonymousChat: React.FC = () => {
                     </motion.button>
                   )}
 
-                  {/* Screen Share Button (only for video calls) */}
-                  {callType === 'video' && (
+                  {/* Screen Share Button (only for video calls on supported devices) */}
+                  {callType === 'video' && isScreenShareSupported && (
                     <motion.button
                       onClick={toggleScreenShare}
                       className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
