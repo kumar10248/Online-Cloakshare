@@ -385,6 +385,15 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
       ));
     });
 
+    // Participant screen share changed
+    socket.on('participant-screen-share-changed', (data) => {
+      if (data.isScreenSharing) {
+        toast(`${data.userName} is sharing their screen`, { icon: '🖥️' });
+      } else {
+        toast(`${data.userName} stopped sharing`, { icon: '📹' });
+      }
+    });
+
     // New message
     socket.on('meeting-new-message', (data) => {
       setMessages(prev => [...prev, { ...data, timestamp: new Date(data.timestamp) }]);
@@ -420,6 +429,7 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
       socket.off('participant-left');
       socket.off('participant-mute-changed');
       socket.off('participant-video-changed');
+      socket.off('participant-screen-share-changed');
       socket.off('meeting-new-message');
       socket.off('meeting-left');
       socket.off('new-host-assigned');
@@ -659,6 +669,7 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
         }
 
         setIsScreenSharing(false);
+        socket?.emit('meeting-screen-share-changed', { isScreenSharing: false });
         toast.success('Stopped screen sharing');
       } else {
         // Start screen sharing
@@ -670,10 +681,47 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
         screenStreamRef.current = screenStream;
         const screenTrack = screenStream.getVideoTracks()[0];
 
-        screenTrack.onended = () => {
-          if (isScreenSharing) {
-            toggleScreenShare();
+        // Handle when user stops sharing via browser UI
+        screenTrack.onended = async () => {
+          // Stop screen sharing and switch back to camera
+          if (screenStreamRef.current) {
+            screenStreamRef.current.getTracks().forEach(track => track.stop());
+            screenStreamRef.current = null;
           }
+
+          try {
+            const cameraStream = await navigator.mediaDevices.getUserMedia({
+              video: { width: { ideal: 1280 }, height: { ideal: 720 } }
+            });
+            const newVideoTrack = cameraStream.getVideoTracks()[0];
+
+            peerConnectionsRef.current.forEach(({ pc }) => {
+              const sender = pc.getSenders().find(s => s.track?.kind === 'video');
+              if (sender) {
+                sender.replaceTrack(newVideoTrack);
+              }
+            });
+
+            const currentStream = localStreamRef.current;
+            if (currentStream) {
+              const oldVideoTrack = currentStream.getVideoTracks()[0];
+              if (oldVideoTrack) {
+                currentStream.removeTrack(oldVideoTrack);
+                oldVideoTrack.stop();
+              }
+              currentStream.addTrack(newVideoTrack);
+            }
+
+            if (localVideoRef.current && currentStream) {
+              localVideoRef.current.srcObject = currentStream;
+            }
+          } catch (err) {
+            console.error('Error switching back to camera:', err);
+          }
+
+          setIsScreenSharing(false);
+          socket?.emit('meeting-screen-share-changed', { isScreenSharing: false });
+          toast.success('Stopped screen sharing');
         };
 
         // Replace track in all peer connections
@@ -689,6 +737,7 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
         }
 
         setIsScreenSharing(true);
+        socket?.emit('meeting-screen-share-changed', { isScreenSharing: true });
         toast.success('Screen sharing started');
       }
     } catch (error) {
@@ -779,11 +828,23 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
               {((participant.socketId === socket?.id && isMuted) || participant.isMuted) && (
                 <FontAwesomeIcon icon={faMicrophoneSlash as IconProp} className="text-red-400 text-xs" />
               )}
+              {/* Screen sharing indicator */}
+              {participant.socketId === socket?.id && isScreenSharing && (
+                <FontAwesomeIcon icon={faDesktop as IconProp} className="text-green-400 text-xs" />
+              )}
               <span className="text-white text-xs">
                 {participant.userName} {participant.isHost && '(Host)'}
                 {participant.socketId === socket?.id && ' (You)'}
               </span>
             </div>
+            
+            {/* Screen sharing banner */}
+            {participant.socketId === socket?.id && isScreenSharing && (
+              <div className="absolute top-2 left-2 right-2 bg-green-500/90 rounded px-3 py-1.5 flex items-center justify-center space-x-2">
+                <FontAwesomeIcon icon={faDesktop as IconProp} className="text-white text-sm" />
+                <span className="text-white text-sm font-medium">You are sharing your screen</span>
+              </div>
+            )}
           </div>
         ))}
       </div>

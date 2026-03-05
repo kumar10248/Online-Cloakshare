@@ -834,6 +834,18 @@ class ChatSocketService {
         }
       });
 
+      // Toggle screen share status
+      socket.on('meeting-screen-share-changed', async (data) => {
+        const participant = this.meetingParticipants.get(socket.id);
+        if (participant) {
+          socket.to(`meeting:${participant.meetingId}`).emit('participant-screen-share-changed', {
+            socketId: socket.id,
+            userName: participant.userName,
+            isScreenSharing: data.isScreenSharing
+          });
+        }
+      });
+
       // Request to connect to a specific peer (for mesh network)
       socket.on('meeting-request-peer-connection', (data) => {
         const participant = this.meetingParticipants.get(socket.id);
