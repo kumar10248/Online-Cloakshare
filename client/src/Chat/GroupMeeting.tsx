@@ -110,6 +110,14 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
     setIsScreenShareSupported(hasGetDisplayMedia && !isMobile);
   }, []);
 
+  // Effect to ensure local video is attached when in meeting
+  useEffect(() => {
+    if (isInMeeting && localVideoRef.current && localStreamRef.current) {
+      localVideoRef.current.srcObject = localStreamRef.current;
+      localVideoRef.current.play().catch(e => console.log('Local video play error:', e));
+    }
+  }, [isInMeeting]);
+
   // Auto-scroll messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -210,6 +218,14 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
         stream: p.socketId === socket.id ? localStreamRef.current : undefined
       })));
       toast.success(`Meeting created! ID: ${data.meetingId}`);
+      
+      // Ensure local video is displayed
+      setTimeout(() => {
+        if (localVideoRef.current && localStreamRef.current) {
+          localVideoRef.current.srcObject = localStreamRef.current;
+          localVideoRef.current.play().catch(e => console.log('Local video play error:', e));
+        }
+      }, 100);
     });
 
     // Meeting joined
@@ -226,6 +242,14 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
       })));
       setMessages(data.messages || []);
       toast.success('Joined the meeting!');
+      
+      // Ensure local video is displayed
+      setTimeout(() => {
+        if (localVideoRef.current && localStreamRef.current) {
+          localVideoRef.current.srcObject = localStreamRef.current;
+          localVideoRef.current.play().catch(e => console.log('Local video play error:', e));
+        }
+      }, 100);
 
       // Request peer connections with existing participants
       data.participants.forEach((p: Participant) => {
@@ -523,7 +547,8 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
       socket.emit('leave-meeting');
     }
     cleanupMeeting();
-    onClose();
+    // Don't close - just reset to lobby view so user can rejoin
+    // onClose(); // Commented out to allow rejoin
   };
 
   // Cleanup meeting resources
@@ -546,7 +571,7 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
     peerConnectionsRef.current.clear();
     pendingCandidatesRef.current.clear();
 
-    // Reset state
+    // Reset state but keep userName and inputMeetingId for easier rejoin
     setIsInMeeting(false);
     setMeetingId('');
     setMeetingName('');
@@ -556,6 +581,8 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
     setIsMuted(false);
     setIsVideoOff(false);
     setIsScreenSharing(false);
+    setIsCreating(false);
+    setIsJoining(false);
   };
 
   // Toggle mute
@@ -826,10 +853,16 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
             <div className="space-y-3">
               <input
                 type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={inputMeetingId}
-                onChange={(e) => setInputMeetingId(e.target.value)}
-                placeholder="Enter meeting ID"
-                className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:border-amber-500 outline-none"
+                onChange={(e) => {
+                  // Only allow digits and max 6 characters
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                  setInputMeetingId(value);
+                }}
+                placeholder="Enter 6-digit meeting ID"
+                className="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:border-amber-500 outline-none text-center text-lg tracking-widest"
                 maxLength={6}
               />
               <button
