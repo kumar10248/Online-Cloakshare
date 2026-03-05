@@ -62,6 +62,8 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
   const [messages, setMessages] = useState<MeetingMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [showChat, setShowChat] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
 
   // Media state
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -190,12 +192,15 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
     const handleError = (data: { message: string }) => {
       console.error('Meeting error:', data.message);
       toast.error(data.message || 'An error occurred');
+      setIsCreating(false);
+      setIsJoining(false);
     };
     socket.on('error', handleError);
 
     // Meeting created
     socket.on('meeting-created', (data) => {
       console.log('Meeting created:', data);
+      setIsCreating(false);
       setIsInMeeting(true);
       setMeetingId(data.meetingId);
       setMeetingName(data.meetingName);
@@ -210,6 +215,7 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
     // Meeting joined
     socket.on('meeting-joined', (data) => {
       console.log('Meeting joined:', data);
+      setIsJoining(false);
       setIsInMeeting(true);
       setMeetingId(data.meetingId);
       setMeetingName(data.meetingName);
@@ -427,24 +433,42 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
 
     if (!socket) {
       toast.error('Socket not initialized. Please refresh the page.');
+      console.error('Socket is null');
       return;
     }
 
     if (!isConnected) {
       toast.error('Not connected to server. Please check your internet connection.');
+      console.error('Socket not connected');
       return;
     }
 
+    setIsCreating(true);
     console.log('Creating meeting with socket:', socket.id);
 
-    const stream = await getLocalStream();
-    if (!stream) return;
+    try {
+      const stream = await getLocalStream();
+      if (!stream) {
+        setIsCreating(false);
+        return;
+      }
 
-    socket.emit('create-meeting', {
-      userName: userName.trim(),
-      meetingName: meetingName.trim() || `${userName.trim()}'s Meeting`,
-      meetingType: 'video'
-    });
+      console.log('Got local stream, emitting create-meeting event');
+      socket.emit('create-meeting', {
+        userName: userName.trim(),
+        meetingName: meetingName.trim() || `${userName.trim()}'s Meeting`,
+        meetingType: 'video'
+      });
+      
+      // Set a timeout to reset loading state if no response
+      setTimeout(() => {
+        setIsCreating(false);
+      }, 10000);
+    } catch (error) {
+      console.error('Error in createMeeting:', error);
+      toast.error('Failed to create meeting');
+      setIsCreating(false);
+    }
   };
 
   // Join meeting
@@ -456,23 +480,41 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
 
     if (!socket) {
       toast.error('Socket not initialized. Please refresh the page.');
+      console.error('Socket is null');
       return;
     }
 
     if (!isConnected) {
       toast.error('Not connected to server. Please check your internet connection.');
+      console.error('Socket not connected');
       return;
     }
 
+    setIsJoining(true);
     console.log('Joining meeting with socket:', socket.id, 'Meeting ID:', inputMeetingId.trim());
 
-    const stream = await getLocalStream();
-    if (!stream) return;
+    try {
+      const stream = await getLocalStream();
+      if (!stream) {
+        setIsJoining(false);
+        return;
+      }
 
-    socket.emit('join-meeting', {
-      meetingId: inputMeetingId.trim(),
-      userName: userName.trim()
-    });
+      console.log('Got local stream, emitting join-meeting event');
+      socket.emit('join-meeting', {
+        meetingId: inputMeetingId.trim(),
+        userName: userName.trim()
+      });
+      
+      // Set a timeout to reset loading state if no response
+      setTimeout(() => {
+        setIsJoining(false);
+      }, 10000);
+    } catch (error) {
+      console.error('Error in joinMeeting:', error);
+      toast.error('Failed to join meeting');
+      setIsJoining(false);
+    }
   };
 
   // Leave meeting
@@ -761,11 +803,20 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
               />
               <button
                 onClick={createMeeting}
-                disabled={!isConnected}
+                disabled={!isConnected || isCreating}
                 className="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white p-3 rounded-lg font-medium hover:from-amber-600 hover:to-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
-                <FontAwesomeIcon icon={faVideo as IconProp} />
-                <span>Create Meeting</span>
+                {isCreating ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    <span>Creating...</span>
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faVideo as IconProp} />
+                    <span>Create Meeting</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -783,11 +834,20 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
               />
               <button
                 onClick={joinMeeting}
-                disabled={!isConnected}
+                disabled={!isConnected || isJoining}
                 className="w-full bg-gray-600 hover:bg-gray-700 text-white p-3 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
-                <FontAwesomeIcon icon={faUserPlus as IconProp} />
-                <span>Join Meeting</span>
+                {isJoining ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    <span>Joining...</span>
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faUserPlus as IconProp} />
+                    <span>Join Meeting</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
