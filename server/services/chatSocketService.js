@@ -586,10 +586,15 @@ class ChatSocketService {
 
       // Create new meeting
       socket.on('create-meeting', async (data) => {
+        console.log('=== CREATE MEETING REQUEST ===');
+        console.log('Socket ID:', socket.id);
+        console.log('Data received:', data);
+        
         try {
           const { userName, meetingName, meetingType = 'video' } = data;
           
           if (!userName || userName.trim().length === 0) {
+            console.log('ERROR: User name is required');
             socket.emit('error', { message: 'User name is required' });
             return;
           }
@@ -639,6 +644,7 @@ class ChatSocketService {
           socket.join(`meeting:${meetingId}`);
 
           console.log(`Meeting created: ${meetingId} by ${userName}`);
+          console.log('Emitting meeting-created event to socket:', socket.id);
           
           socket.emit('meeting-created', {
             meetingId,
@@ -648,10 +654,13 @@ class ChatSocketService {
             participants: meeting.getParticipantList(),
             meetingType
           });
+          
+          console.log('meeting-created event emitted successfully');
 
         } catch (error) {
           console.error('Error creating meeting:', error);
-          socket.emit('error', { message: 'Failed to create meeting' });
+          console.error('Error stack:', error.stack);
+          socket.emit('error', { message: 'Failed to create meeting: ' + error.message });
         }
       });
 
