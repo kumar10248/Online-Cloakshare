@@ -723,21 +723,30 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
 
   // Render video grid
   const renderVideoGrid = () => {
-    const gridCols = participants.length <= 1 ? 1 : participants.length <= 4 ? 2 : 3;
+    const participantCount = participants.length;
+    
+    // Determine grid layout based on participant count
+    let gridClass = '';
+    if (participantCount === 1) {
+      gridClass = 'grid-cols-1';
+    } else if (participantCount === 2) {
+      gridClass = 'grid-cols-1 md:grid-cols-2';
+    } else if (participantCount <= 4) {
+      gridClass = 'grid-cols-2';
+    } else if (participantCount <= 6) {
+      gridClass = 'grid-cols-2 md:grid-cols-3';
+    } else {
+      gridClass = 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
+    }
     
     return (
       <div 
-        className={`grid gap-2 p-4 h-full w-full ${
-          gridCols === 1 ? 'grid-cols-1' : 
-          gridCols === 2 ? 'grid-cols-2' : 
-          'grid-cols-3'
-        }`}
-        style={{ gridAutoRows: '1fr' }}
+        className={`grid gap-3 p-4 h-full w-full auto-rows-fr ${gridClass}`}
       >
         {participants.map((participant) => (
           <div
             key={participant.socketId}
-            className="relative bg-gray-800 rounded-xl overflow-hidden flex items-center justify-center"
+            className="relative bg-gray-800 rounded-xl overflow-hidden flex items-center justify-center min-h-[200px] md:min-h-[250px] aspect-video"
           >
             {participant.socketId === socket?.id ? (
               // Local video
@@ -899,15 +908,15 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
     >
       <div className="relative w-full h-full flex flex-col">
         {/* Header */}
-        <div className="absolute top-0 left-0 right-0 z-20 p-4 bg-gradient-to-b from-black/70 to-transparent">
+        <div className="absolute top-0 left-0 right-0 z-20 p-3 md:p-4 bg-gradient-to-b from-black/80 to-transparent">
           <div className="flex items-center justify-between max-w-6xl mx-auto">
-            <div className="flex items-center space-x-4">
-              <h2 className="text-white font-bold">{meetingName}</h2>
+            <div className="flex items-center space-x-2 md:space-x-4 flex-wrap">
+              <h2 className="text-white font-bold text-sm md:text-base truncate max-w-[120px] md:max-w-none">{meetingName}</h2>
               {isHost && (
-                <span className="bg-amber-500 text-white text-xs px-2 py-1 rounded-full font-medium">Host</span>
+                <span className="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full font-medium">Host</span>
               )}
-              <div className="flex items-center space-x-2 bg-black/50 rounded-full px-3 py-1">
-                <span className="text-gray-300 text-sm">ID: {meetingId}</span>
+              <div className="flex items-center space-x-1 md:space-x-2 bg-black/50 rounded-full px-2 md:px-3 py-1">
+                <span className="text-gray-300 text-xs md:text-sm">ID: {meetingId}</span>
                 <button
                   onClick={copyMeetingId}
                   className="text-amber-400 hover:text-amber-300"
@@ -916,13 +925,13 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
                   <FontAwesomeIcon icon={faCopy as IconProp} className="text-xs" />
                 </button>
               </div>
-              <div className="flex items-center space-x-2 text-gray-400 text-sm">
+              <div className="flex items-center space-x-1 text-gray-400 text-xs md:text-sm">
                 <FontAwesomeIcon icon={faUsers as IconProp} />
                 <span>{participants.length}</span>
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 md:space-x-2">
               <button
                 onClick={() => setShowChat(!showChat)}
                 className={`p-2 rounded-lg transition-all ${
@@ -934,7 +943,7 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
               </button>
               <button
                 onClick={toggleFullscreen}
-                className="text-white/70 hover:text-white p-2 rounded-lg hover:bg-white/10"
+                className="text-white/70 hover:text-white p-2 rounded-lg hover:bg-white/10 hidden md:block"
                 title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
               >
                 <FontAwesomeIcon icon={isFullscreen ? faCompress as IconProp : faExpand as IconProp} />
@@ -944,23 +953,29 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
         </div>
 
         {/* Main content area */}
-        <div className="flex-1 flex pt-16 pb-24">
+        <div className="flex-1 flex pt-16 pb-24 overflow-hidden">
           {/* Video grid */}
-          <div className={`flex-1 ${showChat ? 'mr-80' : ''} transition-all duration-300`}>
+          <div className={`flex-1 overflow-auto ${showChat ? 'md:mr-80' : ''} transition-all duration-300`}>
             {renderVideoGrid()}
           </div>
 
-          {/* Chat sidebar */}
+          {/* Chat sidebar - full screen on mobile, sidebar on desktop */}
           <AnimatePresence>
             {showChat && (
               <motion.div
-                className="absolute right-0 top-16 bottom-24 w-80 bg-gray-900/95 border-l border-gray-700 flex flex-col"
-                initial={{ x: 320, opacity: 0 }}
+                className="fixed md:absolute inset-0 md:inset-auto md:right-0 md:top-16 md:bottom-24 md:w-80 bg-gray-900/98 md:bg-gray-900/95 md:border-l border-gray-700 flex flex-col z-30"
+                initial={{ x: '100%', opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                exit={{ x: 320, opacity: 0 }}
+                exit={{ x: '100%', opacity: 0 }}
               >
-                <div className="p-3 border-b border-gray-700">
+                <div className="p-3 border-b border-gray-700 flex items-center justify-between">
                   <h4 className="text-white font-medium">Meeting Chat</h4>
+                  <button
+                    onClick={() => setShowChat(false)}
+                    className="text-gray-400 hover:text-white p-1 md:hidden"
+                  >
+                    <FontAwesomeIcon icon={faTimes as IconProp} />
+                  </button>
                 </div>
                 <div className="flex-1 overflow-y-auto p-3 space-y-2">
                   {messages.map((msg, i) => (
@@ -1008,11 +1023,11 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
         </div>
 
         {/* Controls */}
-        <div className="absolute bottom-0 left-0 right-0 z-20 p-6 bg-gradient-to-t from-black/80 to-transparent">
-          <div className="flex items-center justify-center space-x-4 max-w-md mx-auto">
+        <div className="absolute bottom-0 left-0 right-0 z-20 p-4 md:p-6 bg-gradient-to-t from-black/90 to-transparent">
+          <div className="flex items-center justify-center space-x-3 md:space-x-4 max-w-md mx-auto">
             <motion.button
               onClick={toggleMute}
-              className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
+              className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
                 isMuted ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'
               }`}
               whileHover={{ scale: 1.1 }}
@@ -1021,13 +1036,13 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
             >
               <FontAwesomeIcon
                 icon={isMuted ? faMicrophoneSlash as IconProp : faMicrophone as IconProp}
-                className="text-white text-xl"
+                className="text-white text-lg md:text-xl"
               />
             </motion.button>
 
             <motion.button
               onClick={toggleVideo}
-              className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
+              className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
                 isVideoOff ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'
               }`}
               whileHover={{ scale: 1.1 }}
@@ -1036,32 +1051,32 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
             >
               <FontAwesomeIcon
                 icon={isVideoOff ? faVideoSlash as IconProp : faVideo as IconProp}
-                className="text-white text-xl"
+                className="text-white text-lg md:text-xl"
               />
             </motion.button>
 
             {isScreenShareSupported && (
               <motion.button
                 onClick={toggleScreenShare}
-                className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
+                className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
                   isScreenSharing ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-700 hover:bg-gray-600'
                 }`}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 title={isScreenSharing ? 'Stop sharing' : 'Share screen'}
               >
-                <FontAwesomeIcon icon={faDesktop as IconProp} className="text-white text-xl" />
+                <FontAwesomeIcon icon={faDesktop as IconProp} className="text-white text-lg md:text-xl" />
               </motion.button>
             )}
 
             <motion.button
               onClick={leaveMeeting}
-              className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg shadow-red-500/30"
+              className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg shadow-red-500/30"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               title="Leave meeting"
             >
-              <FontAwesomeIcon icon={faPhoneSlash as IconProp} className="text-white text-2xl" />
+              <FontAwesomeIcon icon={faPhoneSlash as IconProp} className="text-white text-lg md:text-xl" />
             </motion.button>
           </div>
         </div>
