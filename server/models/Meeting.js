@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const MeetingParticipantSchema = new mongoose.Schema({
-  odedId: String,
+  socketId: String,
   userName: {
     type: String,
     required: true,
