@@ -139,13 +139,27 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
     };
 
     pc.ontrack = (event) => {
-      console.log(`Received track from ${targetUserName}:`, event.track.kind);
+      console.log(`Received track from ${targetUserName}:`, event.track.kind, 'streams:', event.streams.length);
       if (event.streams && event.streams[0]) {
-        setParticipants(prev => prev.map(p => 
-          p.socketId === targetSocketId 
-            ? { ...p, stream: event.streams[0] } 
-            : p
-        ));
+        const remoteStream = event.streams[0];
+        console.log(`Setting remote stream for ${targetUserName}, tracks:`, remoteStream.getTracks().map(t => t.kind));
+        
+        // Update the peer connection's stream reference
+        const peerConn = peerConnectionsRef.current.get(targetSocketId);
+        if (peerConn) {
+          peerConn.stream = remoteStream;
+        }
+        
+        // Update participants state with the new stream
+        setParticipants(prev => {
+          const updated = prev.map(p => 
+            p.socketId === targetSocketId 
+              ? { ...p, stream: remoteStream } 
+              : p
+          );
+          console.log(`Updated participants, ${targetUserName} now has stream:`, updated.find(p => p.socketId === targetSocketId)?.stream ? 'yes' : 'no');
+          return updated;
+        });
       }
     };
 
@@ -156,12 +170,27 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
       }
     };
 
+    pc.onconnectionstatechange = () => {
+      console.log(`Connection state for ${targetUserName}:`, pc.connectionState);
+      if (pc.connectionState === 'connected') {
+        console.log(`Successfully connected to ${targetUserName}`);
+      }
+    };
+
+    pc.onnegotiationneeded = () => {
+      console.log(`Negotiation needed for ${targetUserName}`);
+    };
+
     // Add local tracks
     const stream = localStreamRef.current;
     if (stream) {
+      console.log(`Adding ${stream.getTracks().length} local tracks to peer connection for ${targetUserName}`);
       stream.getTracks().forEach(track => {
+        console.log(`Adding track: ${track.kind} to ${targetUserName}`);
         pc.addTrack(track, stream);
       });
+    } else {
+      console.warn(`No local stream available when creating peer connection for ${targetUserName}`);
     }
 
     peerConnectionsRef.current.set(targetSocketId, { socketId: targetSocketId, pc });
@@ -173,9 +202,22 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
   const initiatePeerConnection = useCallback(async (targetSocketId: string, targetUserName: string) => {
     if (!socket) return;
 
+    // Check if we already have a connection to this peer
+    const existingConn = peerConnectionsRef.current.get(targetSocketId);
+    if (existingConn && existingConn.pc.signalingState !== 'closed') {
+      console.log(`Already have connection to ${targetUserName}, skipping`);
+      return;
+    }
+
     const pc = createPeerConnection(targetSocketId, targetUserName);
     
     try {
+      // Add transceivers to ensure bi-directional communication
+      if (pc.getTransceivers().length === 0) {
+        pc.addTransceiver('audio', { direction: 'sendrecv' });
+        pc.addTransceiver('video', { direction: 'sendrecv' });
+      }
+      
       const offer = await pc.createOffer({
         offerToReceiveAudio: true,
         offerToReceiveVideo: true
@@ -186,7 +228,7 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
         targetSocketId,
         offer: pc.localDescription
       });
-      console.log(`Sent offer to ${targetUserName}`);
+      console.log(`Sent offer to ${targetUserName}, SDP length: ${offer.sdp?.length}`);
     } catch (error) {
       console.error('Error creating offer:', error);
     }
@@ -261,14 +303,28 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
 
     // New participant joined
     socket.on('participant-joined', async (data) => {
-      console.log('Participant joined:', data);
-      setParticipants(data.participants.map((p: Participant) => {
-        const existing = peerConnectionsRef.current.get(p.socketId);
-        return {
-          ...p,
-          stream: p.socketId === socket.id ? localStreamRef.current : existing?.stream
-        };
-      }));
+      console.log('Participant joined:', data.userName, 'socketId:', data.socketId);
+      console.log('Current peer connections:', Array.from(peerConnectionsRef.current.keys()));
+      
+      setParticipants(prev => {
+        // Map through the new participants list and preserve existing streams
+        const updated = data.participants.map((p: Participant) => {
+          // Check if we have an existing stream for this participant
+          const existingParticipant = prev.find(ep => ep.socketId === p.socketId);
+          const peerConn = peerConnectionsRef.current.get(p.socketId);
+          
+          return {
+            ...p,
+            stream: p.socketId === socket.id 
+              ? localStreamRef.current 
+              : existingParticipant?.stream || peerConn?.stream || undefined
+          };
+        });
+        
+        console.log('Updated participants after join:', updated.map((p: Participant) => ({ socketId: p.socketId, hasStream: !!p.stream })));
+        return updated;
+      });
+      
       toast.success(`${data.userName} joined the meeting`);
     });
 
@@ -280,18 +336,35 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
 
     // WebRTC offer received
     socket.on('meeting-webrtc-offer', async (data) => {
-      console.log('Received offer from:', data.userName);
+      console.log('Received offer from:', data.userName, 'from:', data.from);
       
-      let pc = peerConnectionsRef.current.get(data.from)?.pc;
-      if (!pc) {
+      // Check if we already have a peer connection with a different state
+      let peerConn = peerConnectionsRef.current.get(data.from);
+      let pc = peerConn?.pc;
+      
+      if (!pc || pc.signalingState === 'closed') {
+        pc = createPeerConnection(data.from, data.userName);
+      } else if (pc.signalingState !== 'stable') {
+        // Handle glare (both sides tried to create offer simultaneously)
+        console.log(`Glare detected with ${data.userName}, signaling state: ${pc.signalingState}`);
+        // If we have a higher socket id, we ignore the incoming offer
+        if (socket.id && socket.id > data.from) {
+          console.log('Ignoring offer due to glare resolution (we have higher id)');
+          return;
+        }
+        // Otherwise, close the existing connection and create a new one
+        pc.close();
         pc = createPeerConnection(data.from, data.userName);
       }
 
       try {
+        console.log(`Setting remote description for ${data.userName}, current state: ${pc.signalingState}`);
         await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+        console.log(`Remote description set for ${data.userName}, new state: ${pc.signalingState}`);
         
         // Process pending ICE candidates
         const pending = pendingCandidatesRef.current.get(data.from) || [];
+        console.log(`Processing ${pending.length} pending ICE candidates for ${data.userName}`);
         for (const candidate of pending) {
           await pc.addIceCandidate(new RTCIceCandidate(candidate));
         }
@@ -299,6 +372,7 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
 
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
+        console.log(`Created and set answer for ${data.userName}, SDP length: ${answer.sdp?.length}`);
 
         socket.emit('meeting-webrtc-answer', {
           targetSocketId: data.from,
@@ -312,15 +386,24 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
 
     // WebRTC answer received
     socket.on('meeting-webrtc-answer', async (data) => {
-      console.log('Received answer from:', data.userName);
+      console.log('Received answer from:', data.userName, 'from:', data.from);
       const peerConn = peerConnectionsRef.current.get(data.from);
       
-      if (peerConn?.pc && peerConn.pc.signalingState === 'have-local-offer') {
+      if (!peerConn?.pc) {
+        console.warn(`No peer connection found for ${data.userName}`);
+        return;
+      }
+      
+      console.log(`Current signaling state for ${data.userName}: ${peerConn.pc.signalingState}`);
+      
+      if (peerConn.pc.signalingState === 'have-local-offer') {
         try {
           await peerConn.pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+          console.log(`Remote description (answer) set for ${data.userName}, new state: ${peerConn.pc.signalingState}`);
           
           // Process pending ICE candidates
           const pending = pendingCandidatesRef.current.get(data.from) || [];
+          console.log(`Processing ${pending.length} pending ICE candidates for ${data.userName}`);
           for (const candidate of pending) {
             await peerConn.pc.addIceCandidate(new RTCIceCandidate(candidate));
           }
@@ -328,6 +411,8 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
         } catch (error) {
           console.error('Error setting answer:', error);
         }
+      } else {
+        console.warn(`Ignoring answer from ${data.userName}, not in have-local-offer state`);
       }
     });
 
@@ -352,21 +437,29 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
 
     // Participant left
     socket.on('participant-left', (data) => {
-      console.log('Participant left:', data.userName);
-      setParticipants(data.participants.map((p: Participant) => {
-        const existing = peerConnectionsRef.current.get(p.socketId);
-        return {
-          ...p,
-          stream: p.socketId === socket.id ? localStreamRef.current : existing?.stream
-        };
-      }));
+      console.log('Participant left:', data.userName, 'socketId:', data.socketId);
       
-      // Close peer connection
+      // Close peer connection first
       const peerConn = peerConnectionsRef.current.get(data.socketId);
       if (peerConn) {
         peerConn.pc.close();
         peerConnectionsRef.current.delete(data.socketId);
       }
+      
+      setParticipants(prev => {
+        // Map through the updated participants list and preserve existing streams
+        const updated = data.participants.map((p: Participant) => {
+          const existingParticipant = prev.find(ep => ep.socketId === p.socketId);
+          const existingPeerConn = peerConnectionsRef.current.get(p.socketId);
+          return {
+            ...p,
+            stream: p.socketId === socket.id 
+              ? localStreamRef.current 
+              : existingParticipant?.stream || existingPeerConn?.stream || undefined
+          };
+        });
+        return updated;
+      });
       
       toast(`${data.userName} left the meeting`);
     });
@@ -1151,9 +1244,47 @@ const ParticipantVideo: React.FC<{ participant: Participant }> = ({ participant 
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (videoRef.current && participant.stream) {
-      videoRef.current.srcObject = participant.stream;
+    const videoElement = videoRef.current;
+    if (videoElement && participant.stream) {
+      // Check if the stream is different from the current one
+      if (videoElement.srcObject !== participant.stream) {
+        videoElement.srcObject = participant.stream;
+        // Explicitly play the video after setting srcObject
+        videoElement.play().catch(err => {
+          console.log('Remote video play error (will auto-retry):', err);
+          // Retry play on user interaction or after a short delay
+          setTimeout(() => {
+            videoElement.play().catch(e => console.log('Retry play failed:', e));
+          }, 500);
+        });
+      }
     }
+    
+    // Cleanup: Don't clear srcObject on unmount as it may affect other references
+    return () => {
+      if (videoElement) {
+        videoElement.srcObject = null;
+      }
+    };
+  }, [participant.stream]);
+
+  // Also handle when stream tracks are added/updated
+  useEffect(() => {
+    const stream = participant.stream;
+    if (!stream) return;
+
+    const handleTrackAdded = () => {
+      if (videoRef.current && videoRef.current.srcObject !== stream) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(e => console.log('Play on track added:', e));
+      }
+    };
+
+    stream.addEventListener('addtrack', handleTrackAdded);
+    
+    return () => {
+      stream.removeEventListener('addtrack', handleTrackAdded);
+    };
   }, [participant.stream]);
 
   return (
@@ -1161,6 +1292,7 @@ const ParticipantVideo: React.FC<{ participant: Participant }> = ({ participant 
       ref={videoRef}
       autoPlay
       playsInline
+      muted={false}
       className={`w-full h-full object-cover ${participant.isVideoOff ? 'hidden' : ''}`}
     />
   );
