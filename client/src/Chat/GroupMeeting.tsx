@@ -908,26 +908,34 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
     
     // Determine grid layout based on participant count
     let gridClass = '';
+    let containerStyle = '';
     if (participantCount === 1) {
       gridClass = 'grid-cols-1';
+      containerStyle = 'max-w-3xl mx-auto';
     } else if (participantCount === 2) {
       gridClass = 'grid-cols-1 md:grid-cols-2';
+      containerStyle = 'max-w-5xl mx-auto';
     } else if (participantCount <= 4) {
       gridClass = 'grid-cols-2';
+      containerStyle = 'max-w-5xl mx-auto';
     } else if (participantCount <= 6) {
       gridClass = 'grid-cols-2 md:grid-cols-3';
+      containerStyle = 'max-w-6xl mx-auto';
     } else {
       gridClass = 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
+      containerStyle = '';
     }
     
     return (
       <div 
-        className={`grid gap-3 p-4 h-full w-full auto-rows-fr ${gridClass}`}
+        className={`grid gap-3 p-4 h-full w-full ${gridClass} ${containerStyle}`}
+        style={{ gridAutoRows: 'minmax(150px, 1fr)' }}
       >
         {participants.map((participant) => (
           <div
             key={participant.socketId}
-            className="relative bg-gray-800 rounded-xl overflow-hidden flex items-center justify-center min-h-[200px] md:min-h-[250px] aspect-video"
+            className="relative bg-gray-800 rounded-xl overflow-hidden min-h-[150px] md:min-h-[200px]"
+            style={{ aspectRatio: '16/9' }}
           >
             {participant.socketId === socket?.id ? (
               // Local video
@@ -936,7 +944,7 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
                 autoPlay
                 playsInline
                 muted
-                className={`w-full h-full object-cover ${isVideoOff ? 'hidden' : ''}`}
+                className={`absolute inset-0 w-full h-full object-cover ${isVideoOff ? 'hidden' : ''}`}
               />
             ) : (
               // Remote video
@@ -1281,41 +1289,58 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
 // Separate component for participant video to handle refs properly
 const ParticipantVideo: React.FC<{ participant: Participant }> = ({ participant }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     const videoElement = videoRef.current;
-    if (videoElement && participant.stream) {
-      // Check if the stream is different from the current one
-      if (videoElement.srcObject !== participant.stream) {
+    const audioElement = audioRef.current;
+    
+    if (participant.stream) {
+      // Set video stream
+      if (videoElement && videoElement.srcObject !== participant.stream) {
         videoElement.srcObject = participant.stream;
-        // Explicitly play the video after setting srcObject
         videoElement.play().catch(err => {
           console.log('Remote video play error (will auto-retry):', err);
-          // Retry play on user interaction or after a short delay
           setTimeout(() => {
             videoElement.play().catch(e => console.log('Retry play failed:', e));
           }, 500);
         });
       }
+      
+      // Set audio stream separately for better audio handling
+      if (audioElement && audioElement.srcObject !== participant.stream) {
+        audioElement.srcObject = participant.stream;
+        audioElement.play().catch(err => {
+          console.log('Remote audio play error:', err);
+          // Audio autoplay might be blocked - will play on user interaction
+        });
+      }
     }
     
-    // Cleanup: Don't clear srcObject on unmount as it may affect other references
     return () => {
       if (videoElement) {
         videoElement.srcObject = null;
       }
+      if (audioElement) {
+        audioElement.srcObject = null;
+      }
     };
   }, [participant.stream]);
 
-  // Also handle when stream tracks are added/updated
+  // Handle when stream tracks are added/updated
   useEffect(() => {
     const stream = participant.stream;
     if (!stream) return;
 
-    const handleTrackAdded = () => {
+    const handleTrackAdded = (event: MediaStreamTrackEvent) => {
+      console.log('Track added to remote stream:', event.track.kind);
       if (videoRef.current && videoRef.current.srcObject !== stream) {
         videoRef.current.srcObject = stream;
         videoRef.current.play().catch(e => console.log('Play on track added:', e));
+      }
+      if (audioRef.current && audioRef.current.srcObject !== stream) {
+        audioRef.current.srcObject = stream;
+        audioRef.current.play().catch(e => console.log('Audio play on track added:', e));
       }
     };
 
@@ -1327,13 +1352,21 @@ const ParticipantVideo: React.FC<{ participant: Participant }> = ({ participant 
   }, [participant.stream]);
 
   return (
-    <video
-      ref={videoRef}
-      autoPlay
-      playsInline
-      muted={false}
-      className={`w-full h-full object-cover ${participant.isVideoOff ? 'hidden' : ''}`}
-    />
+    <>
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted  // Video element muted - audio handled by separate audio element
+        className={`absolute inset-0 w-full h-full object-cover ${participant.isVideoOff ? 'hidden' : ''}`}
+      />
+      {/* Separate audio element for better audio handling */}
+      <audio
+        ref={audioRef}
+        autoPlay
+        playsInline
+      />
+    </>
   );
 };
 

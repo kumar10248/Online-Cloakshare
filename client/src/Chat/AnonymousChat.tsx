@@ -127,14 +127,48 @@ const AnonymousChat: React.FC = () => {
   React.useEffect(() => {
     if (remoteStream) {
       console.log('📺 Setting remote stream:', remoteStream.getTracks());
+      
+      // Set video element
       if (remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = remoteStream;
-        // Ensure video plays
         remoteVideoRef.current.play().catch(e => console.log('Remote video play error:', e));
       }
+      
+      // Set audio element with robust playback handling for desktop browsers
       if (remoteAudioRef.current) {
-        remoteAudioRef.current.srcObject = remoteStream;
-        remoteAudioRef.current.play().catch(e => console.log('Remote audio play error:', e));
+        const audioElement = remoteAudioRef.current;
+        audioElement.srcObject = remoteStream;
+        audioElement.volume = 1.0;
+        audioElement.muted = false;
+        
+        // Try to play audio
+        const playAudio = () => {
+          audioElement.play()
+            .then(() => {
+              console.log('✅ Remote audio playing successfully');
+            })
+            .catch(e => {
+              console.log('⚠️ Remote audio play blocked:', e.name);
+              // If autoplay was blocked, add a click listener to play on user interaction
+              if (e.name === 'NotAllowedError') {
+                const playOnInteraction = () => {
+                  audioElement.play()
+                    .then(() => {
+                      console.log('✅ Audio started after user interaction');
+                      document.removeEventListener('click', playOnInteraction);
+                      document.removeEventListener('touchstart', playOnInteraction);
+                    })
+                    .catch(err => console.log('Audio play still failed:', err));
+                };
+                document.addEventListener('click', playOnInteraction, { once: true });
+                document.addEventListener('touchstart', playOnInteraction, { once: true });
+                toast('Tap anywhere to enable audio', { icon: '🔊', duration: 3000 });
+              }
+            });
+        };
+        
+        // Slight delay to ensure stream is ready
+        setTimeout(playAudio, 100);
       }
     }
   }, [remoteStream]);
@@ -469,15 +503,26 @@ const AnonymousChat: React.FC = () => {
         pc.ontrack = (event) => {
           console.log('📺 Received remote track (caller):', event.track.kind);
           if (event.streams && event.streams[0]) {
-            setRemoteStream(event.streams[0]);
+            const stream = event.streams[0];
+            setRemoteStream(stream);
+            
             // Set video element directly
             if (remoteVideoRef.current) {
-              remoteVideoRef.current.srcObject = event.streams[0];
+              remoteVideoRef.current.srcObject = stream;
               remoteVideoRef.current.play().catch(e => console.log('Remote video play:', e));
             }
+            
+            // Set audio with explicit unmute and volume for desktop browsers
             if (remoteAudioRef.current) {
-              remoteAudioRef.current.srcObject = event.streams[0];
-              remoteAudioRef.current.play().catch(e => console.log('Remote audio play:', e));
+              const audioEl = remoteAudioRef.current;
+              audioEl.srcObject = stream;
+              audioEl.volume = 1.0;
+              audioEl.muted = false;
+              audioEl.play()
+                .then(() => console.log('✅ Remote audio playing (caller)'))
+                .catch(e => {
+                  console.log('⚠️ Remote audio play blocked (caller):', e);
+                });
             }
           }
         };
@@ -574,15 +619,26 @@ const AnonymousChat: React.FC = () => {
         pc.ontrack = (event) => {
           console.log('📺 Received remote track (receiver):', event.track.kind);
           if (event.streams && event.streams[0]) {
-            setRemoteStream(event.streams[0]);
+            const stream = event.streams[0];
+            setRemoteStream(stream);
+            
             // Set video/audio elements directly
             if (remoteVideoRef.current) {
-              remoteVideoRef.current.srcObject = event.streams[0];
+              remoteVideoRef.current.srcObject = stream;
               remoteVideoRef.current.play().catch(e => console.log('Remote video play:', e));
             }
+            
+            // Set audio with explicit unmute and volume for desktop browsers
             if (remoteAudioRef.current) {
-              remoteAudioRef.current.srcObject = event.streams[0];
-              remoteAudioRef.current.play().catch(e => console.log('Remote audio play:', e));
+              const audioEl = remoteAudioRef.current;
+              audioEl.srcObject = stream;
+              audioEl.volume = 1.0;
+              audioEl.muted = false;
+              audioEl.play()
+                .then(() => console.log('✅ Remote audio playing (receiver)'))
+                .catch(e => {
+                  console.log('⚠️ Remote audio play blocked (receiver):', e);
+                });
             }
           }
         };
@@ -2144,7 +2200,14 @@ const AnonymousChat: React.FC = () => {
                 ref={remoteAudioRef}
                 autoPlay
                 playsInline
+                controls={false}
                 style={{ display: 'none' }}
+                onLoadedMetadata={(e) => {
+                  const audio = e.currentTarget;
+                  audio.volume = 1.0;
+                  audio.muted = false;
+                  audio.play().catch(err => console.log('Audio onLoadedMetadata play:', err));
+                }}
               />
 
               {/* Call Controls */}
