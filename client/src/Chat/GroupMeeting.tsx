@@ -1294,6 +1294,8 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
 const ParticipantVideo: React.FC<{ participant: Participant }> = ({ participant }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
 
   useEffect(() => {
     const videoElement = videoRef.current;
@@ -1301,7 +1303,16 @@ const ParticipantVideo: React.FC<{ participant: Participant }> = ({ participant 
     
     if (participant.stream) {
       console.log('Setting stream for participant, tracks:', participant.stream.getTracks().map(t => t.kind));
-      console.log('Audio tracks:', participant.stream.getAudioTracks().map(t => ({ enabled: t.enabled, muted: t.muted, readyState: t.readyState })));
+      const audioTracks = participant.stream.getAudioTracks();
+      console.log('Audio tracks:', audioTracks.map(t => ({ enabled: t.enabled, muted: t.muted, readyState: t.readyState })));
+      
+      // CRITICAL: Ensure audio tracks are enabled
+      audioTracks.forEach(track => {
+        if (!track.enabled) {
+          console.log('⚠️ Enabling disabled audio track');
+          track.enabled = true;
+        }
+      });
       
       // Set video stream - video element should handle BOTH video and audio now
       if (videoElement && videoElement.srcObject !== participant.stream) {
@@ -1342,6 +1353,49 @@ const ParticipantVideo: React.FC<{ participant: Participant }> = ({ participant 
             .catch(err => console.log('Backup audio blocked:', err.name));
         }, 200);
       }
+      
+      // Web Audio API approach - most reliable for cross-browser audio
+      try {
+        // Clean up previous audio context
+        if (audioSourceRef.current) {
+          audioSourceRef.current.disconnect();
+        }
+        if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+          audioContextRef.current.close();
+        }
+        
+        // Create new audio context
+        const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        const audioContext = new AudioContextClass();
+        audioContextRef.current = audioContext;
+        
+        // Resume audio context (required for autoplay policy)
+        if (audioContext.state === 'suspended') {
+          audioContext.resume().then(() => {
+            console.log('✅ AudioContext resumed');
+          });
+        }
+        
+        // Create source from stream and connect to speakers
+        const source = audioContext.createMediaStreamSource(participant.stream);
+        audioSourceRef.current = source;
+        source.connect(audioContext.destination);
+        console.log('✅ Web Audio API: Connected participant audio to speakers');
+        
+        // Add click handler to resume if suspended
+        const resumeAudio = () => {
+          if (audioContext.state === 'suspended') {
+            audioContext.resume().then(() => {
+              console.log('✅ AudioContext resumed after interaction');
+            });
+          }
+          document.removeEventListener('click', resumeAudio);
+        };
+        document.addEventListener('click', resumeAudio, { once: true });
+        
+      } catch (webAudioError) {
+        console.log('Web Audio API error (fallback to regular audio):', webAudioError);
+      }
     }
     
     return () => {
@@ -1350,6 +1404,13 @@ const ParticipantVideo: React.FC<{ participant: Participant }> = ({ participant 
       }
       if (audioElement) {
         audioElement.srcObject = null;
+      }
+      // Cleanup audio context
+      if (audioSourceRef.current) {
+        try { audioSourceRef.current.disconnect(); } catch (e) { /* ignore */ }
+      }
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        try { audioContextRef.current.close(); } catch (e) { /* ignore */ }
       }
     };
   }, [participant.stream]);
@@ -1361,6 +1422,10 @@ const ParticipantVideo: React.FC<{ participant: Participant }> = ({ participant 
 
     const handleTrackAdded = (event: MediaStreamTrackEvent) => {
       console.log('Track added to remote stream:', event.track.kind);
+      // Enable the track if it's audio
+      if (event.track.kind === 'audio') {
+        event.track.enabled = true;
+      }
       if (videoRef.current && videoRef.current.srcObject !== stream) {
         videoRef.current.srcObject = stream;
         videoRef.current.play().catch(e => console.log('Play on track added:', e));
@@ -1377,6 +1442,7 @@ const ParticipantVideo: React.FC<{ participant: Participant }> = ({ participant 
       stream.removeEventListener('addtrack', handleTrackAdded);
     };
   }, [participant.stream]);
+
 
   return (
     <>

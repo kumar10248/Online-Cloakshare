@@ -110,6 +110,8 @@ const AnonymousChat: React.FC = () => {
   const [isScreenShareSupported, setIsScreenShareSupported] = useState(false);
   const screenStreamRef = useRef<MediaStream | null>(null);
   const callTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
 
   // Refs - declare before useEffects that use them
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -127,7 +129,16 @@ const AnonymousChat: React.FC = () => {
   React.useEffect(() => {
     if (remoteStream) {
       console.log('📺 Setting remote stream:', remoteStream.getTracks());
-      console.log('📺 Audio tracks:', remoteStream.getAudioTracks().map(t => ({ id: t.id, enabled: t.enabled, muted: t.muted, readyState: t.readyState })));
+      const audioTracks = remoteStream.getAudioTracks();
+      console.log('📺 Audio tracks:', audioTracks.map(t => ({ id: t.id, enabled: t.enabled, muted: t.muted, readyState: t.readyState })));
+      
+      // CRITICAL: Ensure audio tracks are enabled
+      audioTracks.forEach(track => {
+        if (!track.enabled) {
+          console.log('⚠️ Enabling disabled audio track');
+          track.enabled = true;
+        }
+      });
       
       // Set video element - this should handle BOTH video and audio
       if (remoteVideoRef.current) {
@@ -169,7 +180,57 @@ const AnonymousChat: React.FC = () => {
             .catch(e => console.log('Backup audio play blocked:', e.name));
         }, 200);
       }
+      
+      // Web Audio API approach - most reliable for cross-browser audio
+      try {
+        // Clean up previous audio context
+        if (audioSourceRef.current) {
+          audioSourceRef.current.disconnect();
+        }
+        if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+          audioContextRef.current.close();
+        }
+        
+        // Create new audio context
+        const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        const audioContext = new AudioContextClass();
+        audioContextRef.current = audioContext;
+        
+        // Resume audio context (required for autoplay policy)
+        if (audioContext.state === 'suspended') {
+          audioContext.resume().then(() => {
+            console.log('✅ AudioContext resumed');
+          });
+        }
+        
+        // Create source from stream and connect to speakers
+        const source = audioContext.createMediaStreamSource(remoteStream);
+        audioSourceRef.current = source;
+        source.connect(audioContext.destination);
+        console.log('✅ Web Audio API: Connected remote audio to speakers');
+        
+        // Add click handler to resume if suspended
+        const resumeAudio = () => {
+          if (audioContext.state === 'suspended') {
+            audioContext.resume().then(() => {
+              console.log('✅ AudioContext resumed after interaction');
+            });
+          }
+          document.removeEventListener('click', resumeAudio);
+        };
+        document.addEventListener('click', resumeAudio, { once: true });
+        
+      } catch (webAudioError) {
+        console.log('Web Audio API error (fallback to regular audio):', webAudioError);
+      }
     }
+    
+    // Cleanup
+    return () => {
+      if (audioSourceRef.current) {
+        try { audioSourceRef.current.disconnect(); } catch (e) { /* ignore */ }
+      }
+    };
   }, [remoteStream]);
 
   // Set local video when localStream changes
