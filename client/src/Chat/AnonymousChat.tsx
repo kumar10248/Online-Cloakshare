@@ -110,8 +110,6 @@ const AnonymousChat: React.FC = () => {
   const [isScreenShareSupported, setIsScreenShareSupported] = useState(false);
   const screenStreamRef = useRef<MediaStream | null>(null);
   const callTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const audioSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
 
   // Refs - declare before useEffects that use them
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -125,112 +123,64 @@ const AnonymousChat: React.FC = () => {
   const localStreamRef = useRef<MediaStream | null>(null);
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
 
-  // Set remote video/audio when remoteStream changes
+  // Set remote video/audio when remoteStream changes - SIMPLIFIED
   React.useEffect(() => {
-    if (remoteStream) {
-      console.log('📺 Setting remote stream:', remoteStream.getTracks());
-      const audioTracks = remoteStream.getAudioTracks();
-      console.log('📺 Audio tracks:', audioTracks.map(t => ({ id: t.id, enabled: t.enabled, muted: t.muted, readyState: t.readyState })));
-      
-      // CRITICAL: Ensure audio tracks are enabled
-      audioTracks.forEach(track => {
-        if (!track.enabled) {
-          console.log('⚠️ Enabling disabled audio track');
-          track.enabled = true;
-        }
-      });
-      
-      // Set video element - this should handle BOTH video and audio
-      if (remoteVideoRef.current) {
-        const videoElement = remoteVideoRef.current;
-        videoElement.srcObject = remoteStream;
-        videoElement.muted = false;  // Ensure not muted
-        videoElement.volume = 1.0;   // Full volume
-        
-        videoElement.play()
-          .then(() => console.log('✅ Remote video+audio playing'))
-          .catch(e => {
-            console.log('⚠️ Remote video play error:', e.name);
-            // If autoplay blocked, play on user interaction
-            if (e.name === 'NotAllowedError') {
-              const playOnClick = () => {
-                videoElement.muted = false;
-                videoElement.volume = 1.0;
-                videoElement.play()
-                  .then(() => console.log('✅ Video+audio started after interaction'))
-                  .catch(err => console.log('Video play still failed:', err));
-                document.removeEventListener('click', playOnClick);
-              };
-              document.addEventListener('click', playOnClick, { once: true });
-              toast('Tap anywhere to enable audio', { icon: '🔊', duration: 3000 });
-            }
-          });
-      }
-      
-      // ALSO set backup audio element for redundancy
-      if (remoteAudioRef.current) {
-        const audioElement = remoteAudioRef.current;
-        audioElement.srcObject = remoteStream;
-        audioElement.volume = 1.0;
-        audioElement.muted = false;
-        
-        setTimeout(() => {
-          audioElement.play()
-            .then(() => console.log('✅ Backup audio element playing'))
-            .catch(e => console.log('Backup audio play blocked:', e.name));
-        }, 200);
-      }
-      
-      // Web Audio API approach - most reliable for cross-browser audio
-      try {
-        // Clean up previous audio context
-        if (audioSourceRef.current) {
-          audioSourceRef.current.disconnect();
-        }
-        if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-          audioContextRef.current.close();
-        }
-        
-        // Create new audio context
-        const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-        const audioContext = new AudioContextClass();
-        audioContextRef.current = audioContext;
-        
-        // Resume audio context (required for autoplay policy)
-        if (audioContext.state === 'suspended') {
-          audioContext.resume().then(() => {
-            console.log('✅ AudioContext resumed');
-          });
-        }
-        
-        // Create source from stream and connect to speakers
-        const source = audioContext.createMediaStreamSource(remoteStream);
-        audioSourceRef.current = source;
-        source.connect(audioContext.destination);
-        console.log('✅ Web Audio API: Connected remote audio to speakers');
-        
-        // Add click handler to resume if suspended
-        const resumeAudio = () => {
-          if (audioContext.state === 'suspended') {
-            audioContext.resume().then(() => {
-              console.log('✅ AudioContext resumed after interaction');
-            });
-          }
-          document.removeEventListener('click', resumeAudio);
-        };
-        document.addEventListener('click', resumeAudio, { once: true });
-        
-      } catch (webAudioError) {
-        console.log('Web Audio API error (fallback to regular audio):', webAudioError);
-      }
-    }
+    if (!remoteStream) return;
     
-    // Cleanup
-    return () => {
-      if (audioSourceRef.current) {
-        try { audioSourceRef.current.disconnect(); } catch (e) { /* ignore */ }
+    console.log('📺 Setting remote stream:', remoteStream.getTracks().map(t => t.kind));
+    const audioTracks = remoteStream.getAudioTracks();
+    console.log('📺 Audio tracks:', audioTracks.map(t => ({ enabled: t.enabled, readyState: t.readyState })));
+    
+    // Ensure audio tracks are enabled
+    audioTracks.forEach(track => {
+      track.enabled = true;
+    });
+    
+    // Use a small delay to avoid race conditions with multiple srcObject assignments
+    const setupMedia = () => {
+      // Set video element (handles both video and audio)
+      if (remoteVideoRef.current) {
+        const video = remoteVideoRef.current;
+        if (video.srcObject !== remoteStream) {
+          video.srcObject = remoteStream;
+        }
+        video.muted = false;
+        video.volume = 1.0;
+        
+        const playPromise = video.play();
+        if (playPromise) {
+          playPromise
+            .then(() => console.log('✅ Remote video+audio playing'))
+            .catch(e => {
+              if (e.name === 'NotAllowedError') {
+                console.log('⚠️ Autoplay blocked, waiting for user interaction');
+                const playOnClick = () => {
+                  video.play().catch(() => {});
+                  document.removeEventListener('click', playOnClick);
+                };
+                document.addEventListener('click', playOnClick, { once: true });
+                toast('Tap anywhere to enable audio', { icon: '🔊', duration: 3000 });
+              }
+              // Ignore AbortError - it's just race condition
+            });
+        }
+      }
+      
+      // Set hidden audio element as backup (don't call play - let autoplay handle it)
+      if (remoteAudioRef.current) {
+        const audio = remoteAudioRef.current;
+        if (audio.srcObject !== remoteStream) {
+          audio.srcObject = remoteStream;
+        }
+        audio.volume = 1.0;
+        audio.muted = false;
+        // Let autoPlay attribute handle this, don't call play()
       }
     };
+    
+    // Small delay to let other assignments complete first
+    setTimeout(setupMedia, 100);
+    
   }, [remoteStream]);
 
   // Set local video when localStream changes
@@ -563,27 +513,8 @@ const AnonymousChat: React.FC = () => {
         pc.ontrack = (event) => {
           console.log('📺 Received remote track (caller):', event.track.kind);
           if (event.streams && event.streams[0]) {
-            const stream = event.streams[0];
-            setRemoteStream(stream);
-            
-            // Set video element directly
-            if (remoteVideoRef.current) {
-              remoteVideoRef.current.srcObject = stream;
-              remoteVideoRef.current.play().catch(e => console.log('Remote video play:', e));
-            }
-            
-            // Set audio with explicit unmute and volume for desktop browsers
-            if (remoteAudioRef.current) {
-              const audioEl = remoteAudioRef.current;
-              audioEl.srcObject = stream;
-              audioEl.volume = 1.0;
-              audioEl.muted = false;
-              audioEl.play()
-                .then(() => console.log('✅ Remote audio playing (caller)'))
-                .catch(e => {
-                  console.log('⚠️ Remote audio play blocked (caller):', e);
-                });
-            }
+            // Just set the stream - useEffect will handle playback
+            setRemoteStream(event.streams[0]);
           }
         };
 
@@ -611,14 +542,7 @@ const AnonymousChat: React.FC = () => {
           }
         };
 
-        // Add transceivers FIRST to ensure bidirectional communication
-        // This is critical for mobile-to-desktop audio
-        pc.addTransceiver('audio', { direction: 'sendrecv' });
-        if (acceptedCallType === 'video') {
-          pc.addTransceiver('video', { direction: 'sendrecv' });
-        }
-
-        // Add local tracks
+        // Add local tracks - addTrack creates transceivers automatically
         stream.getTracks().forEach(track => {
           console.log('Adding track:', track.kind, 'enabled:', track.enabled);
           pc.addTrack(track, stream);
@@ -690,27 +614,8 @@ const AnonymousChat: React.FC = () => {
         pc.ontrack = (event) => {
           console.log('📺 Received remote track (receiver):', event.track.kind);
           if (event.streams && event.streams[0]) {
-            const stream = event.streams[0];
-            setRemoteStream(stream);
-            
-            // Set video/audio elements directly
-            if (remoteVideoRef.current) {
-              remoteVideoRef.current.srcObject = stream;
-              remoteVideoRef.current.play().catch(e => console.log('Remote video play:', e));
-            }
-            
-            // Set audio with explicit unmute and volume for desktop browsers
-            if (remoteAudioRef.current) {
-              const audioEl = remoteAudioRef.current;
-              audioEl.srcObject = stream;
-              audioEl.volume = 1.0;
-              audioEl.muted = false;
-              audioEl.play()
-                .then(() => console.log('✅ Remote audio playing (receiver)'))
-                .catch(e => {
-                  console.log('⚠️ Remote audio play blocked (receiver):', e);
-                });
-            }
+            // Just set the stream - useEffect will handle playback
+            setRemoteStream(event.streams[0]);
           }
         };
 
@@ -773,15 +678,9 @@ const AnonymousChat: React.FC = () => {
           localVideoRef.current.srcObject = stream;
           localVideoRef.current.play().catch(e => console.log('Local video play:', e));
         }
-
-        // Add transceivers FIRST to ensure bidirectional communication
-        // This is critical for mobile-to-desktop audio
-        pc.addTransceiver('audio', { direction: 'sendrecv' });
-        if (incomingCallType === 'video') {
-          pc.addTransceiver('video', { direction: 'sendrecv' });
-        }
         
         // Add local tracks BEFORE setting remote description
+        // addTrack creates transceivers automatically
         stream.getTracks().forEach(track => {
           console.log('Adding track:', track.kind, 'enabled:', track.enabled);
           pc.addTrack(track, stream);
