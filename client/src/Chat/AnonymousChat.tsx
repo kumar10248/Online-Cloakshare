@@ -127,48 +127,47 @@ const AnonymousChat: React.FC = () => {
   React.useEffect(() => {
     if (remoteStream) {
       console.log('📺 Setting remote stream:', remoteStream.getTracks());
+      console.log('📺 Audio tracks:', remoteStream.getAudioTracks().map(t => ({ id: t.id, enabled: t.enabled, muted: t.muted, readyState: t.readyState })));
       
-      // Set video element
+      // Set video element - this should handle BOTH video and audio
       if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = remoteStream;
-        remoteVideoRef.current.play().catch(e => console.log('Remote video play error:', e));
+        const videoElement = remoteVideoRef.current;
+        videoElement.srcObject = remoteStream;
+        videoElement.muted = false;  // Ensure not muted
+        videoElement.volume = 1.0;   // Full volume
+        
+        videoElement.play()
+          .then(() => console.log('✅ Remote video+audio playing'))
+          .catch(e => {
+            console.log('⚠️ Remote video play error:', e.name);
+            // If autoplay blocked, play on user interaction
+            if (e.name === 'NotAllowedError') {
+              const playOnClick = () => {
+                videoElement.muted = false;
+                videoElement.volume = 1.0;
+                videoElement.play()
+                  .then(() => console.log('✅ Video+audio started after interaction'))
+                  .catch(err => console.log('Video play still failed:', err));
+                document.removeEventListener('click', playOnClick);
+              };
+              document.addEventListener('click', playOnClick, { once: true });
+              toast('Tap anywhere to enable audio', { icon: '🔊', duration: 3000 });
+            }
+          });
       }
       
-      // Set audio element with robust playback handling for desktop browsers
+      // ALSO set backup audio element for redundancy
       if (remoteAudioRef.current) {
         const audioElement = remoteAudioRef.current;
         audioElement.srcObject = remoteStream;
         audioElement.volume = 1.0;
         audioElement.muted = false;
         
-        // Try to play audio
-        const playAudio = () => {
+        setTimeout(() => {
           audioElement.play()
-            .then(() => {
-              console.log('✅ Remote audio playing successfully');
-            })
-            .catch(e => {
-              console.log('⚠️ Remote audio play blocked:', e.name);
-              // If autoplay was blocked, add a click listener to play on user interaction
-              if (e.name === 'NotAllowedError') {
-                const playOnInteraction = () => {
-                  audioElement.play()
-                    .then(() => {
-                      console.log('✅ Audio started after user interaction');
-                      document.removeEventListener('click', playOnInteraction);
-                      document.removeEventListener('touchstart', playOnInteraction);
-                    })
-                    .catch(err => console.log('Audio play still failed:', err));
-                };
-                document.addEventListener('click', playOnInteraction, { once: true });
-                document.addEventListener('touchstart', playOnInteraction, { once: true });
-                toast('Tap anywhere to enable audio', { icon: '🔊', duration: 3000 });
-              }
-            });
-        };
-        
-        // Slight delay to ensure stream is ready
-        setTimeout(playAudio, 100);
+            .then(() => console.log('✅ Backup audio element playing'))
+            .catch(e => console.log('Backup audio play blocked:', e.name));
+        }, 200);
       }
     }
   }, [remoteStream]);
@@ -2049,17 +2048,24 @@ const AnonymousChat: React.FC = () => {
               <div className="absolute inset-0 flex items-center justify-center" style={{ top: 0, bottom: 0, left: 0, right: 0 }}>
                 {callType === 'video' ? (
                   <>
-                    {/* Remote Video - Full Screen */}
+                    {/* Remote Video - Full Screen (with audio) */}
                     <video
                       ref={remoteVideoRef}
                       autoPlay
                       playsInline
+                      muted={false}
                       className="absolute inset-0 w-full h-full"
                       style={{ 
                         backgroundColor: '#1a1a1a',
                         objectFit: 'contain',
                         maxWidth: '100%',
                         maxHeight: '100%'
+                      }}
+                      onLoadedMetadata={(e) => {
+                        const video = e.currentTarget;
+                        video.muted = false;
+                        video.volume = 1.0;
+                        video.play().catch(err => console.log('Video onLoadedMetadata play:', err));
                       }}
                     />
                     

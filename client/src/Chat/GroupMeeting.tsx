@@ -1300,44 +1300,47 @@ const ParticipantVideo: React.FC<{ participant: Participant }> = ({ participant 
     const audioElement = audioRef.current;
     
     if (participant.stream) {
-      // Set video stream
+      console.log('Setting stream for participant, tracks:', participant.stream.getTracks().map(t => t.kind));
+      console.log('Audio tracks:', participant.stream.getAudioTracks().map(t => ({ enabled: t.enabled, muted: t.muted, readyState: t.readyState })));
+      
+      // Set video stream - video element should handle BOTH video and audio now
       if (videoElement && videoElement.srcObject !== participant.stream) {
         videoElement.srcObject = participant.stream;
-        videoElement.play().catch(err => {
-          console.log('Remote video play error (will auto-retry):', err);
-          setTimeout(() => {
-            videoElement.play().catch(e => console.log('Retry play failed:', e));
-          }, 500);
-        });
+        videoElement.muted = false;  // IMPORTANT: unmute to hear audio
+        videoElement.volume = 1.0;
+        
+        videoElement.play()
+          .then(() => console.log('✅ Video+audio playing for participant'))
+          .catch(err => {
+            console.log('Video+audio play error:', err.name);
+            if (err.name === 'NotAllowedError') {
+              const playOnClick = () => {
+                videoElement.muted = false;
+                videoElement.volume = 1.0;
+                videoElement.play().catch(e => console.log('Retry failed:', e));
+                document.removeEventListener('click', playOnClick);
+              };
+              document.addEventListener('click', playOnClick, { once: true });
+            }
+            // Retry after delay
+            setTimeout(() => {
+              videoElement.muted = false;
+              videoElement.play().catch(e => console.log('Retry play failed:', e));
+            }, 500);
+          });
       }
       
-      // Set audio stream separately for better audio handling
+      // ALSO set backup audio element for redundancy
       if (audioElement && audioElement.srcObject !== participant.stream) {
         audioElement.srcObject = participant.stream;
-        // Explicitly set volume and unmute for desktop browsers
         audioElement.volume = 1.0;
         audioElement.muted = false;
         
-        const playAudio = () => {
+        setTimeout(() => {
           audioElement.play()
-            .then(() => console.log('✅ Remote audio playing for participant'))
-            .catch(err => {
-              console.log('⚠️ Remote audio play blocked:', err.name);
-              if (err.name === 'NotAllowedError') {
-                // Add click listener to play on user interaction
-                const playOnClick = () => {
-                  audioElement.volume = 1.0;
-                  audioElement.muted = false;
-                  audioElement.play().catch(e => console.log('Audio still blocked:', e));
-                  document.removeEventListener('click', playOnClick);
-                };
-                document.addEventListener('click', playOnClick, { once: true });
-              }
-            });
-        };
-        
-        // Small delay to ensure stream is ready
-        setTimeout(playAudio, 100);
+            .then(() => console.log('✅ Backup audio playing'))
+            .catch(err => console.log('Backup audio blocked:', err.name));
+        }, 200);
       }
     }
     
@@ -1377,23 +1380,31 @@ const ParticipantVideo: React.FC<{ participant: Participant }> = ({ participant 
 
   return (
     <>
+      {/* Video element handles BOTH video and audio */}
       <video
         ref={videoRef}
         autoPlay
         playsInline
-        muted  // Video element muted - audio handled by separate audio element
+        muted={false}
         className={`absolute inset-0 w-full h-full object-cover ${participant.isVideoOff ? 'hidden' : ''}`}
+        onLoadedMetadata={(e) => {
+          const video = e.currentTarget;
+          video.muted = false;
+          video.volume = 1.0;
+          video.play().catch(err => console.log('Video+Audio onLoadedMetadata play:', err));
+        }}
       />
-      {/* Separate audio element for better audio handling */}
+      {/* Backup audio element in case video element doesn't play audio properly */}
       <audio
         ref={audioRef}
         autoPlay
         playsInline
+        style={{ display: 'none' }}
         onLoadedMetadata={(e) => {
           const audio = e.currentTarget;
           audio.volume = 1.0;
           audio.muted = false;
-          audio.play().catch(err => console.log('Audio onLoadedMetadata play:', err));
+          audio.play().catch(err => console.log('Backup audio play:', err));
         }}
       />
     </>
