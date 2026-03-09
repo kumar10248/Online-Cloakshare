@@ -430,8 +430,8 @@ const AnonymousChat: React.FC = () => {
             audio: { 
               echoCancellation: true, 
               noiseSuppression: true, 
-              autoGainControl: true,
-              sampleRate: 48000
+              autoGainControl: true
+              // Note: Removed sampleRate to improve cross-platform compatibility
             },
             video: acceptedCallType === 'video' ? { 
               width: { ideal: 1280, min: 320 }, 
@@ -674,8 +674,8 @@ const AnonymousChat: React.FC = () => {
             audio: { 
               echoCancellation: true, 
               noiseSuppression: true,
-              autoGainControl: true,
-              sampleRate: 48000
+              autoGainControl: true
+              // Note: Removed sampleRate to improve cross-platform compatibility
             },
             video: incomingCallType === 'video' ? { 
               width: { ideal: 1280, min: 320 }, 

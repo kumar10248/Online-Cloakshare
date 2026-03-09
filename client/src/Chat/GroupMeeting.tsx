@@ -572,7 +572,11 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
   const getLocalStream = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true },
+        audio: { 
+          echoCancellation: true, 
+          noiseSuppression: true,
+          autoGainControl: true
+        },
         video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }
       });
       localStreamRef.current = stream;
@@ -1310,10 +1314,30 @@ const ParticipantVideo: React.FC<{ participant: Participant }> = ({ participant 
       // Set audio stream separately for better audio handling
       if (audioElement && audioElement.srcObject !== participant.stream) {
         audioElement.srcObject = participant.stream;
-        audioElement.play().catch(err => {
-          console.log('Remote audio play error:', err);
-          // Audio autoplay might be blocked - will play on user interaction
-        });
+        // Explicitly set volume and unmute for desktop browsers
+        audioElement.volume = 1.0;
+        audioElement.muted = false;
+        
+        const playAudio = () => {
+          audioElement.play()
+            .then(() => console.log('✅ Remote audio playing for participant'))
+            .catch(err => {
+              console.log('⚠️ Remote audio play blocked:', err.name);
+              if (err.name === 'NotAllowedError') {
+                // Add click listener to play on user interaction
+                const playOnClick = () => {
+                  audioElement.volume = 1.0;
+                  audioElement.muted = false;
+                  audioElement.play().catch(e => console.log('Audio still blocked:', e));
+                  document.removeEventListener('click', playOnClick);
+                };
+                document.addEventListener('click', playOnClick, { once: true });
+              }
+            });
+        };
+        
+        // Small delay to ensure stream is ready
+        setTimeout(playAudio, 100);
       }
     }
     
@@ -1365,6 +1389,12 @@ const ParticipantVideo: React.FC<{ participant: Participant }> = ({ participant 
         ref={audioRef}
         autoPlay
         playsInline
+        onLoadedMetadata={(e) => {
+          const audio = e.currentTarget;
+          audio.volume = 1.0;
+          audio.muted = false;
+          audio.play().catch(err => console.log('Audio onLoadedMetadata play:', err));
+        }}
       />
     </>
   );
