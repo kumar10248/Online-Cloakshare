@@ -140,27 +140,46 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
 
     pc.ontrack = (event) => {
       console.log(`Received track from ${targetUserName}:`, event.track.kind, 'streams:', event.streams.length);
+      
+      let remoteStream: MediaStream;
+      
       if (event.streams && event.streams[0]) {
-        const remoteStream = event.streams[0];
-        console.log(`Setting remote stream for ${targetUserName}, tracks:`, remoteStream.getTracks().map(t => t.kind));
-        
-        // Update the peer connection's stream reference
+        remoteStream = event.streams[0];
+      } else {
+        // Handle case where track arrives without associated stream
+        // Create a new MediaStream and add the track to it
+        console.log(`No stream associated with track from ${targetUserName}, creating new stream`);
         const peerConn = peerConnectionsRef.current.get(targetSocketId);
-        if (peerConn) {
-          peerConn.stream = remoteStream;
+        if (peerConn?.stream) {
+          // Add track to existing stream
+          remoteStream = peerConn.stream;
+          if (!remoteStream.getTracks().includes(event.track)) {
+            remoteStream.addTrack(event.track);
+          }
+        } else {
+          // Create new stream
+          remoteStream = new MediaStream([event.track]);
         }
-        
-        // Update participants state with the new stream
-        setParticipants(prev => {
-          const updated = prev.map(p => 
-            p.socketId === targetSocketId 
-              ? { ...p, stream: remoteStream } 
-              : p
-          );
-          console.log(`Updated participants, ${targetUserName} now has stream:`, updated.find(p => p.socketId === targetSocketId)?.stream ? 'yes' : 'no');
-          return updated;
-        });
       }
+      
+      console.log(`Setting remote stream for ${targetUserName}, tracks:`, remoteStream.getTracks().map(t => t.kind));
+      
+      // Update the peer connection's stream reference
+      const peerConn = peerConnectionsRef.current.get(targetSocketId);
+      if (peerConn) {
+        peerConn.stream = remoteStream;
+      }
+      
+      // Update participants state with the new stream
+      setParticipants(prev => {
+        const updated = prev.map(p => 
+          p.socketId === targetSocketId 
+            ? { ...p, stream: remoteStream } 
+            : p
+        );
+        console.log(`Updated participants, ${targetUserName} now has stream:`, updated.find(p => p.socketId === targetSocketId)?.stream ? 'yes' : 'no');
+        return updated;
+      });
     };
 
     pc.oniceconnectionstatechange = () => {
@@ -293,12 +312,22 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
         }
       }, 100);
 
-      // Request peer connections with existing participants
-      data.participants.forEach((p: Participant) => {
-        if (p.socketId !== socket.id) {
-          socket.emit('meeting-request-peer-connection', { targetSocketId: p.socketId });
-        }
-      });
+      // Request peer connections with existing participants after a delay
+      // This gives existing participants time to set up first
+      setTimeout(() => {
+        data.participants.forEach((p: Participant) => {
+          if (p.socketId !== socket.id) {
+            // Check if connection already exists (may have been initiated by existing participant)
+            const existingConn = peerConnectionsRef.current.get(p.socketId);
+            if (!existingConn || existingConn.pc.signalingState === 'closed') {
+              console.log('Requesting peer connection with:', p.userName);
+              socket.emit('meeting-request-peer-connection', { targetSocketId: p.socketId });
+            } else {
+              console.log('Connection already exists with:', p.userName, 'state:', existingConn.pc.signalingState);
+            }
+          }
+        });
+      }, 1000);
     });
 
     // New participant joined
@@ -326,6 +355,16 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
       });
       
       toast.success(`${data.userName} joined the meeting`);
+      
+      // Existing participants should initiate peer connection with the new joiner
+      // This ensures bidirectional video/audio communication
+      if (data.socketId !== socket.id) {
+        console.log('Initiating peer connection with new participant:', data.userName);
+        // Small delay to ensure the new participant is ready
+        setTimeout(() => {
+          initiatePeerConnection(data.socketId, data.userName);
+        }, 500);
+      }
     });
 
     // Peer connection request - initiate connection
