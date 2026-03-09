@@ -200,12 +200,17 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
       console.log(`Negotiation needed for ${targetUserName}`);
     };
 
+    // Add transceivers FIRST to ensure bidirectional audio/video
+    // This is critical for mobile-to-desktop audio
+    pc.addTransceiver('audio', { direction: 'sendrecv' });
+    pc.addTransceiver('video', { direction: 'sendrecv' });
+
     // Add local tracks
     const stream = localStreamRef.current;
     if (stream) {
       console.log(`Adding ${stream.getTracks().length} local tracks to peer connection for ${targetUserName}`);
       stream.getTracks().forEach(track => {
-        console.log(`Adding track: ${track.kind} to ${targetUserName}`);
+        console.log(`Adding track: ${track.kind} to ${targetUserName}, enabled: ${track.enabled}`);
         pc.addTrack(track, stream);
       });
     } else {

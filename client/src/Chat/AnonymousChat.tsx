@@ -611,9 +611,16 @@ const AnonymousChat: React.FC = () => {
           }
         };
 
-        // Add local tracks BEFORE creating offer
+        // Add transceivers FIRST to ensure bidirectional communication
+        // This is critical for mobile-to-desktop audio
+        pc.addTransceiver('audio', { direction: 'sendrecv' });
+        if (acceptedCallType === 'video') {
+          pc.addTransceiver('video', { direction: 'sendrecv' });
+        }
+
+        // Add local tracks
         stream.getTracks().forEach(track => {
-          console.log('Adding track:', track.kind);
+          console.log('Adding track:', track.kind, 'enabled:', track.enabled);
           pc.addTrack(track, stream);
         });
 
@@ -622,6 +629,10 @@ const AnonymousChat: React.FC = () => {
           offerToReceiveAudio: true,
           offerToReceiveVideo: acceptedCallType === 'video'
         });
+        
+        // Log SDP to verify audio is included
+        console.log('📝 Offer SDP contains audio:', offer.sdp?.includes('m=audio'));
+        
         await pc.setLocalDescription(offer);
 
         socketInstance.emit('webrtc-offer', { offer: pc.localDescription, callType: acceptedCallType });
@@ -762,15 +773,25 @@ const AnonymousChat: React.FC = () => {
           localVideoRef.current.srcObject = stream;
           localVideoRef.current.play().catch(e => console.log('Local video play:', e));
         }
+
+        // Add transceivers FIRST to ensure bidirectional communication
+        // This is critical for mobile-to-desktop audio
+        pc.addTransceiver('audio', { direction: 'sendrecv' });
+        if (incomingCallType === 'video') {
+          pc.addTransceiver('video', { direction: 'sendrecv' });
+        }
         
         // Add local tracks BEFORE setting remote description
         stream.getTracks().forEach(track => {
-          console.log('Adding track:', track.kind);
+          console.log('Adding track:', track.kind, 'enabled:', track.enabled);
           pc.addTrack(track, stream);
         });
         
         // Set remote description (the offer)
         await pc.setRemoteDescription(new RTCSessionDescription(offer));
+        
+        // Log to verify audio is in the offer
+        console.log('📝 Received offer contains audio:', offer.sdp?.includes('m=audio'));
         
         // Process any pending ICE candidates
         for (const candidate of pendingCandidatesRef.current) {
