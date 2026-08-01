@@ -242,47 +242,70 @@ const RedactPDF: React.FC<RedactPDFProps> = ({ isOpen, onClose }) => {
 
   // Secure Save: Rasterizes each page into an image so text is permanently gone
   const saveRedactedPDF = async () => {
-    if (!file || pages.length === 0) return;
+    if (!file || pages.length === 0 || !pdfRef) return;
 
     setIsSaving(true);
     
     try {
       const newPdf = await PDFDocument.create();
       
+      const SAVE_SCALE = 2.5; // High resolution scale for reading quality
+      
       for (let i = 0; i < pages.length; i++) {
         const sourceCanvas = canvasRefs.current[i];
         if (!sourceCanvas) continue;
         
-        // Create a temporary canvas to draw the redactions without polluting the UI canvas
+        const pageData = pages[i];
+        const pdfPage = await pdfRef.getPage(pageData.pageNumber);
+        const saveViewport = pdfPage.getViewport({ scale: SAVE_SCALE });
+        
+        // Create a temporary canvas for high-res rendering
         const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = sourceCanvas.width;
-        tempCanvas.height = sourceCanvas.height;
+        tempCanvas.width = saveViewport.width;
+        tempCanvas.height = saveViewport.height;
         const tempCtx = tempCanvas.getContext('2d')!;
         
-        // Copy the original page image
-        tempCtx.drawImage(sourceCanvas, 0, 0);
+        // Fill white background
+        tempCtx.fillStyle = '#ffffff';
+        tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+        
+        // Render high-res PDF to tempCanvas
+        await pdfPage.render({
+          canvasContext: tempCtx,
+          viewport: saveViewport,
+        }).promise;
+        
+        // Scale redaction boxes from display scale (1.5) to SAVE_SCALE (2.5)
+        const scaleMultiplier = SAVE_SCALE / 1.5;
         
         // Draw the redaction boxes
         const pageRedactions = redactions[i] || [];
         tempCtx.fillStyle = '#000000';
         for (const box of pageRedactions) {
-          tempCtx.fillRect(box.x, box.y, box.width, box.height);
+          tempCtx.fillRect(
+            box.x * scaleMultiplier, 
+            box.y * scaleMultiplier, 
+            box.width * scaleMultiplier, 
+            box.height * scaleMultiplier
+          );
         }
         
-        // Convert the modified page to a JPEG image
-        const imgDataUrl = tempCanvas.toDataURL('image/jpeg', 0.90);
+        // Convert the high-res page to a PNG image for lossless text quality
+        const imgDataUrl = tempCanvas.toDataURL('image/png');
         const base64Data = imgDataUrl.split(',')[1];
         const imgBytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
         
-        const jpgImage = await newPdf.embedJpg(imgBytes);
+        const pngImage = await newPdf.embedPng(imgBytes);
         
-        // Add a page matching the image dimensions
-        const page = newPdf.addPage([sourceCanvas.width, sourceCanvas.height]);
-        page.drawImage(jpgImage, {
+        // Add a page matching the original 1.0 scale dimensions, drawing the high-res image into it
+        // This packs more pixels into the same physical page size, resulting in a high-DPI PDF
+        const originalViewport = pdfPage.getViewport({ scale: 1.0 });
+        const page = newPdf.addPage([originalViewport.width, originalViewport.height]);
+        page.drawImage(pngImage, {
           x: 0,
           y: 0,
-          width: sourceCanvas.width,
-          height: sourceCanvas.height,
+          width: originalViewport.width,
+          height: originalViewport.height,
         });
       }
       

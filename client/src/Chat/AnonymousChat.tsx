@@ -38,6 +38,7 @@ import {
 import { toast } from 'react-hot-toast';
 import './AnonymousChat.css';
 import GroupMeeting from './GroupMeeting';
+import { sounds } from '../utils/soundEffects';
 
 // Types
 interface Message {
@@ -341,6 +342,7 @@ const AnonymousChat: React.FC = () => {
       });
       setMessages(data.messages || []);
       toast.success(`Joined room ${data.roomId}! You can now start chatting.`);
+      sounds.playChime();
       setIsConnecting(false);
     });
 
@@ -356,6 +358,7 @@ const AnonymousChat: React.FC = () => {
       }
       
       toast.success(`${guestName} joined the chat! You can now start chatting.`);
+      sounds.playChime();
       setIsConnecting(false);
     });
 
@@ -365,6 +368,11 @@ const AnonymousChat: React.FC = () => {
       // Show notification for file messages
       if (message.type === 'file') {
         toast.success(`${message.senderName} shared a file: ${message.fileName}`);
+      }
+      
+      // Play pop sound for incoming messages
+      if (message.senderId !== socketInstance.id) {
+        sounds.playPop();
       }
     });
 
@@ -885,6 +893,8 @@ const AnonymousChat: React.FC = () => {
       return;
     }
 
+    sounds.playWhoosh();
+    
     // Set file for preview
     setSelectedFile(file);
   };
@@ -1748,7 +1758,7 @@ const AnonymousChat: React.FC = () => {
                       key={index}
                       initial={{ opacity: 0, y: 15, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ duration: 0.3, type: "spring", stiffness: 400, damping: 25 }}
+                      transition={{ duration: 0.4, type: "spring", stiffness: 500, damping: 20 }}
                       className={`flex ${message.senderId === socket?.id ? 'justify-end' : 'justify-start'}`}
                     >
                       <div className={`message-bubble w-fit min-w-[120px] max-w-[85%] lg:max-w-md ${

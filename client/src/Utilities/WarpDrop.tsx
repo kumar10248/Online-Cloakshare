@@ -3,17 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { io, Socket } from 'socket.io-client';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { IconProp } from '@fortawesome/fontawesome-svg-core';
-import {
-  faTimes,
-  faRocket,
-  faExchangeAlt,
-  faSpinner,
-  faCopy,
-  faCheckCircle,
-  faFile,
-  faServer
-} from '@fortawesome/free-solid-svg-icons';
+import { faCopy, faTimes, faFile, faServer, faRocket, faExchangeAlt, faSpinner, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-hot-toast';
+import { sounds } from '../utils/soundEffects';
+import { baseURL } from '../Config';
 import './WarpDrop.css';
 
 interface WarpDropProps {
@@ -36,17 +29,14 @@ const WarpDrop: React.FC<WarpDropProps> = ({ isOpen, onClose }) => {
   const [step, setStep] = useState<'initial' | 'waiting' | 'connecting' | 'connected' | 'transferring' | 'done'>('initial');
   const [roomId, setRoomId] = useState('');
   const [joinCode, setJoinCode] = useState('');
-  // We only keep refs for WebRTC to avoid unnecessary re-renders
-  // const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
-  // const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
   const [file, setFile] = useState<File | null>(null);
   
   // Transfer state
   const [transferProgress, setTransferProgress] = useState(0);
   const [transferSpeed, setTransferSpeed] = useState('');
   const [incomingFileInfo, setIncomingFileInfo] = useState<{ name: string; size: number; type: string } | null>(null);
-  const [receivedBuffer, setReceivedBuffer] = useState<ArrayBuffer[]>([]);
-  // const [receivedBytes, setReceivedBytes] = useState(0);
+  const incomingFileInfoRef = useRef<{ name: string; size: number; type: string } | null>(null);
+  const receivedBufferRef = useRef<ArrayBuffer[]>([]);
 
   // Refs for WebRTC
   const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -65,8 +55,10 @@ const WarpDrop: React.FC<WarpDropProps> = ({ isOpen, onClose }) => {
   // Setup socket when opened
   useEffect(() => {
     if (isOpen) {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-      const newSocket = io(backendUrl);
+      const socketURL = baseURL || 'http://localhost:8000';
+      const newSocket = io(socketURL, {
+        transports: ['websocket', 'polling'],
+      });
       setSocket(newSocket);
 
       newSocket.on('connect', () => console.log('WarpDrop connected to signaling server'));
@@ -78,6 +70,7 @@ const WarpDrop: React.FC<WarpDropProps> = ({ isOpen, onClose }) => {
 
       newSocket.on('user-joined', () => {
         if (roleRef.current === 'guest') return;
+        sounds.playChime();
         toast.success('Peer joined, connecting...');
         setStep('connecting');
         initiateWebRTC(newSocket, true);
@@ -86,6 +79,7 @@ const WarpDrop: React.FC<WarpDropProps> = ({ isOpen, onClose }) => {
       newSocket.on('room-joined', (data: { roomId: string }) => {
         setRoomId(data.roomId);
         setStep('connecting');
+        sounds.playChime();
         toast.success('Joined room, connecting...');
         // Host initiates WebRTC, so guest just waits for offer
         initiateWebRTC(newSocket, false);
@@ -158,7 +152,7 @@ const WarpDrop: React.FC<WarpDropProps> = ({ isOpen, onClose }) => {
     if (isInitiator) {
       const dc = pc.createDataChannel('warp-drop');
       dcRef.current = dc;
-      setupDataChannel(dc);
+      setupDataChannel(dc, isInitiator);
 
       pc.createOffer()
         .then(offer => pc.setLocalDescription(offer))
@@ -169,16 +163,20 @@ const WarpDrop: React.FC<WarpDropProps> = ({ isOpen, onClose }) => {
     } else {
       pc.ondatachannel = (event) => {
         dcRef.current = event.channel;
-        setupDataChannel(event.channel);
+        setupDataChannel(event.channel, isInitiator);
       };
     }
   };
 
-  const setupDataChannel = (dc: RTCDataChannel) => {
+  const setupDataChannel = (dc: RTCDataChannel, isInitiator: boolean) => {
     dc.binaryType = 'arraybuffer';
     
     dc.onopen = () => {
       console.log('Data channel opened!');
+      
+      if (isInitiator) {
+        toast.success('Connection established! You can now send a file.');
+      }
       setStep('connected');
     };
 
@@ -193,7 +191,8 @@ const WarpDrop: React.FC<WarpDropProps> = ({ isOpen, onClose }) => {
         const msg = JSON.parse(event.data);
         if (msg.type === 'file-meta') {
           setIncomingFileInfo(msg.meta);
-          setReceivedBuffer([]);
+          incomingFileInfoRef.current = msg.meta;
+          receivedBufferRef.current = []; // Clear buffer for new file
           totalBytesRef.current = 0;
           setStep('transferring');
           startTimeRef.current = Date.now();
@@ -201,52 +200,56 @@ const WarpDrop: React.FC<WarpDropProps> = ({ isOpen, onClose }) => {
           lastBytesRef.current = 0;
         } else if (msg.type === 'transfer-complete') {
           setStep('done');
+          sounds.playPop();
           toast.success('File received successfully!');
-          downloadReceivedFile();
         }
       } else if (event.data instanceof ArrayBuffer) {
-        setReceivedBuffer(prev => {
-          const newBuffer = [...prev, event.data];
-            const newBytes = totalBytesRef.current + event.data.byteLength;
-            totalBytesRef.current = newBytes;
-            
-            // Calculate speed and progress
-            const now = Date.now();
-            if (now - lastTimeRef.current > 1000) {
-              const diffBytes = newBytes - lastBytesRef.current;
-              const speed = (diffBytes / 1024 / 1024) / ((now - lastTimeRef.current) / 1000);
-              setTransferSpeed(`${speed.toFixed(1)} MB/s`);
-              lastTimeRef.current = now;
-              lastBytesRef.current = newBytes;
-            }
-            
-            if (incomingFileInfo) {
-              setTransferProgress(Math.floor((newBytes / incomingFileInfo.size) * 100));
-            }
-            // return newBytes;
-          // });
-          return newBuffer;
-        });
+        receivedBufferRef.current.push(event.data);
+        
+        const newBytes = totalBytesRef.current + event.data.byteLength;
+        totalBytesRef.current = newBytes;
+        
+        // Calculate speed and progress
+        const now = Date.now();
+        if (now - lastTimeRef.current > 1000) {
+          const diffBytes = newBytes - lastBytesRef.current;
+          const speed = (diffBytes / 1024 / 1024) / ((now - lastTimeRef.current) / 1000);
+          setTransferSpeed(`${speed.toFixed(1)} MB/s`);
+          lastTimeRef.current = now;
+          lastBytesRef.current = newBytes;
+        }
+        
+        if (incomingFileInfoRef.current) {
+          setTransferProgress(Math.floor((newBytes / incomingFileInfoRef.current.size) * 100));
+        }
       }
     };
   };
 
-  const downloadReceivedFile = () => {
-    if (!incomingFileInfo) return;
-    const blob = new Blob(receivedBuffer, { type: incomingFileInfo.type });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = incomingFileInfo.name;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const handleDownload = () => {
+    if (incomingFileInfo && receivedBufferRef.current.length > 0) {
+      const blob = new Blob(receivedBufferRef.current, { type: incomingFileInfo.type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = incomingFileInfo.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   };
+
+  useEffect(() => {
+    if (step === 'done') {
+      handleDownload();
+    }
+  }, [step]);
 
   const sendFile = () => {
     if (!file || !dcRef.current || dcRef.current.readyState !== 'open') return;
     
+    sounds.playWhoosh();
     setStep('transferring');
     setTransferProgress(0);
     setTransferSpeed('Calculating...');
@@ -537,7 +540,14 @@ const WarpDrop: React.FC<WarpDropProps> = ({ isOpen, onClose }) => {
                   <h3 className="text-white text-xl font-bold mb-2">Transfer Complete!</h3>
                   <p className="text-slate-400 mb-8">The file was successfully transferred directly via peer-to-peer connection.</p>
                   
-                  <button onClick={() => setStep('connected')} className="warp-primary-btn bg-violet">
+                  {roleRef.current === 'guest' && (
+                    <button onClick={handleDownload} className="warp-primary-btn bg-emerald-600 hover:bg-emerald-500 mb-4 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                      <FontAwesomeIcon icon={faFile as IconProp} className="mr-2" />
+                      Save File Manually
+                    </button>
+                  )}
+                  
+                  <button onClick={() => setStep('connected')} className="warp-primary-btn bg-violet mt-2">
                     <FontAwesomeIcon icon={faExchangeAlt as IconProp} className="mr-2" />
                     Send Another File
                   </button>
