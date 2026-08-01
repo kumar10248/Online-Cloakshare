@@ -123,6 +123,18 @@ const AnonymousChat: React.FC = () => {
   const localStreamRef = useRef<MediaStream | null>(null);
   const pendingCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
 
+  // Prevent background scrolling when chat is open
+  React.useEffect(() => {
+    if (isVisible) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isVisible]);
+
   // Set remote video/audio when remoteStream changes - SIMPLIFIED
   React.useEffect(() => {
     if (!remoteStream) return;
@@ -1429,7 +1441,7 @@ const AnonymousChat: React.FC = () => {
   if (!isVisible) {
     return (
       <motion.button
-        className="fixed bottom-6 right-6 bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-full shadow-2xl hover:shadow-amber-500/25 transition-all duration-300 z-50"
+        className="fixed bottom-6 right-6 bg-gradient-to-r from-violet-500 to-cyan-500 text-white p-4 rounded-full shadow-2xl hover:shadow-violet-500/25 transition-all duration-300 z-50"
         onClick={() => setIsVisible(true)}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
@@ -1458,21 +1470,27 @@ const AnonymousChat: React.FC = () => {
         aria-labelledby="chat-dialog-title"
       >
         <motion.div
-          className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] max-h-[700px] flex flex-col overflow-hidden border border-gray-700"
+          className="chat-glass-container rounded-2xl w-full max-w-4xl h-[85vh] max-h-[700px] flex flex-col overflow-hidden relative"
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           role="document"
         >
+          {/* Aurora Background Layer */}
+          <div className="absolute inset-0 aurora-bg z-0 pointer-events-none opacity-50"></div>
+          
+          <div className="relative z-10 flex flex-col h-full w-full">
           {/* Header */}
-          <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-3 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-white text-xl" aria-hidden="true" />
+          <div className="chat-header-glass p-4 flex items-center justify-between z-20">
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
+                <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-white text-lg" aria-hidden="true" />
+              </div>
               <div>
-                <h3 id="chat-dialog-title" className="text-white font-bold text-lg">Anonymous Chat</h3>
-                <div className="flex items-center space-x-2 text-amber-100 text-sm">
-                  <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`} aria-hidden="true"></div>
+                <h3 id="chat-dialog-title" className="text-white font-bold text-lg tracking-wide">Anonymous Chat</h3>
+                <div className="flex items-center space-x-2 text-slate-300 text-sm">
+                  <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400 connection-pulse' : 'bg-red-400'}`} aria-hidden="true"></div>
                   <span role="status" aria-live="polite">{isConnected ? 'Connected' : 'Disconnected'}</span>
                   {user && (
                     <>
@@ -1480,7 +1498,7 @@ const AnonymousChat: React.FC = () => {
                       <span>Room: {user.roomId}</span>
                       <button
                         onClick={copyRoomId}
-                        className="text-amber-100 hover:text-white transition-colors"
+                        className="text-violet-100 hover:text-white transition-colors"
                         title="Copy room code"
                         aria-label={`Copy room code ${user.roomId} to clipboard`}
                       >
@@ -1492,31 +1510,29 @@ const AnonymousChat: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               {user && roomInfo?.status === 'connected' && (
                 <>
                   <button
                     onClick={startVoiceCall}
-                    className={`text-white p-2 rounded-lg transition-all duration-200 ${
+                    className={`text-white w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-200 ${
                       isCallActive || isInitiatingCall 
-                        ? 'bg-gray-500 cursor-not-allowed opacity-50' 
-                        : 'bg-white bg-opacity-20 hover:bg-opacity-30 hover:scale-105'
+                        ? 'bg-white/5 cursor-not-allowed opacity-50' 
+                        : 'bg-white/10 hover:bg-violet-500/20 hover:text-violet-400 border border-white/5 hover:border-violet-500/30 action-btn-hover'
                     }`}
                     title="Voice call"
-                    aria-label="Start voice call"
                     disabled={isCallActive || isInitiatingCall}
                   >
                     <FontAwesomeIcon icon={faPhone as IconProp} aria-hidden="true" />
                   </button>
                   <button
                     onClick={startVideoCall}
-                    className={`text-white p-2 rounded-lg transition-all duration-200 ${
+                    className={`text-white w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-200 ${
                       isCallActive || isInitiatingCall 
-                        ? 'bg-gray-500 cursor-not-allowed opacity-50' 
-                        : 'bg-white bg-opacity-20 hover:bg-opacity-30 hover:scale-105'
+                        ? 'bg-white/5 cursor-not-allowed opacity-50' 
+                        : 'bg-white/10 hover:bg-cyan-500/20 hover:text-cyan-400 border border-white/5 hover:border-cyan-500/30 action-btn-hover'
                     }`}
                     title="Video call"
-                    aria-label="Start video call"
                     disabled={isCallActive || isInitiatingCall}
                   >
                     <FontAwesomeIcon icon={faVideo as IconProp} aria-hidden="true" />
@@ -1527,9 +1543,8 @@ const AnonymousChat: React.FC = () => {
               {user && (
                 <button
                   onClick={leaveChat}
-                  className="bg-red-500 bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-lg transition-all duration-200"
+                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all duration-200 action-btn-hover"
                   title="Leave chat"
-                  aria-label="Leave chat room"
                 >
                   <FontAwesomeIcon icon={faSignOutAlt as IconProp} aria-hidden="true" />
                 </button>
@@ -1537,8 +1552,7 @@ const AnonymousChat: React.FC = () => {
 
               <button
                 onClick={() => setIsVisible(false)}
-                className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-lg transition-all duration-200"
-                aria-label="Close chat dialog"
+                className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/5 transition-all duration-200 action-btn-hover ml-2"
                 title="Close"
               >
                 <FontAwesomeIcon icon={faTimes as IconProp} aria-hidden="true" />
@@ -1548,15 +1562,17 @@ const AnonymousChat: React.FC = () => {
 
           {/* Connection/Login Screen */}
           {!user && (
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-              <div className="w-full max-w-md mx-auto space-y-5">
-                <div className="text-center">
-                  <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-amber-400 text-5xl mb-3" aria-hidden="true" />
-                  <h4 className="text-xl font-bold text-white mb-1">Join Anonymous Chat</h4>
-                  <p className="text-gray-400 text-sm">Start chatting securely without revealing your identity</p>
+            <div className="flex-1 overflow-y-auto p-4 sm:p-8 z-10 flex items-center justify-center">
+              <div className="w-full max-w-md bg-white/[0.02] border border-white/[0.05] p-8 rounded-2xl backdrop-blur-xl shadow-2xl">
+                <div className="text-center mb-8">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-500/10 border border-violet-500/20 mb-4 shadow-[0_0_30px_rgba(139,92,246,0.15)]">
+                    <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-violet-400 text-3xl" aria-hidden="true" />
+                  </div>
+                  <h4 className="text-2xl font-bold text-white mb-2">Join Anonymous Chat</h4>
+                  <p className="text-slate-400 text-sm">Start chatting securely without revealing your identity</p>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-5">
                   <div>
                     <label htmlFor="anonymous-name" className="sr-only">Your anonymous name</label>
                     <input
@@ -1565,39 +1581,34 @@ const AnonymousChat: React.FC = () => {
                       placeholder="Enter your anonymous name"
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
-                      className="w-full p-2.5 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 outline-none text-sm"
+                      className="w-full p-4 rounded-xl bg-black/20 border border-white/10 text-white placeholder-slate-500 outline-none text-sm chat-input-glow"
                       maxLength={50}
-                      aria-describedby="name-hint"
                     />
-                    <span id="name-hint" className="sr-only">Choose a name to display in the chat</span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <button
                       onClick={createRoom}
                       disabled={isConnecting || !isConnected}
-                      className="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-2.5 rounded-lg font-medium hover:from-amber-600 hover:to-orange-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                      aria-busy={isConnecting}
-                      aria-label={isConnecting ? 'Creating room, please wait' : 'Create a new chat room'}
+                      className="bg-gradient-to-r from-violet-500 to-cyan-500 text-white p-3.5 rounded-xl font-medium shimmer-btn shadow-lg shadow-violet-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-transform hover:-translate-y-0.5"
                     >
                       {isConnecting ? 'Creating...' : 'Create Room'}
                     </button>
 
-                    <div className="space-y-2">
-                      <label htmlFor="room-code" className="sr-only">Room code to join</label>
+                    <div className="space-y-3">
                       <input
                         id="room-code"
                         type="text"
                         placeholder="Enter room code"
                         value={roomId}
                         onChange={(e) => setRoomId(e.target.value)}
-                        className="w-full p-2.5 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 outline-none text-sm"
+                        className="w-full p-3.5 rounded-xl bg-black/20 border border-white/10 text-white placeholder-slate-500 outline-none text-sm chat-input-glow text-center tracking-widest font-mono"
                         maxLength={4}
                       />
                       <button
                         onClick={joinRoom}
                         disabled={isConnecting || !isConnected}
-                        className="w-full bg-gray-600 hover:bg-gray-700 text-white p-2.5 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                        className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white p-3.5 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm hover:-translate-y-0.5"
                       >
                         {isConnecting ? 'Joining...' : 'Join Room'}
                       </button>
@@ -1605,34 +1616,30 @@ const AnonymousChat: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-center flex-wrap gap-3 text-xs text-gray-400">
-                  <div className="flex items-center space-x-1">
-                    <FontAwesomeIcon icon={faUserSecret as IconProp} />
+                <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-center flex-wrap gap-4 text-xs text-slate-400">
+                  <div className="flex items-center space-x-1.5 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+                    <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-violet-400" />
                     <span>Anonymous</span>
                   </div>
-                  <div className="flex items-center space-x-1">
-                    <FontAwesomeIcon icon={faEyeSlash as IconProp} />
+                  <div className="flex items-center space-x-1.5 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+                    <FontAwesomeIcon icon={faEyeSlash as IconProp} className="text-cyan-400" />
                     <span>No tracking</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <FontAwesomeIcon icon={faFileAlt as IconProp} />
-                    <span>File sharing</span>
                   </div>
                 </div>
 
                 {/* Group Meeting Section */}
-                <div className="border-t border-gray-700 pt-4">
-                  <div className="text-center">
-                    <p className="text-gray-400 text-xs mb-2">Or start a group video meeting</p>
-                    <button
-                      onClick={() => setShowGroupMeeting(true)}
-                      disabled={!isConnected}
-                      className="bg-gradient-to-r from-purple-500 to-pink-600 text-white px-5 py-2.5 rounded-lg font-medium hover:from-purple-600 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 mx-auto text-sm"
-                    >
-                      <FontAwesomeIcon icon={faUsersRectangle as IconProp} />
-                      <span>Group Meeting</span>
-                    </button>
-                  </div>
+                <div className="mt-6 pt-6 border-t border-white/5 text-center">
+                  <p className="text-slate-400 text-xs mb-3 uppercase tracking-wider font-medium">Or join with multiple people</p>
+                  <button
+                    onClick={() => setShowGroupMeeting(true)}
+                    disabled={!isConnected}
+                    className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-5 py-3 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3 mx-auto w-full group hover:-translate-y-0.5"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-violet-500 to-fuchsia-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <FontAwesomeIcon icon={faUsersRectangle as IconProp} className="text-white text-sm" />
+                    </div>
+                    <span>Start Group Meeting</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1640,20 +1647,31 @@ const AnonymousChat: React.FC = () => {
 
           {/* Waiting for guest */}
           {user && roomInfo?.status === 'waiting' && (
-            <div className="flex-1 flex items-center justify-center p-8">
-              <div className="text-center space-y-4">
-                <div className="animate-spin text-amber-400 text-4xl mb-4">
-                  <FontAwesomeIcon icon={faUsers as IconProp} />
+            <div className="flex-1 flex items-center justify-center p-8 z-10">
+              <div className="bg-white/[0.02] border border-white/[0.05] p-10 rounded-3xl backdrop-blur-xl shadow-2xl text-center max-w-md w-full">
+                <div className="relative w-24 h-24 mx-auto mb-8">
+                  <div className="absolute inset-0 rounded-full border-4 border-violet-500/20"></div>
+                  <div className="absolute inset-0 rounded-full border-4 border-violet-500 border-t-transparent animate-spin" style={{ animationDuration: '1.5s' }}></div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <FontAwesomeIcon icon={faUsers as IconProp} className="text-violet-400 text-3xl" />
+                  </div>
                 </div>
-                <h4 className="text-xl font-bold text-white">Waiting for someone to join...</h4>
-                <p className="text-gray-400">Share your room code: <span className="text-amber-400 font-mono font-bold">{user.roomId}</span></p>
-                <button
+                <h4 className="text-2xl font-bold text-white mb-2">Waiting for someone...</h4>
+                <p className="text-slate-400 mb-8">Share your 4-digit code to connect</p>
+                
+                <div 
+                  className="bg-black/30 border border-white/10 rounded-2xl p-6 mb-8 cursor-pointer hover:border-violet-500/30 hover:bg-black/40 transition-all group"
                   onClick={copyRoomId}
-                  className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg transition-colors"
+                  title="Click to copy"
                 >
-                  <FontAwesomeIcon icon={faCopy as IconProp} className="mr-2" />
-                  Copy Room Code
-                </button>
+                  <span className="text-5xl tracking-[0.2em] font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400 group-hover:scale-110 inline-block transition-transform duration-300 ml-[0.2em]">
+                    {user.roomId}
+                  </span>
+                  <div className="mt-4 text-sm text-slate-500 flex items-center justify-center space-x-2">
+                    <FontAwesomeIcon icon={faCopy as IconProp} className="text-violet-400/50 group-hover:text-violet-400 transition-colors" />
+                    <span>Click to copy code</span>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -1662,21 +1680,21 @@ const AnonymousChat: React.FC = () => {
           {user && roomInfo?.status === 'connected' && (
             <>
               {/* Chat Header with Users */}
-              <div className="bg-gray-800 border-b border-gray-700 p-4">
+              <div className="chat-header-glass p-4 z-20">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                      <span className="text-white font-medium">
+                    <div className="flex items-center space-x-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+                      <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.5)]"></div>
+                      <span className="text-white text-sm font-medium">
                         {roomInfo.hostName} & {roomInfo.guestName}
                       </span>
                     </div>
-                    <div className="text-gray-400 text-sm">
-                      Room: {user.roomId}
-                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-gray-400 text-sm">
+                  <div className="flex items-center space-x-3 text-slate-300 text-sm">
+                    <span className="bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+                      Room: <span className="text-white font-mono tracking-wider">{user.roomId}</span>
+                    </span>
+                    <span className="bg-violet-500/10 text-violet-300 px-3 py-1.5 rounded-full border border-violet-500/20">
                       You: {user.userName} ({user.role})
                     </span>
                   </div>
@@ -1685,8 +1703,8 @@ const AnonymousChat: React.FC = () => {
 
               {/* Messages Area */}
               <div 
-                className={`flex-1 p-4 overflow-y-auto bg-gray-800 messages-container relative ${
-                  isDragOver ? 'bg-gray-700 border-2 border-dashed border-amber-500' : ''
+                className={`flex-1 p-4 md:p-6 overflow-y-auto messages-container relative z-10 ${
+                  isDragOver ? 'bg-violet-500/10 border-2 border-dashed border-violet-500 shadow-[inset_0_0_50px_rgba(139,92,246,0.1)]' : 'bg-transparent'
                 }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -1694,82 +1712,89 @@ const AnonymousChat: React.FC = () => {
               >
                 {isDragOver && (
                   <div className="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75 z-10">
-                    <div className="text-center text-amber-400">
+                    <div className="text-center text-violet-400">
                       <FontAwesomeIcon icon={faFileAlt as IconProp} className="text-4xl mb-2" />
                       <p className="text-lg font-medium">Drop file to share</p>
                     </div>
                   </div>
                 )}
                 {messages.length === 0 && (
-                  <div className="text-center text-gray-400 mt-8">
-                    <FontAwesomeIcon icon={faComment as IconProp} className="text-4xl mb-4 opacity-50" />
-                    <p className="text-lg font-medium">Start your anonymous conversation!</p>
-                    <p className="text-sm mt-2">Share files, send messages, and communicate securely.</p>
-                    <div className="mt-4 flex items-center justify-center space-x-6 text-xs">
-                      <div className="flex items-center space-x-1">
-                        <FontAwesomeIcon icon={faFileAlt as IconProp} className="text-amber-400" />
+                  <div className="text-center text-slate-400 mt-12 flex flex-col items-center">
+                    <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center mb-6 shadow-lg border border-white/5">
+                      <FontAwesomeIcon icon={faComment as IconProp} className="text-4xl text-violet-400/50" />
+                    </div>
+                    <p className="text-xl font-bold text-white mb-2">Start your anonymous conversation!</p>
+                    <p className="text-sm">Share files, send messages, and communicate securely.</p>
+                    <div className="mt-8 flex items-center justify-center space-x-4 text-xs">
+                      <div className="flex items-center space-x-1.5 bg-white/5 px-3 py-1.5 rounded-full">
+                        <FontAwesomeIcon icon={faFileAlt as IconProp} className="text-violet-400" />
                         <span>File sharing</span>
                       </div>
-                      <div className="flex items-center space-x-1">
-                        <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-amber-400" />
+                      <div className="flex items-center space-x-1.5 bg-white/5 px-3 py-1.5 rounded-full">
+                        <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-cyan-400" />
                         <span>Anonymous</span>
                       </div>
-                      <div className="flex items-center space-x-1">
-                        <FontAwesomeIcon icon={faEyeSlash as IconProp} className="text-amber-400" />
+                      <div className="flex items-center space-x-1.5 bg-white/5 px-3 py-1.5 rounded-full">
+                        <FontAwesomeIcon icon={faEyeSlash as IconProp} className="text-violet-400" />
                         <span>No tracking</span>
                       </div>
                     </div>
                   </div>
                 )}
                 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {messages.map((message, index) => (
                     <motion.div
                       key={index}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ duration: 0.3, type: "spring", stiffness: 400, damping: 25 }}
                       className={`flex ${message.senderId === socket?.id ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div className={`max-w-xs lg:max-w-md ${
+                      <div className={`message-bubble w-fit min-w-[120px] max-w-[85%] lg:max-w-md ${
                         message.type === 'system' 
-                          ? 'w-full text-center'
+                          ? 'w-full text-center shadow-none !bg-transparent before:hidden min-w-0'
                           : message.senderId === socket?.id
-                            ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white'
-                            : 'bg-gray-700 text-white'
-                      } rounded-lg p-3 shadow-lg`}>
+                            ? 'own text-white rounded-2xl rounded-tr-sm'
+                            : 'other text-slate-200 rounded-2xl rounded-tl-sm'
+                      } p-3.5 flex flex-col`}>
                         
                         {message.type === 'system' ? (
-                          <p className="text-amber-400 text-sm italic">{message.content}</p>
+                          <p className="text-violet-400 text-sm italic">{message.content}</p>
                         ) : (
                           <>
-                            <div className="flex items-center justify-between mb-1">
-                              <span className="text-xs opacity-75">{message.senderName}</span>
-                              <span className="text-xs opacity-75">{formatTime(message.timestamp)}</span>
+                            <div className="flex items-baseline justify-between space-x-3 mb-1.5 border-b border-white/10 pb-1">
+                              <span className="text-xs font-medium opacity-90 truncate">{message.senderName}</span>
+                              <span className="text-[10px] opacity-70 shrink-0">{formatTime(message.timestamp)}</span>
                             </div>
                             
                             {message.type === 'text' && (
-                              <p className="text-sm break-words">{message.content}</p>
+                              <p className="text-sm break-words leading-relaxed">{message.content}</p>
                             )}
                             
                             {message.type === 'emoji' && (
-                              <p className="text-2xl">{message.content}</p>
+                              <p className="text-3xl leading-none pt-1 pb-1">{message.content}</p>
                             )}
                             
                             {message.type === 'file' && (
-                              <div className="space-y-2">
-                                <div className="flex items-center space-x-2 text-sm">
-                                  <FontAwesomeIcon icon={faFileAlt as IconProp} />
-                                  <span className="truncate">{message.fileName}</span>
+                              <div className="flex flex-col space-y-2.5 mt-1 w-full sm:w-64">
+                                <div className="flex items-center space-x-3 text-sm bg-black/20 p-2.5 rounded-xl border border-white/5">
+                                  <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                                    <FontAwesomeIcon icon={faFileAlt as IconProp} className="text-lg" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="truncate font-medium text-white">{message.fileName}</p>
+                                    {message.fileSize && (
+                                      <p className="text-xs opacity-70 mt-0.5">{formatFileSize(message.fileSize)}</p>
+                                    )}
+                                  </div>
                                 </div>
-                                {message.fileSize && (
-                                  <p className="text-xs opacity-75">{formatFileSize(message.fileSize)}</p>
-                                )}
                                 <button
                                   onClick={() => downloadFile(message)}
-                                  className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-3 py-1 rounded text-xs transition-colors"
+                                  className="w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center space-x-2 border border-white/5 hover:border-white/20"
                                 >
-                                  <FontAwesomeIcon icon={faDownload as IconProp} className="mr-1" />
-                                  Download
+                                  <FontAwesomeIcon icon={faDownload as IconProp} />
+                                  <span>Download File</span>
                                 </button>
                               </div>
                             )}
@@ -1781,12 +1806,17 @@ const AnonymousChat: React.FC = () => {
                   
                   {otherUserTyping && (
                     <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
                       className="flex justify-start"
                     >
-                      <div className="bg-gray-700 rounded-lg p-3 text-gray-400 text-sm">
-                        <span>{roomInfo.guestName || roomInfo.hostName} is typing...</span>
+                      <div className="message-bubble other text-slate-300 p-3 flex items-center space-x-2">
+                        <span className="text-sm font-medium">{roomInfo.guestName || roomInfo.hostName} is typing</span>
+                        <div className="flex space-x-1 ml-1">
+                          <div className="w-1.5 h-1.5 bg-violet-400 rounded-full typing-dot"></div>
+                          <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full typing-dot"></div>
+                          <div className="w-1.5 h-1.5 bg-violet-400 rounded-full typing-dot"></div>
+                        </div>
                       </div>
                     </motion.div>
                   )}
@@ -1796,18 +1826,18 @@ const AnonymousChat: React.FC = () => {
               </div>
 
               {/* Input Area */}
-              <div className="border-t border-gray-700 bg-gray-900">
+              <div className="chat-header-glass border-t border-white/10 z-20">
                 {/* File Preview */}
                 {selectedFile && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="p-4 border-b border-gray-700"
+                    className="p-4 border-b border-white/5 bg-black/20"
                   >
-                    <div className="flex items-center justify-between bg-gray-800 rounded-lg p-3">
+                    <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl p-3">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg">
                           <FontAwesomeIcon 
                             icon={getFileIcon(selectedFile.name, selectedFile.type) as IconProp} 
                             className="text-white" 
@@ -1815,7 +1845,7 @@ const AnonymousChat: React.FC = () => {
                         </div>
                         <div>
                           <p className="text-white font-medium truncate max-w-48">{selectedFile.name}</p>
-                          <p className="text-gray-400 text-sm">
+                          <p className="text-slate-400 text-sm">
                             {formatFileSize(selectedFile.size)}
                           </p>
                         </div>
@@ -1824,14 +1854,14 @@ const AnonymousChat: React.FC = () => {
                         <button
                           onClick={sendFile}
                           disabled={!roomInfo?.hostName || !roomInfo?.guestName}
-                          className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition-colors"
+                          className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 rounded-lg transition-all text-sm font-medium"
                           aria-label="Send file"
                         >
                           Send
                         </button>
                         <button
                           onClick={cancelFileSelection}
-                          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                          className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 px-4 py-2 rounded-lg transition-all text-sm font-medium"
                           aria-label="Cancel file selection"
                         >
                           Cancel
@@ -1842,7 +1872,7 @@ const AnonymousChat: React.FC = () => {
                 )}
 
                 <div className="p-4">
-                  <div className="flex items-end space-x-3">
+                  <div className="flex items-end space-x-2 sm:space-x-3">
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -1854,9 +1884,8 @@ const AnonymousChat: React.FC = () => {
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={!roomInfo?.hostName || !roomInfo?.guestName}
-                    className="bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:cursor-not-allowed text-white p-3 rounded-lg transition-colors"
+                    className="bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 hover:text-violet-400 p-3.5 rounded-xl transition-all action-btn-hover flex-shrink-0"
                     title={roomInfo?.hostName && roomInfo?.guestName ? "Attach file" : "Wait for both users to join"}
-                    aria-label={roomInfo?.hostName && roomInfo?.guestName ? "Attach file to share" : "Waiting for user to join before you can attach files"}
                   >
                     <FontAwesomeIcon icon={faPlus as IconProp} aria-hidden="true" />
                   </button>
@@ -1874,12 +1903,12 @@ const AnonymousChat: React.FC = () => {
                           ? `Message ${user?.role === 'host' ? roomInfo.guestName : roomInfo.hostName}...`
                           : 'Waiting for someone to join...'
                       }
-                      className="w-full p-3 pr-12 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 outline-none"
+                      className="w-full p-3.5 pr-12 rounded-xl bg-black/20 border border-white/10 text-white placeholder-slate-500 outline-none chat-input-glow"
                       maxLength={1000}
                       disabled={!roomInfo?.hostName || !roomInfo?.guestName}
                       aria-describedby="message-char-count"
                     />
-                    <div id="message-char-count" className="absolute right-3 top-3 text-xs text-gray-400" aria-live="polite">
+                    <div id="message-char-count" className="absolute right-4 top-4 text-xs text-slate-500 font-mono" aria-live="polite">
                       {currentMessage.length}/1000
                     </div>
                   </div>
@@ -1887,7 +1916,7 @@ const AnonymousChat: React.FC = () => {
                   <button
                     onClick={sendMessage}
                     disabled={!currentMessage.trim()}
-                    className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white p-3 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600 text-white p-3.5 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-violet-500/20 shimmer-btn flex-shrink-0"
                     aria-label="Send message"
                   >
                     <FontAwesomeIcon icon={faPaperPlane as IconProp} aria-hidden="true" />
@@ -1897,17 +1926,18 @@ const AnonymousChat: React.FC = () => {
               </div>
             </>
           )}
+          </div>
         </motion.div>
 
         {/* Incoming Call Modal */}
         {incomingCall && (
           <motion.div
-            className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[100]"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
             <motion.div
-              className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 text-center space-y-6 max-w-sm w-full mx-4 border border-gray-700 shadow-2xl"
+              className="bg-white/[0.02] border border-white/[0.05] backdrop-blur-xl rounded-3xl p-8 text-center space-y-6 max-w-sm w-full mx-4 shadow-[0_0_50px_rgba(0,0,0,0.5)]"
               initial={{ scale: 0.8, opacity: 0, y: 50 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
@@ -1915,7 +1945,7 @@ const AnonymousChat: React.FC = () => {
               {/* Animated caller avatar */}
               <div className="relative">
                 <motion.div
-                  className="w-24 h-24 mx-auto rounded-full bg-gradient-to-r from-amber-500 to-orange-600 flex items-center justify-center"
+                  className="w-24 h-24 mx-auto rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 flex items-center justify-center shadow-[0_0_30px_rgba(139,92,246,0.3)] relative z-10"
                   animate={{ scale: [1, 1.1, 1] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 >
@@ -1926,37 +1956,37 @@ const AnonymousChat: React.FC = () => {
                 </motion.div>
                 {/* Ripple effect */}
                 <motion.div
-                  className="absolute inset-0 mx-auto w-24 h-24 rounded-full border-2 border-amber-500"
-                  animate={{ scale: [1, 1.5], opacity: [0.8, 0] }}
+                  className="absolute inset-0 mx-auto w-24 h-24 rounded-full border-2 border-violet-500 z-0"
+                  animate={{ scale: [1, 1.8], opacity: [0.8, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 />
                 <motion.div
-                  className="absolute inset-0 mx-auto w-24 h-24 rounded-full border-2 border-amber-500"
-                  animate={{ scale: [1, 1.5], opacity: [0.8, 0] }}
+                  className="absolute inset-0 mx-auto w-24 h-24 rounded-full border-2 border-cyan-500 z-0"
+                  animate={{ scale: [1, 1.8], opacity: [0.8, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
                 />
               </div>
 
               {/* Call type icon */}
-              <div className="flex items-center justify-center space-x-2 text-amber-400">
+              <div className="flex items-center justify-center space-x-2 text-violet-400 bg-violet-500/10 w-max mx-auto px-4 py-1.5 rounded-full border border-violet-500/20">
                 <FontAwesomeIcon 
                   icon={incomingCall.callType === 'video' ? faVideo as IconProp : faPhoneAlt as IconProp} 
-                  className="text-2xl" 
+                  className="text-lg" 
                 />
-                <span className="text-lg font-medium">
+                <span className="text-sm font-medium tracking-wide uppercase">
                   Incoming {incomingCall.callType === 'video' ? 'Video' : 'Voice'} Call
                 </span>
               </div>
 
               <div>
-                <h3 className="text-white text-2xl font-bold">{incomingCall.callerName}</h3>
-                <p className="text-gray-400 text-sm mt-1">is calling you...</p>
+                <h3 className="text-white text-3xl font-bold tracking-tight">{incomingCall.callerName}</h3>
+                <p className="text-slate-400 text-sm mt-2">is calling you...</p>
               </div>
               
-              <div className="flex justify-center space-x-6 pt-4">
+              <div className="flex justify-center space-x-8 pt-4">
                 <motion.button
                   onClick={rejectCall}
-                  className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-lg shadow-red-500/30 transition-all"
+                  className="w-16 h-16 rounded-full bg-red-500/20 border border-red-500/30 hover:bg-red-500/30 text-red-400 flex items-center justify-center transition-all"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -1964,7 +1994,7 @@ const AnonymousChat: React.FC = () => {
                 </motion.button>
                 <motion.button
                   onClick={acceptCall}
-                  className="w-16 h-16 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center shadow-lg shadow-green-500/30 transition-all"
+                  className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/30 hover:bg-emerald-500/30 text-emerald-400 flex items-center justify-center transition-all shadow-[0_0_30px_rgba(16,185,129,0.2)]"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   animate={{ scale: [1, 1.05, 1] }}
@@ -1974,7 +2004,7 @@ const AnonymousChat: React.FC = () => {
                 </motion.button>
               </div>
 
-              <p className="text-gray-500 text-xs">
+              <p className="text-slate-500 text-xs mt-4">
                 {incomingCall.callType === 'video' ? 'Camera and microphone will be used' : 'Microphone will be used'}
               </p>
             </motion.div>
@@ -2099,37 +2129,37 @@ const AnonymousChat: React.FC = () => {
                   </>
                 ) : (
                   /* Voice Call UI */
-                  <div className="flex flex-col items-center justify-center space-y-8">
+                  <div className="flex flex-col items-center justify-center space-y-12">
                     {/* Voice wave animation */}
                     <div className="relative">
                       <motion.div
-                        className="w-32 h-32 rounded-full bg-gradient-to-r from-amber-500 to-orange-600 flex items-center justify-center"
+                        className="w-36 h-36 rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 flex items-center justify-center shadow-[0_0_50px_rgba(139,92,246,0.3)] z-10 relative"
                         animate={isCallConnected ? { scale: [1, 1.05, 1] } : {}}
                         transition={{ duration: 2, repeat: Infinity }}
                       >
-                        <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-white text-5xl" />
+                        <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-white text-6xl" />
                       </motion.div>
                       
                       {/* Audio visualizer rings */}
                       {isCallConnected && (
                         <>
                           <motion.div
-                            className="absolute inset-0 rounded-full border-2 border-amber-500/50"
-                            animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
+                            className="absolute inset-0 rounded-full border-2 border-violet-500/50 z-0"
+                            animate={{ scale: [1, 2], opacity: [0.5, 0] }}
                             transition={{ duration: 2, repeat: Infinity }}
                           />
                           <motion.div
-                            className="absolute inset-0 rounded-full border-2 border-amber-500/50"
-                            animate={{ scale: [1, 1.5], opacity: [0.5, 0] }}
+                            className="absolute inset-0 rounded-full border-2 border-cyan-500/50 z-0"
+                            animate={{ scale: [1, 2], opacity: [0.5, 0] }}
                             transition={{ duration: 2, repeat: Infinity, delay: 0.7 }}
                           />
                         </>
                       )}
                     </div>
                     
-                    <div className="text-center">
-                      <h2 className="text-white text-2xl font-bold">{getOtherUserName()}</h2>
-                      <p className="text-gray-400 mt-1">
+                    <div className="text-center space-y-2">
+                      <h2 className="text-white text-3xl font-bold tracking-tight">{getOtherUserName()}</h2>
+                      <p className="text-violet-400 font-mono tracking-widest uppercase text-sm">
                         {callStatus === 'ringing' && 'Calling...'}
                         {callStatus === 'connecting' && 'Connecting...'}
                         {callStatus === 'connected' && formatCallDuration(callDuration)}
@@ -2139,19 +2169,9 @@ const AnonymousChat: React.FC = () => {
 
                     {/* Voice activity indicator */}
                     {isCallConnected && (
-                      <div className="flex items-center space-x-1">
+                      <div className="flex items-center space-x-1.5 bg-white/5 px-6 py-3 rounded-2xl backdrop-blur-sm border border-white/10">
                         {[...Array(5)].map((_, i) => (
-                          <motion.div
-                            key={i}
-                            className="w-1 bg-amber-500 rounded-full"
-                            animate={{ height: ['8px', '24px', '8px'] }}
-                            transition={{ 
-                              duration: 0.8, 
-                              repeat: Infinity, 
-                              delay: i * 0.1,
-                              ease: 'easeInOut'
-                            }}
-                          />
+                          <div key={i} className="voice-wave"></div>
                         ))}
                       </div>
                     )}
@@ -2167,7 +2187,7 @@ const AnonymousChat: React.FC = () => {
                   >
                     <div className="text-center space-y-4">
                       <motion.div
-                        className="w-20 h-20 mx-auto rounded-full border-4 border-amber-500 border-t-transparent"
+                        className="w-20 h-20 mx-auto rounded-full border-4 border-violet-500 border-t-transparent"
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                       />
@@ -2199,7 +2219,7 @@ const AnonymousChat: React.FC = () => {
 
               {/* Call Controls */}
               <motion.div 
-                className="absolute bottom-0 left-0 right-0 z-20 p-6 bg-gradient-to-t from-black/80 to-transparent"
+                className="absolute bottom-0 left-0 right-0 z-20 p-8 pb-12 bg-gradient-to-t from-black via-black/80 to-transparent"
                 initial={{ y: 50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}
@@ -2208,10 +2228,10 @@ const AnonymousChat: React.FC = () => {
                   {/* Mute Button */}
                   <motion.button
                     onClick={toggleMute}
-                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
+                    className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all shadow-lg border backdrop-blur-md ${
                       isMuted 
-                        ? 'bg-red-500 hover:bg-red-600 shadow-red-500/30' 
-                        : 'bg-gray-700 hover:bg-gray-600 shadow-black/30'
+                        ? 'bg-red-500/20 border-red-500/30 text-red-400' 
+                        : 'bg-white/10 border-white/10 text-white hover:bg-white/20'
                     }`}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
@@ -2219,7 +2239,7 @@ const AnonymousChat: React.FC = () => {
                   >
                     <FontAwesomeIcon 
                       icon={isMuted ? faMicrophoneSlash as IconProp : faMicrophone as IconProp} 
-                      className="text-white text-xl"
+                      className="text-xl"
                     />
                   </motion.button>
 
@@ -2227,10 +2247,10 @@ const AnonymousChat: React.FC = () => {
                   {callType === 'video' && (
                     <motion.button
                       onClick={toggleVideo}
-                      className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
+                      className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all shadow-lg border backdrop-blur-md ${
                         isVideoOff 
-                          ? 'bg-red-500 hover:bg-red-600 shadow-red-500/30' 
-                          : 'bg-gray-700 hover:bg-gray-600 shadow-black/30'
+                          ? 'bg-red-500/20 border-red-500/30 text-red-400' 
+                          : 'bg-white/10 border-white/10 text-white hover:bg-white/20'
                       }`}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
@@ -2238,7 +2258,7 @@ const AnonymousChat: React.FC = () => {
                     >
                       <FontAwesomeIcon 
                         icon={isVideoOff ? faVideoSlash as IconProp : faVideo as IconProp} 
-                        className="text-white text-xl"
+                        className="text-xl"
                       />
                     </motion.button>
                   )}
@@ -2248,10 +2268,10 @@ const AnonymousChat: React.FC = () => {
                     <motion.button
                       onClick={switchCamera}
                       disabled={isSwitchingCamera}
-                      className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
+                      className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all shadow-lg border backdrop-blur-md ${
                         isSwitchingCamera 
-                          ? 'bg-gray-600 cursor-not-allowed' 
-                          : 'bg-gray-700 hover:bg-gray-600 shadow-black/30'
+                          ? 'bg-white/5 border-white/5 text-slate-500 cursor-not-allowed' 
+                          : 'bg-white/10 border-white/10 text-white hover:bg-white/20'
                       }`}
                       whileHover={!isSwitchingCamera ? { scale: 1.1 } : {}}
                       whileTap={!isSwitchingCamera ? { scale: 0.95 } : {}}
@@ -2259,7 +2279,7 @@ const AnonymousChat: React.FC = () => {
                     >
                       <FontAwesomeIcon 
                         icon={faSyncAlt as IconProp} 
-                        className={`text-white text-xl ${isSwitchingCamera ? 'animate-spin' : ''}`}
+                        className={`text-xl ${isSwitchingCamera ? 'animate-spin' : ''}`}
                       />
                     </motion.button>
                   )}
@@ -2268,10 +2288,10 @@ const AnonymousChat: React.FC = () => {
                   {callType === 'video' && isScreenShareSupported && (
                     <motion.button
                       onClick={toggleScreenShare}
-                      className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
+                      className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all shadow-lg border backdrop-blur-md ${
                         isScreenSharing 
-                          ? 'bg-green-500 hover:bg-green-600 shadow-green-500/30' 
-                          : 'bg-gray-700 hover:bg-gray-600 shadow-black/30'
+                          ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' 
+                          : 'bg-white/10 border-white/10 text-white hover:bg-white/20'
                       }`}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
@@ -2279,7 +2299,7 @@ const AnonymousChat: React.FC = () => {
                     >
                       <FontAwesomeIcon 
                         icon={faDesktop as IconProp} 
-                        className="text-white text-xl"
+                        className="text-xl"
                       />
                     </motion.button>
                   )}
@@ -2287,10 +2307,10 @@ const AnonymousChat: React.FC = () => {
                   {/* Speaker Toggle */}
                   <motion.button
                     onClick={toggleSpeaker}
-                    className={`w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
+                    className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all shadow-lg border backdrop-blur-md ${
                       !isSpeakerOn 
-                        ? 'bg-red-500 hover:bg-red-600 shadow-red-500/30' 
-                        : 'bg-gray-700 hover:bg-gray-600 shadow-black/30'
+                        ? 'bg-red-500/20 border-red-500/30 text-red-400' 
+                        : 'bg-white/10 border-white/10 text-white hover:bg-white/20'
                     }`}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
@@ -2298,25 +2318,25 @@ const AnonymousChat: React.FC = () => {
                   >
                     <FontAwesomeIcon 
                       icon={isSpeakerOn ? faVolumeUp as IconProp : faVolumeMute as IconProp} 
-                      className="text-white text-xl"
+                      className="text-xl"
                     />
                   </motion.button>
 
                   {/* End Call Button */}
                   <motion.button
                     onClick={handleEndCall}
-                    className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center transition-all shadow-lg shadow-red-500/30"
+                    className="w-16 h-16 rounded-2xl bg-red-500 hover:bg-red-600 flex items-center justify-center transition-all shadow-[0_0_30px_rgba(239,68,68,0.4)] text-white"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     title="End call"
                   >
-                    <FontAwesomeIcon icon={faPhoneSlash as IconProp} className="text-white text-2xl" />
+                    <FontAwesomeIcon icon={faPhoneSlash as IconProp} className="text-2xl" />
                   </motion.button>
                 </div>
 
                 {/* Call info footer */}
-                <div className="text-center mt-4">
-                  <p className="text-gray-500 text-xs">
+                <div className="text-center mt-6">
+                  <p className="text-slate-400 text-xs tracking-widest uppercase">
                     {isCallConnected ? 'Secure peer-to-peer connection' : 'Establishing connection...'}
                   </p>
                 </div>

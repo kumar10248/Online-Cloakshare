@@ -1,0 +1,68 @@
+/* RedactPDF.css */
+.redact-canvas-container {
+  position: relative;
+  display: inline-block;
+  user-select: none;
+  touch-action: none; /* Prevent scrolling while dragging on touch devices */
+}
+
+.redact-canvas-container canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.redact-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  z-index: 10;
+}
+
+.redaction-box {
+  position: absolute;
+  background-color: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  pointer-events: auto; /* Allow interaction with the box itself, like deleting */
+}
+
+.redaction-box-drawing {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black while drawing */
+  border: 1px dashed rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+}
+
+.delete-redaction-btn {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  background: #ef4444;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  z-index: 20;
+}
+
+.redaction-box:hover .delete-redaction-btn {
+  opacity: 1;
+}
+
+.delete-redaction-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
