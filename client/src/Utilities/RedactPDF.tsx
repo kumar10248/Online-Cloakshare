@@ -348,7 +348,7 @@ const RedactPDF: React.FC<RedactPDFProps> = ({ isOpen, onClose }) => {
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="w-full max-w-6xl h-[90vh] bg-[#0a0a0a] rounded-2xl border border-white/10 shadow-2xl flex flex-col overflow-hidden relative"
+            className="w-full max-w-6xl h-full sm:h-[90vh] bg-[#0a0a0a] rounded-none sm:rounded-2xl border-0 sm:border border-white/10 shadow-2xl flex flex-col overflow-hidden relative"
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}

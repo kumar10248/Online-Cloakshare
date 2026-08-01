@@ -1470,7 +1470,7 @@ const AnonymousChat: React.FC = () => {
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+        className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-6"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -1480,7 +1480,7 @@ const AnonymousChat: React.FC = () => {
         aria-labelledby="chat-dialog-title"
       >
         <motion.div
-          className="chat-glass-container rounded-2xl w-full max-w-4xl h-[85vh] max-h-[700px] flex flex-col overflow-hidden relative"
+          className="chat-glass-container rounded-none sm:rounded-2xl w-full max-w-4xl h-full sm:h-[85vh] max-h-[700px] flex flex-col overflow-hidden relative"
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
