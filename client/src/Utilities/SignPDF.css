@@ -23,17 +23,17 @@
   cursor: grab;
   z-index: 20;
   box-sizing: border-box;
-  border: 2px solid transparent;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  outline: 2px solid transparent;
+  transition: outline-color 0.2s ease, background-color 0.2s ease;
 }
 
 .signature-draggable:hover {
-  border-color: rgba(139, 92, 246, 0.4);
+  outline-color: rgba(139, 92, 246, 0.4);
   background: rgba(139, 92, 246, 0.05);
 }
 
 .signature-draggable[data-type="image"] {
-  border: 2px dashed rgba(139, 92, 246, 0.6);
+  outline: 2px dashed rgba(139, 92, 246, 0.6);
   background: rgba(139, 92, 246, 0.1);
 }
 

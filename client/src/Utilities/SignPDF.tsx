@@ -58,6 +58,26 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
   const canvasRefs = useRef<{ [pageIndex: number]: HTMLCanvasElement | null }>({});
   const drawingCanvasRef = useRef<HTMLCanvasElement | null>(null);
   
+  const [canvasScale, setCanvasScale] = useState(1);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      const canvas = canvasRefs.current[activePageIndex] || canvasRefs.current[0];
+      if (canvas) {
+        const rect = canvas.getBoundingClientRect();
+        if (rect.width > 0 && canvas.width > 0) {
+          setCanvasScale(rect.width / canvas.width);
+        }
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    const timer = setTimeout(handleResize, 50);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(timer);
+    };
+  }, [pages, activePageIndex]);
+  
   const [isDrawing, setIsDrawing] = useState(false);
   
   // Dragging state
@@ -371,7 +391,9 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
       for (const el of elements) {
         if (el.pageIndex >= pdfPages.length) continue;
         const pageToEdit = pdfPages[el.pageIndex];
-        const { width: pdfW, height: pdfH } = pageToEdit.getSize();
+        const cropBox = pageToEdit.getCropBox();
+        const pdfW = cropBox.width;
+        const pdfH = cropBox.height;
         
         const canvas = canvasRefs.current[el.pageIndex];
         if (!canvas) continue;
@@ -380,12 +402,12 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
         const scaleY = pdfH / canvas.height;
         
         const scaledWidth = el.width * scaleX;
-        const scaledHeight = el.height * scaleY;
-        const scaledX = el.x * scaleX;
-        // PDF coords are bottom-left
-        const scaledY = pdfH - (el.y * scaleY) - scaledHeight;
-        
+        const scaledX = cropBox.x + (el.x * scaleX);
         if (el.type === 'image' && el.dataUrl) {
+          const scaledHeight = el.height * scaleY;
+          // PDF coords are bottom-left
+          const scaledY = cropBox.y + pdfH - (el.y * scaleY) - scaledHeight;
+          
           const imgBytes = await fetch(el.dataUrl).then(res => res.arrayBuffer());
           let embeddedImage;
           if (el.dataUrl.includes('image/jpeg')) {
@@ -406,9 +428,14 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
           const baseSize = el.fontSize || 24;
           const fontSize = baseSize * scaleY;
           
+          // PDF coords are bottom-up. el.y is distance from top.
+          // The top of the text in PDF coords is: cropBox.y + pdfH - (el.y * scaleY)
+          // The baseline is below the top by about 0.8 * fontSize
+          const baselineY = cropBox.y + pdfH - (el.y * scaleY) - (fontSize * 0.8);
+          
           pageToEdit.drawText(el.text, {
             x: scaledX,
-            y: scaledY + (scaledHeight * 0.2), // Adjust baseline visually
+            y: baselineY,
             size: fontSize,
             font: activeFont,
             color: rgb(0, 0, 0),
@@ -592,14 +619,14 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
                                   className={`signature-draggable group ${isSelected ? 'selected' : ''}`}
                                   data-type={el.type}
                                   style={{
-                                    left: el.x,
-                                    top: el.y,
-                                    width: el.type === 'text' ? 'auto' : el.width, // text width is auto, image is fixed
-                                    height: el.type === 'text' ? 'auto' : el.height,
+                                    left: `${(el.x / (canvasRefs.current[index]?.width || 1)) * 100}%`,
+                                    top: `${(el.y / (canvasRefs.current[index]?.height || 1)) * 100}%`,
+                                    width: el.type === 'text' ? 'auto' : `${(el.width / (canvasRefs.current[index]?.width || 1)) * 100}%`,
+                                    height: el.type === 'text' ? 'auto' : `${(el.height / (canvasRefs.current[index]?.height || 1)) * 100}%`,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    border: isSelected ? '2px dashed rgba(139, 92, 246, 0.8)' : undefined,
+                                    outline: isSelected ? '2px dashed rgba(139, 92, 246, 0.8)' : undefined,
                                   }}
                                   onMouseDown={(e) => handleMouseDown(e, el.id)}
                                 >
@@ -639,7 +666,7 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
 
                                   {el.type === 'image' && el.dataUrl ? (
                                     <>
-                                      <img src={el.dataUrl} alt="Signature" style={{ width: '100%', height: '100%', pointerEvents: 'none', objectFit: 'contain' }} />
+                                      <img src={el.dataUrl} alt="Signature" style={{ width: '100%', height: '100%', pointerEvents: 'none', objectFit: 'fill' }} />
                                       {/* Resize Handle for images */}
                                       <div 
                                         className={`signature-resize-handle ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
@@ -648,12 +675,11 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
                                     </>
                                   ) : el.type === 'text' ? (
                                     <span style={{ 
-                                      fontSize: `${el.fontSize || 24}px`, 
+                                      fontSize: `${(el.fontSize || 24) * canvasScale}px`, 
                                       color: 'black', 
                                       pointerEvents: 'none', 
                                       fontFamily: el.fontFamily === 'Courier' ? 'monospace' : el.fontFamily === 'TimesRoman' ? 'serif' : 'sans-serif',
-                                      whiteSpace: 'nowrap',
-                                      padding: '4px' // Add slight padding to text for grab area
+                                      whiteSpace: 'nowrap'
                                     }}>
                                       {el.text}
                                     </span>

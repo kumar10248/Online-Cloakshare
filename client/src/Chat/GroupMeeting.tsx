@@ -200,11 +200,6 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
       console.log(`Negotiation needed for ${targetUserName}`);
     };
 
-    // Add transceivers FIRST to ensure bidirectional audio/video
-    // This is critical for mobile-to-desktop audio
-    pc.addTransceiver('audio', { direction: 'sendrecv' });
-    pc.addTransceiver('video', { direction: 'sendrecv' });
-
     // Add local tracks
     const stream = localStreamRef.current;
     if (stream) {
@@ -215,6 +210,9 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
       });
     } else {
       console.warn(`No local stream available when creating peer connection for ${targetUserName}`);
+      // Fallback for recvonly if no local stream
+      pc.addTransceiver('audio', { direction: 'recvonly' });
+      pc.addTransceiver('video', { direction: 'recvonly' });
     }
 
     peerConnectionsRef.current.set(targetSocketId, { socketId: targetSocketId, pc });
@@ -236,12 +234,7 @@ const GroupMeeting: React.FC<GroupMeetingProps> = ({ socket, isConnected, onClos
     const pc = createPeerConnection(targetSocketId, targetUserName);
     
     try {
-      // Add transceivers to ensure bi-directional communication
-      if (pc.getTransceivers().length === 0) {
-        pc.addTransceiver('audio', { direction: 'sendrecv' });
-        pc.addTransceiver('video', { direction: 'sendrecv' });
-      }
-      
+      // Create offer
       const offer = await pc.createOffer({
         offerToReceiveAudio: true,
         offerToReceiveVideo: true
