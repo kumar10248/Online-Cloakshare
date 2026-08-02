@@ -1061,21 +1061,21 @@ const Home: React.FC = () => {
           <div className="header-line my-8"></div>
 
           {/* Bottom Footer */}
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-4 mb-4 md:mb-0">
-              <p className="text-slate-600 text-sm">
+          <div className="flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-4 md:gap-0">
+            <div className="flex flex-col md:flex-row items-center md:space-x-4 mb-2 md:mb-0">
+              <p className="text-slate-600 text-sm mb-2 md:mb-0">
                 © {new Date().getFullYear()} CloakShare. All rights reserved.
               </p>
-              <div className="hidden md:flex items-center space-x-4 text-slate-600 text-sm">
+              <div className="flex flex-wrap justify-center items-center gap-3 text-slate-600 text-sm">
                 <a href="#" className="hover:text-violet-400 transition-colors">Privacy Policy</a>
-                <span className="text-slate-700">•</span>
+                <span className="text-slate-700 hidden sm:inline">•</span>
                 <a href="#" className="hover:text-violet-400 transition-colors">Terms of Service</a>
-                <span className="text-slate-700">•</span>
+                <span className="text-slate-700 hidden sm:inline">•</span>
                 <a href="https://devashish.top" className="hover:text-violet-400 transition-colors">Contact</a>
               </div>
             </div>
             
-            <div className="flex items-center space-x-2 text-slate-600 text-sm">
+            <div className="flex items-center justify-center space-x-2 text-slate-600 text-sm">
               <FontAwesomeIcon icon={faRocket as IconProp} className="text-violet-500" aria-hidden="true" />
               <span>Made with</span>
               <FontAwesomeIcon icon={faStar as IconProp} className="text-cyan-500" aria-hidden="true" />
