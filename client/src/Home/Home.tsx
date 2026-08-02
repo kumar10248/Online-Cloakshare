@@ -17,7 +17,8 @@ import {
   faRocket,
   faCut,
   faFileMedical,
-  faImage
+  faImage,
+  faPenNib
 } from "@fortawesome/free-solid-svg-icons";
 import { faGithub, faLinkedin, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { motion } from "framer-motion";
@@ -28,7 +29,7 @@ import MergePDF from "../Utilities/MergePDF";
 import CompressPDF from "../Utilities/CompressPDF";
 import JpgToPDF from "../Utilities/JpgToPDF";
 import PdfToJpg from "../Utilities/PdfToJpg";
-import PdfToWord from "../Utilities/PdfToWord";
+import SignPDF from "../Utilities/SignPDF";
 import EditPDF from "../Utilities/EditPDF";
 import SplitPDF from "../Utilities/SplitPDF";
 import AddRemovePages from "../Utilities/AddRemovePages";
@@ -71,7 +72,7 @@ const Home: React.FC = () => {
   const [showCompressPDF, setShowCompressPDF] = useState<boolean>(false);
   const [showJpgToPDF, setShowJpgToPDF] = useState<boolean>(false);
   const [showPdfToJpg, setShowPdfToJpg] = useState<boolean>(false);
-  const [showPdfToWord, setShowPdfToWord] = useState<boolean>(false);
+  const [showSignPDF, setShowSignPDF] = useState<boolean>(false);
   const [showEditPDF, setShowEditPDF] = useState<boolean>(false);
   const [showSplitPDF, setShowSplitPDF] = useState<boolean>(false);
   const [showAddRemovePages, setShowAddRemovePages] = useState<boolean>(false);
@@ -92,7 +93,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     const isAnyModalOpen = 
       showMergePDF || showCompressPDF || showJpgToPDF || showPdfToJpg ||
-      showPdfToWord || showEditPDF || showSplitPDF || showAddRemovePages ||
+      showSignPDF || showEditPDF || showSplitPDF || showAddRemovePages ||
       showImageToPng || showRedactPDF || showCloak || showWarpDrop;
 
     if (isAnyModalOpen) {
@@ -106,7 +107,7 @@ const Home: React.FC = () => {
     };
   }, [
     showMergePDF, showCompressPDF, showJpgToPDF, showPdfToJpg,
-    showPdfToWord, showEditPDF, showSplitPDF, showAddRemovePages,
+    showSignPDF, showEditPDF, showSplitPDF, showAddRemovePages,
     showImageToPng, showRedactPDF, showCloak, showWarpDrop
   ]);
 
@@ -343,7 +344,7 @@ const Home: React.FC = () => {
               aria-label="PDF utility tools"
             >
               {[
-                { name: "PDF to Word", icon: faFileAlt, action: () => setShowPdfToWord(true) },
+                { name: "Sign PDF", icon: faPenNib, action: () => setShowSignPDF(true) },
                 { name: "Merge PDF", icon: faCopy, action: () => setShowMergePDF(true) },
                 { name: "Edit PDF", icon: faFont, action: () => setShowEditPDF(true) },
                 { name: "Split PDF", icon: faCut, action: () => setShowSplitPDF(true) },
@@ -1117,7 +1118,7 @@ const Home: React.FC = () => {
       <CompressPDF isOpen={showCompressPDF} onClose={() => setShowCompressPDF(false)} />
       <JpgToPDF isOpen={showJpgToPDF} onClose={() => setShowJpgToPDF(false)} />
       <PdfToJpg isOpen={showPdfToJpg} onClose={() => setShowPdfToJpg(false)} />
-      <PdfToWord isOpen={showPdfToWord} onClose={() => setShowPdfToWord(false)} />
+      <SignPDF isOpen={showSignPDF} onClose={() => setShowSignPDF(false)} />
       <EditPDF isOpen={showEditPDF} onClose={() => setShowEditPDF(false)} />
       <SplitPDF isOpen={showSplitPDF} onClose={() => setShowSplitPDF(false)} />
       <AddRemovePages isOpen={showAddRemovePages} onClose={() => setShowAddRemovePages(false)} />

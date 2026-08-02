@@ -1,0 +1,90 @@
+/* ============================================
+   Sign PDF Modal — Premium Styles
+   ============================================ */
+
+.sign-pdf-canvas-container {
+  position: relative;
+  display: inline-block;
+  user-select: none;
+  touch-action: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+}
+
+.sign-pdf-canvas-container canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Draggable Element Overlay */
+.signature-draggable {
+  position: absolute;
+  cursor: grab;
+  z-index: 20;
+  box-sizing: border-box;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.signature-draggable:hover {
+  border-color: rgba(139, 92, 246, 0.4);
+  background: rgba(139, 92, 246, 0.05);
+}
+
+.signature-draggable[data-type="image"] {
+  border: 2px dashed rgba(139, 92, 246, 0.6);
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.signature-draggable:active {
+  cursor: grabbing;
+}
+
+/* Resize handle */
+.signature-resize-handle {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  width: 12px;
+  height: 12px;
+  background: #06B6D4;
+  border-radius: 50%;
+  cursor: se-resize;
+  z-index: 21;
+}
+
+/* Delete handle */
+.signature-delete-handle {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  background: #EF4444;
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 21;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+/* Signature Drawing Pad */
+.signature-pad-container {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 2px dashed rgba(139, 92, 246, 0.3);
+  overflow: hidden;
+  position: relative;
+  touch-action: none; /* Prevent scroll while drawing */
+}
+
+.signature-pad-canvas {
+  cursor: crosshair;
+  display: block;
+  touch-action: none;
+}
