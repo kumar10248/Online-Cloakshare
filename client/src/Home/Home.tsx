@@ -23,7 +23,7 @@ import {
   faEraser,
   faQrcode
 } from "@fortawesome/free-solid-svg-icons";
-import { faGithub, faLinkedin, faTwitter } from "@fortawesome/free-brands-svg-icons";
+import { faGithub, faInstagram, faLinkedin, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { motion } from "framer-motion";
 import { Toaster, toast } from "react-hot-toast";
 import cloakShareLogo from "../assets/cloakshare-logo-large.svg";
@@ -1024,15 +1024,15 @@ const Home: React.FC = () => {
               <h4 className="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">Connect</h4>
               <div className="space-y-1">
                 <a 
-                  href="https://github.com/kumar10248" 
+                  href="https://www.instagram.com/kumardevashish48" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="social-link"
                 >
                   <div className="icon-box">
-                    <FontAwesomeIcon icon={faGithub as IconProp} className="text-base" />
+                    <FontAwesomeIcon icon={faInstagram as IconProp} className="text-base" />
                   </div>
-                  <span className="text-sm">GitHub</span>
+                  <span className="text-sm">Instagram</span>
                 </a>
                 <a 
                   href="https://linkedin.com/in/kumar-devashishh" 
@@ -1074,7 +1074,7 @@ const Home: React.FC = () => {
                 <span className="text-slate-700 hidden sm:inline">•</span>
                 <a href="#" className="hover:text-yellow-400 transition-colors">Terms of Service</a>
                 <span className="text-slate-700 hidden sm:inline">•</span>
-                <a href="https://devashish.top" className="hover:text-yellow-400 transition-colors">Contact</a>
+                <a href="https://deva-portfolio-inky.vercel.app" target="_blank" className="hover:text-yellow-400 transition-colors">Contact</a>
               </div>
             </div>
             
