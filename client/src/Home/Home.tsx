@@ -23,7 +23,7 @@ import {
   faEraser,
   faQrcode
 } from "@fortawesome/free-solid-svg-icons";
-import { faGithub, faInstagram, faLinkedin, faTwitter } from "@fortawesome/free-brands-svg-icons";
+import {faInstagram, faLinkedin, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { motion } from "framer-motion";
 import { Toaster, toast } from "react-hot-toast";
 import cloakShareLogo from "../assets/cloakshare-logo-large.svg";
