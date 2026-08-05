@@ -1451,7 +1451,7 @@ const AnonymousChat: React.FC = () => {
   if (!isVisible) {
     return (
       <motion.button
-        className="fixed bottom-6 right-6 bg-gradient-to-r from-violet-500 to-cyan-500 text-white p-4 rounded-full shadow-2xl hover:shadow-violet-500/25 transition-all duration-300 z-50"
+        className="fixed bottom-6 right-6 bg-orange-500 text-white p-4 rounded-full shadow-2xl hover:shadow-orange-500/25 transition-all duration-300 z-50"
         onClick={() => setIsVisible(true)}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
@@ -1494,7 +1494,7 @@ const AnonymousChat: React.FC = () => {
           {/* Header */}
           <div className="chat-header-glass p-4 flex items-center justify-between z-20">
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-violet-500/20">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center shadow-lg shadow-yellow-500/20">
                 <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-white text-lg" aria-hidden="true" />
               </div>
               <div>
@@ -1508,7 +1508,7 @@ const AnonymousChat: React.FC = () => {
                       <span>Room: {user.roomId}</span>
                       <button
                         onClick={copyRoomId}
-                        className="text-violet-100 hover:text-white transition-colors"
+                        className="text-yellow-100 hover:text-white transition-colors"
                         title="Copy room code"
                         aria-label={`Copy room code ${user.roomId} to clipboard`}
                       >
@@ -1528,7 +1528,7 @@ const AnonymousChat: React.FC = () => {
                     className={`text-white w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-200 ${
                       isCallActive || isInitiatingCall 
                         ? 'bg-white/5 cursor-not-allowed opacity-50' 
-                        : 'bg-white/10 hover:bg-violet-500/20 hover:text-violet-400 border border-white/5 hover:border-violet-500/30 action-btn-hover'
+                        : 'bg-white/10 hover:bg-yellow-500/20 hover:text-yellow-400 border border-white/5 hover:border-yellow-500/30 action-btn-hover'
                     }`}
                     title="Voice call"
                     disabled={isCallActive || isInitiatingCall}
@@ -1540,7 +1540,7 @@ const AnonymousChat: React.FC = () => {
                     className={`text-white w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-200 ${
                       isCallActive || isInitiatingCall 
                         ? 'bg-white/5 cursor-not-allowed opacity-50' 
-                        : 'bg-white/10 hover:bg-cyan-500/20 hover:text-cyan-400 border border-white/5 hover:border-cyan-500/30 action-btn-hover'
+                        : 'bg-white/10 hover:bg-orange-500/20 hover:text-orange-400 border border-white/5 hover:border-orange-500/30 action-btn-hover'
                     }`}
                     title="Video call"
                     disabled={isCallActive || isInitiatingCall}
@@ -1575,8 +1575,8 @@ const AnonymousChat: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-4 sm:p-8 z-10 flex items-center justify-center">
               <div className="w-full max-w-md bg-white/[0.02] border border-white/[0.05] p-8 rounded-2xl backdrop-blur-xl shadow-2xl">
                 <div className="text-center mb-8">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-violet-500/10 border border-violet-500/20 mb-4 shadow-[0_0_30px_rgba(139,92,246,0.15)]">
-                    <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-violet-400 text-3xl" aria-hidden="true" />
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 mb-4 shadow-[0_0_30px_rgba(234, 179, 8,0.15)]">
+                    <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-yellow-400 text-3xl" aria-hidden="true" />
                   </div>
                   <h4 className="text-2xl font-bold text-white mb-2">Join Anonymous Chat</h4>
                   <p className="text-slate-400 text-sm">Start chatting securely without revealing your identity</p>
@@ -1600,7 +1600,7 @@ const AnonymousChat: React.FC = () => {
                     <button
                       onClick={createRoom}
                       disabled={isConnecting || !isConnected}
-                      className="bg-gradient-to-r from-violet-500 to-cyan-500 text-white p-3.5 rounded-xl font-medium shimmer-btn shadow-lg shadow-violet-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-transform hover:-translate-y-0.5"
+                      className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white p-3.5 rounded-xl font-medium shimmer-btn shadow-lg shadow-yellow-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition-transform hover:-translate-y-0.5"
                     >
                       {isConnecting ? 'Creating...' : 'Create Room'}
                     </button>
@@ -1628,11 +1628,11 @@ const AnonymousChat: React.FC = () => {
 
                 <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-center flex-wrap gap-4 text-xs text-slate-400">
                   <div className="flex items-center space-x-1.5 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
-                    <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-violet-400" />
+                    <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-yellow-400" />
                     <span>Anonymous</span>
                   </div>
                   <div className="flex items-center space-x-1.5 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
-                    <FontAwesomeIcon icon={faEyeSlash as IconProp} className="text-cyan-400" />
+                    <FontAwesomeIcon icon={faEyeSlash as IconProp} className="text-orange-400" />
                     <span>No tracking</span>
                   </div>
                 </div>
@@ -1645,7 +1645,7 @@ const AnonymousChat: React.FC = () => {
                     disabled={!isConnected}
                     className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-5 py-3 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3 mx-auto w-full group hover:-translate-y-0.5"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-violet-500 to-fuchsia-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-yellow-500 to-fuchsia-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                       <FontAwesomeIcon icon={faUsersRectangle as IconProp} className="text-white text-sm" />
                     </div>
                     <span>Start Group Meeting</span>
@@ -1660,25 +1660,25 @@ const AnonymousChat: React.FC = () => {
             <div className="flex-1 flex items-center justify-center p-8 z-10">
               <div className="bg-white/[0.02] border border-white/[0.05] p-10 rounded-3xl backdrop-blur-xl shadow-2xl text-center max-w-md w-full">
                 <div className="relative w-24 h-24 mx-auto mb-8">
-                  <div className="absolute inset-0 rounded-full border-4 border-violet-500/20"></div>
-                  <div className="absolute inset-0 rounded-full border-4 border-violet-500 border-t-transparent animate-spin" style={{ animationDuration: '1.5s' }}></div>
+                  <div className="absolute inset-0 rounded-full border-4 border-yellow-500/20"></div>
+                  <div className="absolute inset-0 rounded-full border-4 border-yellow-500 border-t-transparent animate-spin" style={{ animationDuration: '1.5s' }}></div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <FontAwesomeIcon icon={faUsers as IconProp} className="text-violet-400 text-3xl" />
+                    <FontAwesomeIcon icon={faUsers as IconProp} className="text-yellow-400 text-3xl" />
                   </div>
                 </div>
                 <h4 className="text-2xl font-bold text-white mb-2">Waiting for someone...</h4>
                 <p className="text-slate-400 mb-8">Share your 4-digit code to connect</p>
                 
                 <div 
-                  className="bg-black/30 border border-white/10 rounded-2xl p-6 mb-8 cursor-pointer hover:border-violet-500/30 hover:bg-black/40 transition-all group"
+                  className="bg-black/30 border border-white/10 rounded-2xl p-6 mb-8 cursor-pointer hover:border-yellow-500/30 hover:bg-black/40 transition-all group"
                   onClick={copyRoomId}
                   title="Click to copy"
                 >
-                  <span className="text-5xl tracking-[0.2em] font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400 group-hover:scale-110 inline-block transition-transform duration-300 ml-[0.2em]">
+                  <span className="text-5xl tracking-[0.2em] font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 group-hover:scale-110 inline-block transition-transform duration-300 ml-[0.2em]">
                     {user.roomId}
                   </span>
                   <div className="mt-4 text-sm text-slate-500 flex items-center justify-center space-x-2">
-                    <FontAwesomeIcon icon={faCopy as IconProp} className="text-violet-400/50 group-hover:text-violet-400 transition-colors" />
+                    <FontAwesomeIcon icon={faCopy as IconProp} className="text-yellow-400/50 group-hover:text-yellow-400 transition-colors" />
                     <span>Click to copy code</span>
                   </div>
                 </div>
@@ -1704,7 +1704,7 @@ const AnonymousChat: React.FC = () => {
                     <span className="bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
                       Room: <span className="text-white font-mono tracking-wider">{user.roomId}</span>
                     </span>
-                    <span className="bg-violet-500/10 text-violet-300 px-3 py-1.5 rounded-full border border-violet-500/20">
+                    <span className="bg-yellow-500/10 text-yellow-300 px-3 py-1.5 rounded-full border border-yellow-500/20">
                       You: {user.userName} ({user.role})
                     </span>
                   </div>
@@ -1714,7 +1714,7 @@ const AnonymousChat: React.FC = () => {
               {/* Messages Area */}
               <div 
                 className={`flex-1 p-4 md:p-6 overflow-y-auto messages-container relative z-10 ${
-                  isDragOver ? 'bg-violet-500/10 border-2 border-dashed border-violet-500 shadow-[inset_0_0_50px_rgba(139,92,246,0.1)]' : 'bg-transparent'
+                  isDragOver ? 'bg-yellow-500/10 border-2 border-dashed border-yellow-500 shadow-[inset_0_0_50px_rgba(234, 179, 8,0.1)]' : 'bg-transparent'
                 }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -1722,7 +1722,7 @@ const AnonymousChat: React.FC = () => {
               >
                 {isDragOver && (
                   <div className="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75 z-10">
-                    <div className="text-center text-violet-400">
+                    <div className="text-center text-yellow-400">
                       <FontAwesomeIcon icon={faFileAlt as IconProp} className="text-4xl mb-2" />
                       <p className="text-lg font-medium">Drop file to share</p>
                     </div>
@@ -1731,21 +1731,21 @@ const AnonymousChat: React.FC = () => {
                 {messages.length === 0 && (
                   <div className="text-center text-slate-400 mt-12 flex flex-col items-center">
                     <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center mb-6 shadow-lg border border-white/5">
-                      <FontAwesomeIcon icon={faComment as IconProp} className="text-4xl text-violet-400/50" />
+                      <FontAwesomeIcon icon={faComment as IconProp} className="text-4xl text-yellow-400/50" />
                     </div>
                     <p className="text-xl font-bold text-white mb-2">Start your anonymous conversation!</p>
                     <p className="text-sm">Share files, send messages, and communicate securely.</p>
                     <div className="mt-8 flex items-center justify-center space-x-4 text-xs">
                       <div className="flex items-center space-x-1.5 bg-white/5 px-3 py-1.5 rounded-full">
-                        <FontAwesomeIcon icon={faFileAlt as IconProp} className="text-violet-400" />
+                        <FontAwesomeIcon icon={faFileAlt as IconProp} className="text-yellow-400" />
                         <span>File sharing</span>
                       </div>
                       <div className="flex items-center space-x-1.5 bg-white/5 px-3 py-1.5 rounded-full">
-                        <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-cyan-400" />
+                        <FontAwesomeIcon icon={faUserSecret as IconProp} className="text-orange-400" />
                         <span>Anonymous</span>
                       </div>
                       <div className="flex items-center space-x-1.5 bg-white/5 px-3 py-1.5 rounded-full">
-                        <FontAwesomeIcon icon={faEyeSlash as IconProp} className="text-violet-400" />
+                        <FontAwesomeIcon icon={faEyeSlash as IconProp} className="text-yellow-400" />
                         <span>No tracking</span>
                       </div>
                     </div>
@@ -1770,7 +1770,7 @@ const AnonymousChat: React.FC = () => {
                       } p-3.5 flex flex-col`}>
                         
                         {message.type === 'system' ? (
-                          <p className="text-violet-400 text-sm italic">{message.content}</p>
+                          <p className="text-yellow-400 text-sm italic">{message.content}</p>
                         ) : (
                           <>
                             <div className="flex items-baseline justify-between space-x-3 mb-1.5 border-b border-white/10 pb-1">
@@ -1823,9 +1823,9 @@ const AnonymousChat: React.FC = () => {
                       <div className="message-bubble other text-slate-300 p-3 flex items-center space-x-2">
                         <span className="text-sm font-medium">{roomInfo.guestName || roomInfo.hostName} is typing</span>
                         <div className="flex space-x-1 ml-1">
-                          <div className="w-1.5 h-1.5 bg-violet-400 rounded-full typing-dot"></div>
-                          <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full typing-dot"></div>
-                          <div className="w-1.5 h-1.5 bg-violet-400 rounded-full typing-dot"></div>
+                          <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full typing-dot"></div>
+                          <div className="w-1.5 h-1.5 bg-orange-400 rounded-full typing-dot"></div>
+                          <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full typing-dot"></div>
                         </div>
                       </div>
                     </motion.div>
@@ -1847,7 +1847,7 @@ const AnonymousChat: React.FC = () => {
                   >
                     <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl p-3">
                       <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-cyan-500 rounded-lg flex items-center justify-center shadow-lg">
+                        <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center shadow-lg">
                           <FontAwesomeIcon 
                             icon={getFileIcon(selectedFile.name, selectedFile.type) as IconProp} 
                             className="text-white" 
@@ -1894,7 +1894,7 @@ const AnonymousChat: React.FC = () => {
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={!roomInfo?.hostName || !roomInfo?.guestName}
-                    className="bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 hover:text-violet-400 p-3.5 rounded-xl transition-all action-btn-hover flex-shrink-0"
+                    className="bg-white/5 hover:bg-white/10 border border-white/10 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 hover:text-yellow-400 p-3.5 rounded-xl transition-all action-btn-hover flex-shrink-0"
                     title={roomInfo?.hostName && roomInfo?.guestName ? "Attach file" : "Wait for both users to join"}
                   >
                     <FontAwesomeIcon icon={faPlus as IconProp} aria-hidden="true" />
@@ -1926,7 +1926,7 @@ const AnonymousChat: React.FC = () => {
                   <button
                     onClick={sendMessage}
                     disabled={!currentMessage.trim()}
-                    className="bg-gradient-to-r from-violet-500 to-cyan-500 hover:from-violet-600 hover:to-cyan-600 text-white p-3.5 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-violet-500/20 shimmer-btn flex-shrink-0"
+                    className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white p-3.5 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-yellow-500/20 shimmer-btn flex-shrink-0"
                     aria-label="Send message"
                   >
                     <FontAwesomeIcon icon={faPaperPlane as IconProp} aria-hidden="true" />
@@ -1955,7 +1955,7 @@ const AnonymousChat: React.FC = () => {
               {/* Animated caller avatar */}
               <div className="relative">
                 <motion.div
-                  className="w-24 h-24 mx-auto rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 flex items-center justify-center shadow-[0_0_30px_rgba(139,92,246,0.3)] relative z-10"
+                  className="w-24 h-24 mx-auto rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center shadow-[0_0_30px_rgba(234, 179, 8,0.3)] relative z-10"
                   animate={{ scale: [1, 1.1, 1] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 >
@@ -1966,19 +1966,19 @@ const AnonymousChat: React.FC = () => {
                 </motion.div>
                 {/* Ripple effect */}
                 <motion.div
-                  className="absolute inset-0 mx-auto w-24 h-24 rounded-full border-2 border-violet-500 z-0"
+                  className="absolute inset-0 mx-auto w-24 h-24 rounded-full border-2 border-yellow-500 z-0"
                   animate={{ scale: [1, 1.8], opacity: [0.8, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 />
                 <motion.div
-                  className="absolute inset-0 mx-auto w-24 h-24 rounded-full border-2 border-cyan-500 z-0"
+                  className="absolute inset-0 mx-auto w-24 h-24 rounded-full border-2 border-orange-500 z-0"
                   animate={{ scale: [1, 1.8], opacity: [0.8, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
                 />
               </div>
 
               {/* Call type icon */}
-              <div className="flex items-center justify-center space-x-2 text-violet-400 bg-violet-500/10 w-max mx-auto px-4 py-1.5 rounded-full border border-violet-500/20">
+              <div className="flex items-center justify-center space-x-2 text-yellow-400 bg-yellow-500/10 w-max mx-auto px-4 py-1.5 rounded-full border border-yellow-500/20">
                 <FontAwesomeIcon 
                   icon={incomingCall.callType === 'video' ? faVideo as IconProp : faPhoneAlt as IconProp} 
                   className="text-lg" 
@@ -2143,7 +2143,7 @@ const AnonymousChat: React.FC = () => {
                     {/* Voice wave animation */}
                     <div className="relative">
                       <motion.div
-                        className="w-36 h-36 rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 flex items-center justify-center shadow-[0_0_50px_rgba(139,92,246,0.3)] z-10 relative"
+                        className="w-36 h-36 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 flex items-center justify-center shadow-[0_0_50px_rgba(234, 179, 8,0.3)] z-10 relative"
                         animate={isCallConnected ? { scale: [1, 1.05, 1] } : {}}
                         transition={{ duration: 2, repeat: Infinity }}
                       >
@@ -2154,12 +2154,12 @@ const AnonymousChat: React.FC = () => {
                       {isCallConnected && (
                         <>
                           <motion.div
-                            className="absolute inset-0 rounded-full border-2 border-violet-500/50 z-0"
+                            className="absolute inset-0 rounded-full border-2 border-yellow-500/50 z-0"
                             animate={{ scale: [1, 2], opacity: [0.5, 0] }}
                             transition={{ duration: 2, repeat: Infinity }}
                           />
                           <motion.div
-                            className="absolute inset-0 rounded-full border-2 border-cyan-500/50 z-0"
+                            className="absolute inset-0 rounded-full border-2 border-orange-500/50 z-0"
                             animate={{ scale: [1, 2], opacity: [0.5, 0] }}
                             transition={{ duration: 2, repeat: Infinity, delay: 0.7 }}
                           />
@@ -2169,7 +2169,7 @@ const AnonymousChat: React.FC = () => {
                     
                     <div className="text-center space-y-2">
                       <h2 className="text-white text-3xl font-bold tracking-tight">{getOtherUserName()}</h2>
-                      <p className="text-violet-400 font-mono tracking-widest uppercase text-sm">
+                      <p className="text-yellow-400 font-mono tracking-widest uppercase text-sm">
                         {callStatus === 'ringing' && 'Calling...'}
                         {callStatus === 'connecting' && 'Connecting...'}
                         {callStatus === 'connected' && formatCallDuration(callDuration)}
@@ -2197,7 +2197,7 @@ const AnonymousChat: React.FC = () => {
                   >
                     <div className="text-center space-y-4">
                       <motion.div
-                        className="w-20 h-20 mx-auto rounded-full border-4 border-violet-500 border-t-transparent"
+                        className="w-20 h-20 mx-auto rounded-full border-4 border-yellow-500 border-t-transparent"
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                       />

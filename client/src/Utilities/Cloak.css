@@ -28,7 +28,7 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow:
-    0 0 60px rgba(139, 92, 246, 0.08),
+    0 0 60px rgba(234, 179, 8, 0.08),
     0 25px 80px rgba(0, 0, 0, 0.5);
 }
 
@@ -45,11 +45,11 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+  background: linear-gradient(135deg, #EAB308, #F97316);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 15px rgba(234, 179, 8, 0.3);
 }
 
 .cloak-close-btn {
@@ -117,9 +117,9 @@
 }
 
 .cloak-mode-btn.active-encrypt {
-  background: rgba(139, 92, 246, 0.15);
-  color: #A78BFA;
-  box-shadow: 0 0 15px rgba(139, 92, 246, 0.1);
+  background: rgba(234, 179, 8, 0.15);
+  color: #FDBA74;
+  box-shadow: 0 0 15px rgba(234, 179, 8, 0.1);
 }
 
 .cloak-mode-btn.active-decrypt {
@@ -142,8 +142,8 @@
 }
 
 .cloak-dropzone.drag-active {
-  background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='rgba(139,92,246,0.5)' stroke-width='2' stroke-dasharray='12,8' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e");
-  background-color: rgba(139, 92, 246, 0.04);
+  background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='rgba(234, 179, 8,0.5)' stroke-width='2' stroke-dasharray='12,8' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e");
+  background-color: rgba(234, 179, 8, 0.04);
 }
 
 .cloak-dropzone-content {
@@ -244,8 +244,8 @@
 
 .cloak-password-input:focus {
   outline: none;
-  border-color: rgba(139, 92, 246, 0.5);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  border-color: rgba(234, 179, 8, 0.5);
+  box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.15);
 }
 
 .cloak-password-input:disabled {
@@ -268,7 +268,7 @@
 }
 
 .cloak-password-toggle:hover {
-  color: #A78BFA;
+  color: #FDBA74;
 }
 
 /* Result Box */
@@ -318,12 +318,12 @@
 }
 
 .cloak-primary-btn.bg-violet {
-  background: linear-gradient(135deg, #8B5CF6, #06B6D4);
-  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+  background: linear-gradient(135deg, #EAB308, #F97316);
+  box-shadow: 0 4px 20px rgba(234, 179, 8, 0.3);
 }
 
 .cloak-primary-btn.bg-emerald {
-  background: linear-gradient(135deg, #10B981, #3B82F6);
+  background: linear-gradient(135deg, #EAB308, #F97316);
   box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
 }
 
@@ -332,7 +332,7 @@
 }
 
 .cloak-primary-btn.bg-violet:hover:not(.disabled) {
-  box-shadow: 0 6px 30px rgba(139, 92, 246, 0.5), 0 0 60px rgba(6, 182, 212, 0.15);
+  box-shadow: 0 6px 30px rgba(234, 179, 8, 0.5), 0 0 60px rgba(249, 115, 22, 0.15);
 }
 
 .cloak-primary-btn.bg-emerald:hover:not(.disabled) {

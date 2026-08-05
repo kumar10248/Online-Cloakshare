@@ -409,7 +409,7 @@ const WarpDrop: React.FC<WarpDropProps> = ({ isOpen, onClose }) => {
               {step === 'initial' && (
                 <div className="warp-initial">
                   <div className="warp-action-card">
-                    <div className="warp-action-icon bg-violet-500/10 text-violet-400">
+                    <div className="warp-action-icon bg-yellow-500/10 text-yellow-400">
                       <FontAwesomeIcon icon={faServer as IconProp} />
                     </div>
                     <h3 className="text-white font-medium mb-2">Send File</h3>
@@ -424,7 +424,7 @@ const WarpDrop: React.FC<WarpDropProps> = ({ isOpen, onClose }) => {
                   </div>
 
                   <div className="warp-action-card">
-                    <div className="warp-action-icon bg-cyan-500/10 text-cyan-400">
+                    <div className="warp-action-icon bg-orange-500/10 text-orange-400">
                       <FontAwesomeIcon icon={faExchangeAlt as IconProp} />
                     </div>
                     <h3 className="text-white font-medium mb-2">Receive File</h3>
@@ -449,10 +449,10 @@ const WarpDrop: React.FC<WarpDropProps> = ({ isOpen, onClose }) => {
               {(step === 'waiting' || step === 'connecting') && (
                 <div className="warp-waiting text-center py-8">
                   <div className="inline-block relative">
-                    <div className="w-24 h-24 rounded-full border-4 border-violet-500/30 flex items-center justify-center">
-                      <FontAwesomeIcon icon={faSpinner as IconProp} className="text-violet-400 text-3xl animate-spin" />
+                    <div className="w-24 h-24 rounded-full border-4 border-yellow-500/30 flex items-center justify-center">
+                      <FontAwesomeIcon icon={faSpinner as IconProp} className="text-yellow-400 text-3xl animate-spin" />
                     </div>
-                    <div className="absolute inset-0 rounded-full border-4 border-violet-500 border-t-transparent animate-spin" style={{ animationDuration: '2s' }}></div>
+                    <div className="absolute inset-0 rounded-full border-4 border-yellow-500 border-t-transparent animate-spin" style={{ animationDuration: '2s' }}></div>
                   </div>
                   <h3 className="text-white text-lg font-medium mt-6 mb-2">
                     {step === 'waiting' ? 'Waiting for receiver...' : 'Establishing secure link...'}
@@ -465,7 +465,7 @@ const WarpDrop: React.FC<WarpDropProps> = ({ isOpen, onClose }) => {
                   
                   {step === 'waiting' && (
                     <div className="warp-code-box" onClick={copyCode}>
-                      <span className="text-3xl tracking-widest font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">
+                      <span className="text-3xl tracking-widest font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">
                         {roomId}
                       </span>
                       <FontAwesomeIcon icon={faCopy as IconProp} className="text-slate-500 ml-4 hover:text-white transition-colors" />
@@ -481,9 +481,9 @@ const WarpDrop: React.FC<WarpDropProps> = ({ isOpen, onClose }) => {
                     Secure peer-to-peer connection established
                   </div>
 
-                  <div className="warp-file-selector border-2 border-dashed border-violet-500/30 rounded-xl p-8 text-center bg-violet-500/5 hover:bg-violet-500/10 transition-colors cursor-pointer" onClick={() => document.getElementById('warp-file')?.click()}>
+                  <div className="warp-file-selector border-2 border-dashed border-yellow-500/30 rounded-xl p-8 text-center bg-yellow-500/5 hover:bg-yellow-500/10 transition-colors cursor-pointer" onClick={() => document.getElementById('warp-file')?.click()}>
                     <input type="file" id="warp-file" className="hidden" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-                    <FontAwesomeIcon icon={faFile as IconProp} className="text-4xl text-violet-400 mb-4" />
+                    <FontAwesomeIcon icon={faFile as IconProp} className="text-4xl text-yellow-400 mb-4" />
                     {file ? (
                       <div>
                         <h4 className="text-white font-medium mb-1">{file.name}</h4>
@@ -510,7 +510,7 @@ const WarpDrop: React.FC<WarpDropProps> = ({ isOpen, onClose }) => {
               {step === 'transferring' && (
                 <div className="warp-transferring py-6">
                   <div className="text-center mb-8">
-                    <FontAwesomeIcon icon={faExchangeAlt as IconProp} className="text-4xl text-cyan-400 mb-4 animate-bounce" />
+                    <FontAwesomeIcon icon={faExchangeAlt as IconProp} className="text-4xl text-orange-400 mb-4 animate-bounce" />
                     <h3 className="text-white text-lg font-medium">Transferring File</h3>
                     <p className="text-slate-400 text-sm">{incomingFileInfo ? incomingFileInfo.name : file?.name}</p>
                   </div>

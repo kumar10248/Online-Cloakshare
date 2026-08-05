@@ -17,12 +17,12 @@
 }
 
 .anonymous-chat .messages-container::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.4);
+  background: rgba(234, 179, 8, 0.4);
   border-radius: 3px;
 }
 
 .anonymous-chat .messages-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.6);
+  background: rgba(234, 179, 8, 0.6);
 }
 
 /* Typing indicator animation */
@@ -39,7 +39,7 @@
 
 .typing-dot {
   animation: chat-typing 1.4s infinite ease-in-out;
-  box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 8px rgba(234, 179, 8, 0.5);
 }
 
 .typing-dot:nth-child(1) { animation-delay: -0.32s; }
@@ -54,9 +54,9 @@
 }
 
 .file-drop-zone.drag-over {
-  border-color: #8B5CF6;
-  background-color: rgba(139, 92, 246, 0.1);
-  box-shadow: inset 0 0 20px rgba(139, 92, 246, 0.15);
+  border-color: #EAB308;
+  background-color: rgba(234, 179, 8, 0.1);
+  box-shadow: inset 0 0 20px rgba(234, 179, 8, 0.15);
 }
 
 /* Message animations */
@@ -75,11 +75,11 @@
 .voice-wave {
   width: 4px;
   height: 20px;
-  background: linear-gradient(to top, #8B5CF6, #06B6D4);
+  background: linear-gradient(to top, #EAB308, #F97316);
   margin: 0 3px;
   border-radius: 2px;
   animation: wave 1.5s ease-in-out infinite;
-  box-shadow: 0 0 8px rgba(6, 182, 212, 0.5);
+  box-shadow: 0 0 8px rgba(249, 115, 22, 0.5);
 }
 
 .voice-wave:nth-child(1) { animation-delay: 0s; }
@@ -113,7 +113,7 @@
 
 /* Own messages (Violet gradient) */
 .message-bubble.own {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.9), rgba(6, 182, 212, 0.9));
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.9), rgba(249, 115, 22, 0.9));
 }
 
 /* Other messages (Glass effect) */
@@ -136,7 +136,7 @@
 
 .upload-progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #8B5CF6, #06B6D4);
+  background: linear-gradient(90deg, #EAB308, #F97316);
   transition: width 0.3s ease;
   position: relative;
 }
@@ -169,7 +169,7 @@
   max-height: 250px;
   overflow-y: auto;
   z-index: 1000;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(139, 92, 246, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(234, 179, 8, 0.1);
 }
 
 /* Custom scrollbar for emoji picker */
@@ -190,7 +190,7 @@
 }
 
 .emoji-item:hover {
-  background-color: rgba(139, 92, 246, 0.25);
+  background-color: rgba(234, 179, 8, 0.25);
   transform: scale(1.15);
 }
 
@@ -200,8 +200,8 @@
 }
 
 .chat-input-glow:focus-within {
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3), 0 0 20px rgba(139, 92, 246, 0.1);
-  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.3), 0 0 20px rgba(234, 179, 8, 0.1);
+  border-color: rgba(234, 179, 8, 0.5);
   background: rgba(255, 255, 255, 0.04);
 }
 
@@ -211,7 +211,7 @@
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 40px rgba(139, 92, 246, 0.08), 0 30px 80px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 40px rgba(234, 179, 8, 0.08), 0 30px 80px rgba(0, 0, 0, 0.6);
 }
 
 .chat-header-glass {

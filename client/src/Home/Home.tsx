@@ -266,27 +266,26 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F] text-slate-200 relative overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="min-h-screen bg-[#111827] text-slate-200 relative overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
       {/* ============ Animated Background ============ */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="aurora-bg absolute inset-0" />
-        <div className="orb orb-1" />
-        <div className="orb orb-2" />
-        <div className="orb orb-3" />
+        
+        
+        
+        
       </div>
 
       {/* Skip to main content link for accessibility */}
       <a 
         href="#main-content" 
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-violet-600 focus:text-white focus:rounded-lg focus:font-semibold"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-yellow-600 focus:text-white focus:rounded-lg focus:font-semibold"
       >
         Skip to main content
       </a>
       
       {/* ============ Header ============ */}
-      <header className="relative z-10 glass-panel border-b border-white/[0.06]" role="banner">
-        <div className="header-line absolute bottom-0 left-0 right-0" />
-        <div className="container mx-auto px-4 py-5">
+      <header className="relative z-10 bg-gradient-to-r from-orange-500 to-orange-600 shadow-md" role="banner">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex flex-wrap items-center justify-between">
             <div className="flex items-center">
               <motion.div
@@ -300,7 +299,7 @@ const Home: React.FC = () => {
                   alt="" 
                   aria-hidden="true"
                   className="w-11 h-11 drop-shadow-lg"
-                  style={{ filter: "drop-shadow(0 0 8px rgba(139, 92, 246, 0.4))" }}
+                  style={{ filter: "drop-shadow(0 0 8px rgba(234, 179, 8, 0.4))" }}
                 />
               </motion.div>
               <motion.h1
@@ -311,7 +310,7 @@ const Home: React.FC = () => {
               >
                 <span className="sr-only">CloakShare - </span>
                 <span className="text-white">ONLINE </span>
-                <span className="gradient-text">CLOAKSHARE</span>
+                <span className="text-black">CLOAKSHARE</span>
               </motion.h1>
             </div>
 
@@ -323,19 +322,19 @@ const Home: React.FC = () => {
             >
               <button
                 onClick={() => setShowUtilities(!showUtilities)}
-                className="px-5 py-2.5 rounded-xl shimmer-btn bg-white/[0.06] border border-white/[0.1] text-slate-300 hover:text-white hover:border-violet-500/40 hover:bg-violet-500/10 transition-all duration-300 font-medium flex items-center text-sm"
+                className="px-4 py-2 rounded-lg bg-white text-orange-500 hover:bg-orange-50 transition-all duration-300 font-bold flex items-center text-sm shadow-sm"
                 aria-expanded={showUtilities}
                 aria-controls="utilities-panel"
                 aria-label={showUtilities ? 'Hide utilities menu' : 'Show utilities menu'}
               >
-                <FontAwesomeIcon icon={faExchangeAlt as IconProp} className="mr-2 text-violet-400" />
+                <FontAwesomeIcon icon={faExchangeAlt as IconProp} className="mr-2" />
                 Utilities
                 <motion.div
                   animate={{ rotate: showUtilities ? 180 : 0 }}
                   transition={{ duration: 0.3 }}
                   className="ml-2"
                 >
-                  <FontAwesomeIcon icon={faRocket as IconProp} className="text-xs text-cyan-400" />
+                  <FontAwesomeIcon icon={faRocket as IconProp} className="text-xs" />
                 </motion.div>
               </button>
             </motion.div>
@@ -371,13 +370,13 @@ const Home: React.FC = () => {
               ].map((tool, index) => (
                 <motion.button
                   key={tool.name}
-                  className="util-btn"
+                  className="flex flex-col items-center justify-center space-y-1 bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white px-4 py-3 rounded-xl transition-all border border-slate-700 shadow-sm text-sm"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.08 }}
                   onClick={tool.action}
                 >
-                  <FontAwesomeIcon icon={tool.icon as IconProp} className="text-xs text-violet-400" aria-hidden="true" />
+                  <FontAwesomeIcon icon={tool.icon as IconProp} className="text-xs text-yellow-400" aria-hidden="true" />
                   <span>{tool.name}</span>
                 </motion.button>
               ))}
@@ -388,15 +387,15 @@ const Home: React.FC = () => {
 
       {/* ============ Notice Bar ============ */}
       <motion.div 
-        className="notice-bar relative z-10 text-center py-2.5 px-4 text-xs sm:text-sm"
+        className="bg-[#1F2937] border-b border-gray-700 relative z-10 text-center py-2.5 px-4 text-xs sm:text-sm"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex items-center justify-center space-x-2 flex-wrap text-slate-400">
-          <FontAwesomeIcon icon={faClock as IconProp} className="text-violet-400 hidden sm:inline" />
+        <div className="flex items-center justify-center space-x-2 flex-wrap text-yellow-500">
+          <FontAwesomeIcon icon={faClock as IconProp} className="text-yellow-400 hidden sm:inline" />
           <span>Your data will be deleted automatically after expiration time (default: 24 hours)</span>
-          <FontAwesomeIcon icon={faShieldAlt as IconProp} className="text-cyan-400 hidden sm:inline" />
+          <FontAwesomeIcon icon={faShieldAlt as IconProp} className="text-orange-400 hidden sm:inline" />
         </div>
       </motion.div>
 
@@ -411,7 +410,7 @@ const Home: React.FC = () => {
           transition={{ duration: 0.7 }}
         >
           <h2 className="text-3xl sm:text-4xl lg:text-6xl font-extrabold text-white mb-5 leading-tight">
-            Secure & <span className="gradient-text">Temporary</span> Sharing
+            Secure & <span className="text-orange-500">Temporary</span> Sharing
           </h2>
           <p className="text-base sm:text-lg lg:text-xl text-slate-400 max-w-2xl mx-auto px-4 leading-relaxed">
             Share files and text securely with automatic expiration. No registration required.
@@ -429,11 +428,11 @@ const Home: React.FC = () => {
               <span className="text-slate-300">Encrypted</span>
             </motion.div>
             <motion.div variants={itemVariants} className="feature-pill">
-              <FontAwesomeIcon icon={faClock as IconProp} className="text-cyan-400 text-sm" />
+              <FontAwesomeIcon icon={faClock as IconProp} className="text-orange-400 text-sm" />
               <span className="text-slate-300">Auto-Delete</span>
             </motion.div>
             <motion.div variants={itemVariants} className="feature-pill">
-              <FontAwesomeIcon icon={faStar as IconProp} className="text-violet-400 text-sm" />
+              <FontAwesomeIcon icon={faStar as IconProp} className="text-yellow-400 text-sm" />
               <span className="text-slate-300">No Signup</span>
             </motion.div>
           </motion.div>
@@ -447,7 +446,7 @@ const Home: React.FC = () => {
           >
             <button
               onClick={() => setShowGuide(!showGuide)}
-              className="px-6 py-3 rounded-xl shimmer-btn glow-btn bg-gradient-to-r from-violet-600 to-cyan-600 text-white hover:from-violet-500 hover:to-cyan-500 transition-all duration-300 font-semibold flex items-center mx-auto text-sm"
+              className="px-6 py-3 rounded-xl   bg-orange-500 text-white hover:from-yellow-500 hover:to-orange-500 transition-all duration-300 font-semibold flex items-center mx-auto text-sm"
               aria-expanded={showGuide}
               aria-controls="user-guide-section"
               aria-label={showGuide ? 'Hide user guide' : 'Show user guide'}
@@ -476,10 +475,10 @@ const Home: React.FC = () => {
             transition={{ duration: 0.6 }}
             aria-label="User guide for CloakShare"
           >
-            <div className="glass-card p-6 lg:p-8">
+            <div className="bg-transparent p-6 lg:p-8">
               <div className="text-center mb-8">
                 <div className="flex items-center justify-center mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-violet-600 to-cyan-600 rounded-xl flex items-center justify-center mr-4 shadow-lg shadow-violet-500/20">
+                  <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mr-4 shadow-lg shadow-yellow-500/20">
                     <FontAwesomeIcon icon={faRocket as IconProp} className="text-white text-xl" />
                   </div>
                   <h3 className="text-2xl lg:text-3xl font-bold gradient-text">How to Use CloakShare</h3>
@@ -493,10 +492,10 @@ const Home: React.FC = () => {
                 {/* Sending Guide */}
                 <div className="space-y-4">
                   <div className="flex items-center mb-4">
-                    <div className="w-8 h-8 bg-gradient-to-br from-violet-600 to-cyan-600 rounded-lg flex items-center justify-center mr-3">
+                    <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center mr-3">
                       <FontAwesomeIcon icon={faUpload as IconProp} className="text-white text-sm" />
                     </div>
-                    <h4 className="text-xl font-bold text-violet-400">Sending Content</h4>
+                    <h4 className="text-xl font-bold text-yellow-400">Sending Content</h4>
                   </div>
 
                   {[
@@ -524,10 +523,10 @@ const Home: React.FC = () => {
                 {/* Receiving Guide */}
                 <div className="space-y-4">
                   <div className="flex items-center mb-4">
-                    <div className="w-8 h-8 bg-gradient-to-br from-violet-600 to-cyan-600 rounded-lg flex items-center justify-center mr-3">
+                    <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center mr-3">
                       <FontAwesomeIcon icon={faEye as IconProp} className="text-white text-sm" />
                     </div>
-                    <h4 className="text-xl font-bold text-cyan-400">Receiving Content</h4>
+                    <h4 className="text-xl font-bold text-orange-400">Receiving Content</h4>
                   </div>
 
                   {[
@@ -554,10 +553,10 @@ const Home: React.FC = () => {
               </div>
 
               {/* Security Notes */}
-              <div className="mt-8 p-5 rounded-xl bg-violet-500/[0.04] border border-violet-500/[0.12]">
+              <div className="mt-8 p-5 rounded-xl bg-yellow-900/30 border border-yellow-700/50 text-yellow-500">
                 <div className="flex items-center mb-4">
-                  <FontAwesomeIcon icon={faShieldAlt as IconProp} className="text-violet-400 text-lg mr-3" />
-                  <h4 className="text-base font-bold text-violet-400">Important Security Notes</h4>
+                  <FontAwesomeIcon icon={faShieldAlt as IconProp} className="text-yellow-400 text-lg mr-3" />
+                  <h4 className="text-base font-bold text-yellow-400">Important Security Notes</h4>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                   {[
@@ -567,7 +566,7 @@ const Home: React.FC = () => {
                     { icon: faRocket, text: "Maximum file size limit is 100MB" },
                   ].map((note, i) => (
                     <div key={i} className="flex items-start space-x-2">
-                      <FontAwesomeIcon icon={note.icon as IconProp} className="text-violet-400/60 mt-1 flex-shrink-0" />
+                      <FontAwesomeIcon icon={note.icon as IconProp} className="text-yellow-400/60 mt-1 flex-shrink-0" />
                       <span className="text-slate-500">{note.text}</span>
                     </div>
                   ))}
@@ -588,34 +587,25 @@ const Home: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             aria-labelledby="send-section-heading"
           >
-            <div className="glass-card p-4 sm:p-6 lg:p-8 flex flex-col w-full min-h-[600px] sm:min-h-[650px]">
+            <div className="bg-[#1a1f2c] border border-white/5 rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col w-full min-h-[600px] sm:min-h-[650px] shadow-2xl">
               
               {/* Section Header */}
               <div className="flex items-center mb-6 lg:mb-8">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-violet-600 to-cyan-600 rounded-xl flex items-center justify-center mr-3 sm:mr-4 shadow-lg shadow-violet-500/20" aria-hidden="true">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 rounded-xl flex items-center justify-center mr-3 sm:mr-4 shadow-lg shadow-orange-500/20" aria-hidden="true">
                   <FontAwesomeIcon icon={faUpload as IconProp} className="text-white text-lg sm:text-xl" />
                 </div>
-                <h2 id="send-section-heading" className="text-xl sm:text-2xl lg:text-3xl font-bold gradient-text">Send to CloakShare</h2>
+                <h2 id="send-section-heading" className="text-xl sm:text-2xl lg:text-3xl font-bold text-amber-500">Send to CloakShare</h2>
               </div>
 
               {/* Tab Switcher */}
-              <div className="flex mb-6 lg:mb-8 bg-white/[0.03] rounded-xl p-1.5 border border-white/[0.06] relative" role="tablist" aria-label="Content type selection">
-                <div 
-                  className="tab-indicator absolute z-0"
-                  style={{
-                    left: isText ? '6px' : '50%',
-                    width: 'calc(50% - 6px)',
-                    top: '6px',
-                    height: 'calc(100% - 12px)',
-                  }}
-                />
+              <div className="flex mb-6 lg:mb-8 bg-slate-800/50 rounded-xl p-1.5 border border-white/5 relative" role="tablist" aria-label="Content type selection">
                 <button
                   role="tab"
                   aria-selected={isText}
                   aria-controls="text-panel"
                   id="text-tab"
-                  className={`relative z-10 flex-1 py-2.5 rounded-lg transition-all duration-300 flex items-center justify-center font-medium text-sm ${
-                    isText ? "text-white" : "text-slate-400 hover:text-slate-300"
+                  className={`relative z-10 flex-1 py-2.5 rounded-lg transition-all duration-300 flex items-center justify-center font-bold text-sm ${
+                    isText ? "text-white bg-orange-500 shadow-md" : "text-slate-400 hover:text-slate-300"
                   }`}
                   onClick={() => {
                     setIsText(true);
@@ -631,8 +621,8 @@ const Home: React.FC = () => {
                   aria-selected={isFile}
                   aria-controls="file-panel"
                   id="file-tab"
-                  className={`relative z-10 flex-1 py-2.5 rounded-lg transition-all duration-300 flex items-center justify-center font-medium text-sm ${
-                    isFile ? "text-white" : "text-slate-400 hover:text-slate-300"
+                  className={`relative z-10 flex-1 py-2.5 rounded-lg transition-all duration-300 flex items-center justify-center font-bold text-sm ${
+                    isFile ? "text-white bg-orange-500 shadow-md" : "text-slate-400 hover:text-slate-300"
                   }`}
                   onClick={() => {
                     setIsFile(true);
@@ -662,7 +652,7 @@ const Home: React.FC = () => {
                     <textarea
                       id="text-input"
                       placeholder="Enter text to share securely..."
-                      className="w-full h-48 sm:h-56 lg:h-64 p-4 sm:p-5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-slate-200 placeholder-slate-600 focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20 outline-none resize-none transition-all duration-300 text-sm sm:text-base input-glow"
+                      className="w-full h-48 sm:h-56 lg:h-64 p-4 sm:p-5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-slate-200 placeholder-slate-600 focus:border-yellow-500/50 focus:ring-2 focus:ring-yellow-500/20 outline-none resize-none transition-all duration-300 text-sm sm:text-base input-glow"
                       value={text}
                       onChange={(e) => setText(e.target.value)}
                       aria-describedby="text-char-count"
@@ -674,14 +664,14 @@ const Home: React.FC = () => {
 
                   <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 text-xs sm:text-sm bg-white/[0.02] rounded-xl p-3 sm:p-4 border border-white/[0.06]">
                     <div className="flex items-center space-x-2">
-                      <FontAwesomeIcon icon={faClock as IconProp} className="text-violet-400" aria-hidden="true" />
-                      <label htmlFor="expiration-text" className="text-violet-400/80 font-medium">Expiration:</label>
+                      <FontAwesomeIcon icon={faClock as IconProp} className="text-yellow-400" aria-hidden="true" />
+                      <label htmlFor="expiration-text" className="text-yellow-400/80 font-medium">Expiration:</label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <input
                         type="text"
                         id="expiration-text"
-                        className="w-16 sm:w-20 px-2 sm:px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.1] text-white focus:border-violet-500/50 outline-none text-center text-xs sm:text-sm input-glow"
+                        className="w-16 sm:w-20 px-2 sm:px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.1] text-white focus:border-yellow-500/50 outline-none text-center text-xs sm:text-sm input-glow"
                         style={{ fontFamily: "'JetBrains Mono', monospace" }}
                         maxLength={4}
                         value={number}
@@ -696,10 +686,10 @@ const Home: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoadingSave}
-                    className={`w-full py-3.5 sm:py-4 rounded-xl shimmer-btn ${
+                    className={`w-full py-3.5 sm:py-4 rounded-xl  ${
                       isLoadingSave
                         ? "bg-slate-800 cursor-not-allowed border border-slate-700"
-                        : "bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 glow-btn transform hover:scale-[1.02]"
+                        : "bg-orange-500 hover:from-yellow-500 hover:to-orange-500  transform hover:scale-[1.02]"
                     } text-white font-bold transition-all duration-300 flex items-center justify-center text-base sm:text-lg`}
                     aria-busy={isLoadingSave}
                     aria-label={isLoadingSave ? 'Saving text, please wait' : 'Save text securely'}
@@ -735,7 +725,7 @@ const Home: React.FC = () => {
                   aria-labelledby="file-tab"
                 >
                   <div 
-                    className="upload-zone rounded-2xl p-6 sm:p-8 text-center bg-white/[0.02] hover:bg-violet-500/[0.03] transition-all duration-300 cursor-pointer group"
+                    className="upload-zone rounded-2xl p-6 sm:p-8 text-center bg-white/[0.02] hover:bg-yellow-500/[0.03] transition-all duration-300 cursor-pointer group"
                     onClick={() => document.getElementById('fileInput')?.click()}
                   >
                     <input
@@ -748,8 +738,8 @@ const Home: React.FC = () => {
                     <div
                       className="cursor-pointer flex flex-col items-center justify-center pointer-events-none"
                     >
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-violet-600/20 to-cyan-600/20 rounded-2xl flex items-center justify-center mb-4 group-hover:from-violet-600/30 group-hover:to-cyan-600/30 transition-all duration-300" aria-hidden="true">
-                        <FontAwesomeIcon icon={faUpload as IconProp} className="text-2xl sm:text-3xl text-violet-400" />
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-orange-500/20 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-orange-500/30 transition-all duration-300" aria-hidden="true">
+                        <FontAwesomeIcon icon={faUpload as IconProp} className="text-2xl sm:text-3xl text-yellow-400" />
                       </div>
                       <span className="text-base sm:text-lg font-semibold text-slate-300 mb-2 block pointer-events-none">
                         {selectedFileName || "Choose a file to upload"}
@@ -776,14 +766,14 @@ const Home: React.FC = () => {
 
                   <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 text-sm bg-white/[0.02] rounded-xl p-4 border border-white/[0.06]">
                     <div className="flex items-center space-x-2">
-                      <FontAwesomeIcon icon={faClock as IconProp} className="text-violet-400" aria-hidden="true" />
-                      <label htmlFor="expiration-file" className="text-violet-400/80 font-medium">Expiration:</label>
+                      <FontAwesomeIcon icon={faClock as IconProp} className="text-yellow-400" aria-hidden="true" />
+                      <label htmlFor="expiration-file" className="text-yellow-400/80 font-medium">Expiration:</label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <input
                         type="text"
                         id="expiration-file"
-                        className="w-20 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.1] text-white focus:border-violet-500/50 outline-none text-center input-glow"
+                        className="w-20 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.1] text-white focus:border-yellow-500/50 outline-none text-center input-glow"
                         style={{ fontFamily: "'JetBrains Mono', monospace" }}
                         maxLength={4}
                         value={number}
@@ -798,10 +788,10 @@ const Home: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoadingSave || !selectedFile}
-                    className={`w-full py-3.5 sm:py-4 rounded-xl shimmer-btn ${
+                    className={`w-full py-3.5 sm:py-4 rounded-xl  ${
                       isLoadingSave || !selectedFile
                         ? "bg-slate-800 cursor-not-allowed border border-slate-700"
-                        : "bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 glow-btn transform hover:scale-[1.02]"
+                        : "bg-orange-500 hover:from-yellow-500 hover:to-orange-500  transform hover:scale-[1.02]"
                     } text-white font-bold transition-all duration-300 flex items-center justify-center text-base sm:text-lg`}
                     aria-busy={isLoadingSave}
                     aria-label={isLoadingSave ? 'Uploading file, please wait' : 'Upload file securely'}
@@ -875,14 +865,14 @@ const Home: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
             aria-labelledby="reveal-section-heading"
           >
-            <div className="glass-card p-4 sm:p-6 lg:p-8 flex flex-col w-full min-h-[600px] sm:min-h-[650px]">
+            <div className="bg-[#1a1f2c] border border-white/5 rounded-2xl p-4 sm:p-6 lg:p-8 flex flex-col w-full min-h-[600px] sm:min-h-[650px] shadow-2xl">
               
               {/* Section Header */}
               <div className="flex items-center mb-6 lg:mb-8">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-cyan-600 to-violet-600 rounded-xl flex items-center justify-center mr-3 sm:mr-4 shadow-lg shadow-cyan-500/20" aria-hidden="true">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 rounded-xl flex items-center justify-center mr-3 sm:mr-4 shadow-lg shadow-orange-500/20" aria-hidden="true">
                   <FontAwesomeIcon icon={faEye as IconProp} className="text-white text-lg sm:text-xl" />
                 </div>
-                <h2 id="reveal-section-heading" className="text-xl sm:text-2xl lg:text-3xl font-bold gradient-text">Reveal from CloakShare</h2>
+                <h2 id="reveal-section-heading" className="text-xl sm:text-2xl lg:text-3xl font-bold text-amber-500">Reveal from CloakShare</h2>
               </div>
 
               <motion.form 
@@ -898,7 +888,7 @@ const Home: React.FC = () => {
                     id="code-input"
                     type="text"
                     placeholder="Enter your 4-digit code"
-                    className="w-full py-4 sm:py-6 px-4 sm:px-6 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-lg sm:text-2xl text-center tracking-[0.3em] placeholder-slate-600 focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20 outline-none transition-all duration-300 input-glow"
+                    className="w-full py-4 sm:py-6 px-4 sm:px-6 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-lg sm:text-2xl text-center tracking-[0.3em] placeholder-slate-600 focus:border-yellow-500/50 focus:ring-2 focus:ring-yellow-500/20 outline-none transition-all duration-300 input-glow"
                     style={{ fontFamily: "'JetBrains Mono', monospace" }}
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
@@ -912,10 +902,10 @@ const Home: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isLoadingShow || !code}
-                  className={`w-full py-3.5 sm:py-4 rounded-xl shimmer-btn ${
+                  className={`w-full py-3.5 sm:py-4 rounded-xl  ${
                     isLoadingShow || !code
                       ? "bg-slate-800 cursor-not-allowed border border-slate-700"
-                      : "bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 glow-btn transform hover:scale-[1.02]"
+                      : "bg-slate-700 hover:bg-slate-600 transition-colors"
                   } text-white font-bold transition-all duration-300 flex items-center justify-center text-base sm:text-lg`}
                   aria-busy={isLoadingShow}
                   aria-label={isLoadingShow ? 'Retrieving content, please wait' : 'Reveal shared content'}
@@ -954,7 +944,7 @@ const Home: React.FC = () => {
                     </div>
                     <button
                       onClick={() => handleCopy(showText)}
-                      className="px-3.5 py-1.5 bg-violet-500/10 text-violet-400 rounded-lg hover:bg-violet-500/20 transition-all duration-200 flex items-center space-x-2 border border-violet-500/20 text-sm"
+                      className="px-3.5 py-1.5 bg-yellow-500/10 text-yellow-400 rounded-lg hover:bg-yellow-500/20 transition-all duration-200 flex items-center space-x-2 border border-yellow-500/20 text-sm"
                       aria-label="Copy retrieved content to clipboard"
                     >
                       <FontAwesomeIcon icon={faCopy as IconProp} aria-hidden="true" />
@@ -998,7 +988,7 @@ const Home: React.FC = () => {
                     alt="" 
                     aria-hidden="true"
                     className="w-8 h-8 sm:w-10 sm:h-10"
-                    style={{ filter: "drop-shadow(0 0 6px rgba(139, 92, 246, 0.3))" }}
+                    style={{ filter: "drop-shadow(0 0 6px rgba(234, 179, 8, 0.3))" }}
                   />
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-white">CloakShare</h3>
@@ -1012,7 +1002,7 @@ const Home: React.FC = () => {
                   <FontAwesomeIcon icon={faShieldAlt as IconProp} aria-hidden="true" />
                   <span className="text-xs sm:text-sm">End-to-End Encrypted</span>
                 </div>
-                <div className="flex items-center space-x-2 text-cyan-400/70">
+                <div className="flex items-center space-x-2 text-orange-400/70">
                   <FontAwesomeIcon icon={faClock as IconProp} aria-hidden="true" />
                   <span className="text-xs sm:text-sm">Auto-Delete</span>
                 </div>
@@ -1024,7 +1014,7 @@ const Home: React.FC = () => {
               <h4 className="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">Features</h4>
               <ul className="space-y-2 text-slate-500 text-sm" role="list">
                 {["Text Sharing", "File Upload", "Auto Expiration", "No Registration", "Secure Transfer"].map((f) => (
-                  <li key={f} className="hover:text-violet-400 transition-colors cursor-pointer py-0.5">{f}</li>
+                  <li key={f} className="hover:text-yellow-400 transition-colors cursor-pointer py-0.5">{f}</li>
                 ))}
               </ul>
             </nav>
@@ -1080,18 +1070,18 @@ const Home: React.FC = () => {
                 © {new Date().getFullYear()} CloakShare. All rights reserved.
               </p>
               <div className="flex flex-wrap justify-center items-center gap-3 text-slate-600 text-sm">
-                <a href="#" className="hover:text-violet-400 transition-colors">Privacy Policy</a>
+                <a href="#" className="hover:text-yellow-400 transition-colors">Privacy Policy</a>
                 <span className="text-slate-700 hidden sm:inline">•</span>
-                <a href="#" className="hover:text-violet-400 transition-colors">Terms of Service</a>
+                <a href="#" className="hover:text-yellow-400 transition-colors">Terms of Service</a>
                 <span className="text-slate-700 hidden sm:inline">•</span>
-                <a href="https://devashish.top" className="hover:text-violet-400 transition-colors">Contact</a>
+                <a href="https://devashish.top" className="hover:text-yellow-400 transition-colors">Contact</a>
               </div>
             </div>
             
             <div className="flex items-center justify-center space-x-2 text-slate-600 text-sm">
-              <FontAwesomeIcon icon={faRocket as IconProp} className="text-violet-500" aria-hidden="true" />
+              <FontAwesomeIcon icon={faRocket as IconProp} className="text-yellow-500" aria-hidden="true" />
               <span>Made with</span>
-              <FontAwesomeIcon icon={faStar as IconProp} className="text-cyan-500" aria-hidden="true" />
+              <FontAwesomeIcon icon={faStar as IconProp} className="text-orange-500" aria-hidden="true" />
               <span>for secure sharing</span>
             </div>
           </div>
@@ -1106,13 +1096,13 @@ const Home: React.FC = () => {
           style: {
             background: 'rgba(15, 15, 25, 0.9)',
             color: '#E2E8F0',
-            border: '1px solid rgba(139, 92, 246, 0.2)',
+            border: '1px solid rgba(234, 179, 8, 0.2)',
             backdropFilter: 'blur(20px)',
             fontFamily: "'Inter', sans-serif",
           },
           success: {
             iconTheme: {
-              primary: '#8B5CF6',
+              primary: '#EAB308',
               secondary: '#fff',
             },
           },

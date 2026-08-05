@@ -342,7 +342,7 @@ const PdfToJpg: React.FC<PdfToJpgProps> = ({ isOpen, onClose }) => {
                   />
                   <div className="pdf-jpg-dropzone-content">
                     <div className={`pdf-jpg-dropzone-icon ${isDragOver ? 'bounce' : ''}`}>
-                      <FontAwesomeIcon icon={faFileUpload as IconProp} className="text-violet-400 text-xl" />
+                      <FontAwesomeIcon icon={faFileUpload as IconProp} className="text-yellow-400 text-xl" />
                     </div>
                     <span className="text-slate-400 text-sm font-medium">
                       Drop a PDF here or click to browse
@@ -444,7 +444,7 @@ const PdfToJpg: React.FC<PdfToJpgProps> = ({ isOpen, onClose }) => {
                         <span className="text-slate-400 text-xs font-medium">
                           Processing page {progress.current} of {progress.total}
                         </span>
-                        <span className="text-violet-400 text-xs font-mono font-bold">{progressPercent}%</span>
+                        <span className="text-yellow-400 text-xs font-mono font-bold">{progressPercent}%</span>
                       </div>
                       <div className="pdf-jpg-progress-bar">
                         <motion.div
@@ -477,12 +477,12 @@ const PdfToJpg: React.FC<PdfToJpgProps> = ({ isOpen, onClose }) => {
                         
                         <div className="flex items-center space-x-4 bg-white/[0.03] p-3 rounded-lg border border-white/[0.05]">
                           <div className="flex items-center space-x-2 text-slate-300">
-                            <FontAwesomeIcon icon={faImages as IconProp} className="text-violet-400" />
+                            <FontAwesomeIcon icon={faImages as IconProp} className="text-yellow-400" />
                             <span className="text-sm font-medium">{result.numImages} JPGs</span>
                           </div>
                           <span className="text-slate-600">|</span>
                           <div className="flex items-center space-x-2 text-slate-300">
-                            <FontAwesomeIcon icon={faDownload as IconProp} className="text-cyan-400" />
+                            <FontAwesomeIcon icon={faDownload as IconProp} className="text-orange-400" />
                             <span className="text-sm font-medium">{formatFileSize(result.size)}</span>
                           </div>
                         </div>

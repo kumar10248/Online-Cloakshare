@@ -485,7 +485,7 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/5">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-600 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-yellow-500/20">
                   <FontAwesomeIcon icon={faPenNib as IconProp} className="text-white text-lg" />
                 </div>
                 <div>
@@ -503,7 +503,7 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
               
               {!file ? (
                 <div 
-                  className={`flex-1 flex items-center justify-center p-8 transition-colors ${isDragOver ? 'bg-violet-900/20' : ''}`}
+                  className={`flex-1 flex items-center justify-center p-8 transition-colors ${isDragOver ? 'bg-yellow-900/20' : ''}`}
                   onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
                   onDragLeave={() => setIsDragOver(false)}
                   onDrop={(e) => {
@@ -514,9 +514,9 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
                 >
                   <div className="max-w-md w-full">
                     <input type="file" accept=".pdf" className="hidden" ref={fileInputRef} onChange={(e) => e.target.files?.[0] && loadFile(e.target.files[0])} />
-                    <button onClick={() => fileInputRef.current?.click()} className="w-full flex flex-col items-center justify-center py-16 px-6 border-2 border-dashed border-violet-500/30 rounded-2xl bg-violet-500/5 hover:bg-violet-500/10 hover:border-violet-500/50 transition-all group">
-                      <div className="w-20 h-20 bg-violet-500/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <FontAwesomeIcon icon={faFileUpload as IconProp} className="text-3xl text-violet-400" />
+                    <button onClick={() => fileInputRef.current?.click()} className="w-full flex flex-col items-center justify-center py-16 px-6 border-2 border-dashed border-yellow-500/30 rounded-2xl bg-yellow-500/5 hover:bg-yellow-500/10 hover:border-yellow-500/50 transition-all group">
+                      <div className="w-20 h-20 bg-yellow-500/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <FontAwesomeIcon icon={faFileUpload as IconProp} className="text-3xl text-yellow-400" />
                       </div>
                       <h3 className="text-xl font-bold text-white mb-2">Upload PDF</h3>
                       <p className="text-slate-400 text-center text-sm">Drag and drop your PDF here or click to browse</p>
@@ -525,7 +525,7 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
                 </div>
               ) : isLoading ? (
                 <div className="flex-1 flex flex-col items-center justify-center">
-                  <FontAwesomeIcon icon={faSpinner as IconProp} spin className="text-4xl text-violet-500 mb-4" />
+                  <FontAwesomeIcon icon={faSpinner as IconProp} spin className="text-4xl text-yellow-500 mb-4" />
                   <p className="text-slate-400">Loading document...</p>
                 </div>
               ) : (
@@ -545,12 +545,12 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
                       <h3 className="text-slate-400 text-xs uppercase tracking-wider mb-2 font-semibold">Add Elements</h3>
                       
                       <button onClick={() => setIsDrawingMode(true)} className="w-full py-3 px-4 bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 rounded-xl font-medium transition-all flex items-center space-x-3 text-sm text-left">
-                        <FontAwesomeIcon icon={faPenNib as IconProp} className="text-violet-400 w-5" />
+                        <FontAwesomeIcon icon={faPenNib as IconProp} className="text-yellow-400 w-5" />
                         <span>Draw Signature</span>
                       </button>
                       
                       <button onClick={() => imageInputRef.current?.click()} className="w-full py-3 px-4 bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 rounded-xl font-medium transition-all flex items-center space-x-3 text-sm text-left">
-                        <FontAwesomeIcon icon={faImage as IconProp} className="text-cyan-400 w-5" />
+                        <FontAwesomeIcon icon={faImage as IconProp} className="text-orange-400 w-5" />
                         <span>Upload Image</span>
                       </button>
                       <input type="file" accept="image/png, image/jpeg" className="hidden" ref={imageInputRef} onChange={handleImageUpload} />
@@ -566,7 +566,7 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
                           <div className="space-y-2 max-h-32 overflow-y-auto pr-1">
                             {elements.map((el, idx) => (
                               <div key={el.id} 
-                                className={`flex justify-between items-center bg-white/5 p-2 rounded-lg border cursor-pointer transition-colors ${selectedElementId === el.id ? 'border-violet-500/50' : 'border-white/5'}`}
+                                className={`flex justify-between items-center bg-white/5 p-2 rounded-lg border cursor-pointer transition-colors ${selectedElementId === el.id ? 'border-yellow-500/50' : 'border-white/5'}`}
                                 onClick={() => setSelectedElementId(el.id)}
                               >
                                 <span className="text-xs text-slate-300 truncate">{el.type === 'text' ? el.text : `Image ${idx + 1}`}</span>
@@ -584,7 +584,7 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
                       className={`w-full py-3.5 px-4 rounded-xl font-bold transition-all shadow-lg mt-4 flex items-center justify-center space-x-2 ${
                         isSaving || elements.length === 0
                           ? 'bg-white/5 text-slate-500 cursor-not-allowed shadow-none'
-                          : 'bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-violet-500/25 transform hover:-translate-y-0.5'
+                          : 'bg-gradient-to-r from-yellow-600 to-fuchsia-600 hover:from-yellow-500 hover:to-fuchsia-500 text-white shadow-yellow-500/25 transform hover:-translate-y-0.5'
                       }`}
                     >
                       {isSaving ? (
@@ -626,7 +626,7 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    outline: isSelected ? '2px dashed rgba(139, 92, 246, 0.8)' : undefined,
+                                    outline: isSelected ? '2px dashed rgba(234, 179, 8, 0.8)' : undefined,
                                   }}
                                   onMouseDown={(e) => handleMouseDown(e, el.id)}
                                 >
@@ -741,7 +741,7 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
                     </button>
                     <div className="flex space-x-3">
                       <button onClick={() => setIsDrawingMode(false)} className="px-4 py-2 text-slate-600 hover:text-slate-900 font-medium">Cancel</button>
-                      <button onClick={saveSignature} className="px-6 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg font-bold shadow-md shadow-violet-500/20 transition-colors">Save Signature</button>
+                      <button onClick={saveSignature} className="px-6 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-bold shadow-md shadow-yellow-500/20 transition-colors">Save Signature</button>
                     </div>
                   </div>
                 </div>
@@ -760,14 +760,14 @@ const SignPDF: React.FC<SignPDFProps> = ({ isOpen, onClose }) => {
                     value={textInput}
                     onChange={(e) => setTextInput(e.target.value)}
                     placeholder="Enter text..."
-                    className="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white outline-none focus:border-violet-500/50 mb-6"
+                    className="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white outline-none focus:border-yellow-500/50 mb-6"
                     autoFocus
                     onKeyDown={(e) => e.key === 'Enter' && saveText()}
                   />
                   
                   <div className="flex justify-end space-x-3">
                     <button onClick={() => setIsTextMode(false)} className="px-4 py-2 text-slate-400 hover:text-white transition-colors font-medium">Cancel</button>
-                    <button onClick={saveText} className="px-6 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg font-medium shadow-md shadow-violet-500/20 transition-colors">Add to Page</button>
+                    <button onClick={saveText} className="px-6 py-2 bg-yellow-600 hover:bg-yellow-500 text-white rounded-lg font-medium shadow-md shadow-yellow-500/20 transition-colors">Add to Page</button>
                   </div>
                 </div>
               </div>

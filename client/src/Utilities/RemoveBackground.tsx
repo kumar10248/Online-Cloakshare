@@ -193,7 +193,7 @@ const RemoveBackground: React.FC<RemoveBackgroundProps> = ({ isOpen, onClose }) 
                   />
                   <div className="rm-bg-dropzone-content">
                     <div className={`rm-bg-dropzone-icon ${isDragOver ? 'bounce' : ''}`}>
-                      <FontAwesomeIcon icon={faFileUpload as IconProp} className="text-blue-400 text-xl" />
+                      <FontAwesomeIcon icon={faFileUpload as IconProp} className="text-yellow-400 text-xl" />
                     </div>
                     <span className="text-slate-400 text-sm font-medium">
                       Drop any image here or click to browse
@@ -206,7 +206,7 @@ const RemoveBackground: React.FC<RemoveBackgroundProps> = ({ isOpen, onClose }) 
                   <div className="rm-bg-file-card mb-6">
                     <div className="flex items-center space-x-4 flex-1 min-w-0">
                       <div className="rm-bg-file-icon">
-                        <FontAwesomeIcon icon={faImage as IconProp} className="text-blue-400 text-lg" />
+                        <FontAwesomeIcon icon={faImage as IconProp} className="text-yellow-400 text-lg" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-white text-sm font-medium truncate" title={file.name}>{file.name}</p>
@@ -235,7 +235,7 @@ const RemoveBackground: React.FC<RemoveBackgroundProps> = ({ isOpen, onClose }) 
                         )}
                         {isProcessing && (
                           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center">
-                            <FontAwesomeIcon icon={faSpinner as IconProp} className="spin-fast text-4xl text-blue-500 mb-4" />
+                            <FontAwesomeIcon icon={faSpinner as IconProp} className="spin-fast text-4xl text-yellow-500 mb-4" />
                             <p className="text-white font-medium text-sm text-center px-4">
                               AI is processing your image...<br/>
                               <span className="text-slate-400 text-xs font-normal">This happens completely locally!</span>
@@ -272,7 +272,7 @@ const RemoveBackground: React.FC<RemoveBackgroundProps> = ({ isOpen, onClose }) 
                         </button>
                         <button
                           onClick={handleDownload}
-                          className="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors shadow-lg shadow-blue-500/20 flex items-center justify-center"
+                          className="flex-1 py-3 px-4 rounded-xl bg-yellow-600 hover:bg-yellow-500 text-white font-medium transition-colors shadow-lg shadow-yellow-500/20 flex items-center justify-center"
                         >
                           <FontAwesomeIcon icon={faDownload as IconProp} className="mr-2" />
                           Download PNG

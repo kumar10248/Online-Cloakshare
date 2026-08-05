@@ -315,7 +315,7 @@ const JpgToPDF: React.FC<JpgToPDFProps> = ({ isOpen, onClose }) => {
               />
               <div className="jpg-pdf-dropzone-content">
                 <div className={`jpg-pdf-dropzone-icon ${isDragOver ? 'bounce' : ''}`}>
-                  <FontAwesomeIcon icon={faPlus as IconProp} className="text-violet-400 text-xl" />
+                  <FontAwesomeIcon icon={faPlus as IconProp} className="text-yellow-400 text-xl" />
                 </div>
                 <span className="text-slate-400 text-sm font-medium">
                   {images.length > 0 ? 'Add more images' : 'Drop images here or click to browse'}
@@ -333,7 +333,7 @@ const JpgToPDF: React.FC<JpgToPDFProps> = ({ isOpen, onClose }) => {
                 <div className="jpg-pdf-stats">
                   <div className="flex items-center space-x-4">
                     <span className="text-slate-500 text-xs">
-                      <span className="text-violet-400 font-semibold">{images.length}</span> image{images.length !== 1 ? 's' : ''}
+                      <span className="text-yellow-400 font-semibold">{images.length}</span> image{images.length !== 1 ? 's' : ''}
                     </span>
                     <span className="text-slate-600">•</span>
                     <span className="text-slate-500 text-xs">{formatFileSize(totalSize)}</span>

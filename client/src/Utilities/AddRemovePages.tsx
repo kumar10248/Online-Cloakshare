@@ -261,7 +261,7 @@ const AddRemovePages: React.FC<AddRemovePagesProps> = ({ isOpen, onClose }) => {
                   />
                   <div className="add-rm-dropzone-content">
                     <div className={`add-rm-dropzone-icon ${isDragOver ? 'bounce' : ''}`}>
-                      <FontAwesomeIcon icon={faFileUpload as IconProp} className="text-violet-400 text-xl" />
+                      <FontAwesomeIcon icon={faFileUpload as IconProp} className="text-yellow-400 text-xl" />
                     </div>
                     <span className="text-slate-400 text-sm font-medium">
                       Start by dropping your main PDF here
@@ -270,7 +270,7 @@ const AddRemovePages: React.FC<AddRemovePagesProps> = ({ isOpen, onClose }) => {
                 </div>
               ) : isLoading ? (
                 <div className="add-rm-loading">
-                  <FontAwesomeIcon icon={faSpinner as IconProp} className="animate-spin text-violet-400 text-3xl mb-3" />
+                  <FontAwesomeIcon icon={faSpinner as IconProp} className="animate-spin text-yellow-400 text-3xl mb-3" />
                   <p className="text-slate-300 font-medium">Processing pages...</p>
                 </div>
               ) : !result ? (

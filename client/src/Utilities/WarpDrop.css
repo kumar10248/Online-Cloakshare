@@ -28,7 +28,7 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow:
-    0 0 60px rgba(6, 182, 212, 0.08),
+    0 0 60px rgba(249, 115, 22, 0.08),
     0 25px 80px rgba(0, 0, 0, 0.5);
 }
 
@@ -57,11 +57,11 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+  background: linear-gradient(135deg, #EAB308, #F97316);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
 }
 
 .warp-close-btn {
@@ -155,8 +155,8 @@
 
 .warp-input:focus {
   outline: none;
-  border-color: rgba(6, 182, 212, 0.5);
-  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+  border-color: rgba(249, 115, 22, 0.5);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
 }
 
 .warp-primary-btn {
@@ -177,13 +177,13 @@
 }
 
 .warp-primary-btn.bg-violet {
-  background: linear-gradient(135deg, #8B5CF6, #6D28D9);
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+  background: linear-gradient(135deg, #EAB308, #F97316);
+  box-shadow: 0 4px 15px rgba(234, 179, 8, 0.3);
 }
 
 .warp-primary-btn.bg-cyan {
-  background: linear-gradient(135deg, #06B6D4, #0284C7);
-  box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+  background: linear-gradient(135deg, #EAB308, #F97316);
+  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
 }
 
 .warp-primary-btn:hover {
@@ -191,11 +191,11 @@
 }
 
 .warp-primary-btn.bg-violet:hover {
-  box-shadow: 0 6px 25px rgba(139, 92, 246, 0.5);
+  box-shadow: 0 6px 25px rgba(234, 179, 8, 0.5);
 }
 
 .warp-primary-btn.bg-cyan:hover {
-  box-shadow: 0 6px 25px rgba(6, 182, 212, 0.5);
+  box-shadow: 0 6px 25px rgba(249, 115, 22, 0.5);
 }
 
 /* Waiting / Code Box */
@@ -211,7 +211,7 @@
 }
 
 .warp-code-box:hover {
-  border-color: rgba(139, 92, 246, 0.3);
+  border-color: rgba(234, 179, 8, 0.3);
   background: rgba(0, 0, 0, 0.4);
 }
 
@@ -227,7 +227,7 @@
 
 .warp-progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #8B5CF6, #06B6D4);
+  background: linear-gradient(90deg, #EAB308, #F97316);
   border-radius: 999px;
   transition: width 0.3s ease;
   position: relative;

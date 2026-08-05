@@ -241,7 +241,7 @@ const MergePDF: React.FC<MergePDFProps> = ({ isOpen, onClose }) => {
               />
               <div className="merge-pdf-dropzone-content">
                 <div className={`merge-pdf-dropzone-icon ${isDragOver ? 'bounce' : ''}`}>
-                  <FontAwesomeIcon icon={faPlus as IconProp} className="text-violet-400 text-xl" />
+                  <FontAwesomeIcon icon={faPlus as IconProp} className="text-yellow-400 text-xl" />
                 </div>
                 <span className="text-slate-400 text-sm font-medium">
                   {pdfFiles.length > 0 ? 'Add more PDFs' : 'Drop PDF files here or click to browse'}
@@ -259,11 +259,11 @@ const MergePDF: React.FC<MergePDFProps> = ({ isOpen, onClose }) => {
                 <div className="merge-pdf-stats">
                   <div className="flex items-center space-x-4">
                     <span className="text-slate-500 text-xs">
-                      <span className="text-violet-400 font-semibold">{pdfFiles.length}</span> file{pdfFiles.length !== 1 ? 's' : ''}
+                      <span className="text-yellow-400 font-semibold">{pdfFiles.length}</span> file{pdfFiles.length !== 1 ? 's' : ''}
                     </span>
                     <span className="text-slate-600">•</span>
                     <span className="text-slate-500 text-xs">
-                      <span className="text-cyan-400 font-semibold">{totalPages}</span> page{totalPages !== 1 ? 's' : ''}
+                      <span className="text-orange-400 font-semibold">{totalPages}</span> page{totalPages !== 1 ? 's' : ''}
                     </span>
                     <span className="text-slate-600">•</span>
                     <span className="text-slate-500 text-xs">{formatFileSize(totalSize)}</span>

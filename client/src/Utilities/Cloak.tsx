@@ -302,7 +302,7 @@ const Cloak: React.FC<CloakProps> = ({ isOpen, onClose }) => {
                     <div className={`cloak-dropzone-icon ${isDragOver ? 'bounce' : ''}`}>
                       <FontAwesomeIcon 
                         icon={mode === 'encrypt' ? faLock as IconProp : faLockOpen as IconProp} 
-                        className={mode === 'encrypt' ? "text-violet-400 text-xl" : "text-emerald-400 text-xl"} 
+                        className={mode === 'encrypt' ? "text-yellow-400 text-xl" : "text-emerald-400 text-xl"} 
                       />
                     </div>
                     <span className="text-slate-400 text-sm font-medium">
@@ -318,10 +318,10 @@ const Cloak: React.FC<CloakProps> = ({ isOpen, onClose }) => {
                   {/* File Info */}
                   <div className="cloak-file-card">
                     <div className="flex items-center space-x-3 flex-1 min-w-0">
-                      <div className={`cloak-file-icon ${mode === 'decrypt' ? 'bg-emerald-500/10' : 'bg-violet-500/10'}`}>
+                      <div className={`cloak-file-icon ${mode === 'decrypt' ? 'bg-emerald-500/10' : 'bg-yellow-500/10'}`}>
                         <FontAwesomeIcon 
                           icon={faShieldAlt as IconProp} 
-                          className={mode === 'decrypt' ? 'text-emerald-400 text-lg' : 'text-violet-400 text-lg'} 
+                          className={mode === 'decrypt' ? 'text-emerald-400 text-lg' : 'text-yellow-400 text-lg'} 
                         />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -389,7 +389,7 @@ const Cloak: React.FC<CloakProps> = ({ isOpen, onClose }) => {
                         <div className="cloak-result-icon">
                           <FontAwesomeIcon 
                             icon={faCheckCircle as IconProp} 
-                            className={mode === 'encrypt' ? "text-violet-400 text-2xl" : "text-emerald-400 text-2xl"} 
+                            className={mode === 'encrypt' ? "text-yellow-400 text-2xl" : "text-emerald-400 text-2xl"} 
                           />
                         </div>
                         <h3 className="text-white font-bold mb-1">
@@ -403,7 +403,7 @@ const Cloak: React.FC<CloakProps> = ({ isOpen, onClose }) => {
                         
                         <div className="flex items-center space-x-4 bg-white/[0.03] p-3 rounded-lg border border-white/[0.05]">
                           <div className="flex items-center space-x-2 text-slate-300">
-                            <FontAwesomeIcon icon={mode === 'encrypt' ? faLock as IconProp : faLockOpen as IconProp} className={mode === 'encrypt' ? "text-violet-400" : "text-emerald-400"} />
+                            <FontAwesomeIcon icon={mode === 'encrypt' ? faLock as IconProp : faLockOpen as IconProp} className={mode === 'encrypt' ? "text-yellow-400" : "text-emerald-400"} />
                             <span className="text-sm font-medium">{result.fileName}</span>
                           </div>
                         </div>

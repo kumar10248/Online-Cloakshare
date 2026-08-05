@@ -283,7 +283,7 @@ const CompressPDF: React.FC<CompressPDFProps> = ({ isOpen, onClose }) => {
                   />
                   <div className="compress-pdf-dropzone-content">
                     <div className={`compress-pdf-dropzone-icon ${isDragOver ? 'bounce' : ''}`}>
-                      <FontAwesomeIcon icon={faFileUpload as IconProp} className="text-violet-400 text-xl" />
+                      <FontAwesomeIcon icon={faFileUpload as IconProp} className="text-yellow-400 text-xl" />
                     </div>
                     <span className="text-slate-400 text-sm font-medium">
                       Drop a PDF here or click to browse
@@ -354,7 +354,7 @@ const CompressPDF: React.FC<CompressPDFProps> = ({ isOpen, onClose }) => {
                         <span className="text-slate-400 text-xs font-medium">
                           Compressing page {progress.current} of {progress.total}
                         </span>
-                        <span className="text-violet-400 text-xs font-mono font-bold">{progressPercent}%</span>
+                        <span className="text-yellow-400 text-xs font-mono font-bold">{progressPercent}%</span>
                       </div>
                       <div className="compress-pdf-progress-bar">
                         <motion.div
@@ -387,7 +387,7 @@ const CompressPDF: React.FC<CompressPDFProps> = ({ isOpen, onClose }) => {
                           <span className="text-white text-lg font-bold font-mono">{formatFileSize(result.originalSize)}</span>
                         </div>
                         <div className="compress-pdf-arrow">
-                          <FontAwesomeIcon icon={faArrowDown as IconProp} className="text-violet-400 rotate-[-90deg]" />
+                          <FontAwesomeIcon icon={faArrowDown as IconProp} className="text-yellow-400 rotate-[-90deg]" />
                         </div>
                         <div className="compress-pdf-size-box highlight">
                           <span className="text-slate-500 text-xs">Compressed</span>

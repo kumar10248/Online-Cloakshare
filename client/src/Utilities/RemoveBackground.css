@@ -45,7 +45,7 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  background: linear-gradient(135deg, #EAB308, #F97316);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -171,7 +171,7 @@
   padding: 1rem;
   border-radius: 0.75rem;
   border: none;
-  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  background: linear-gradient(135deg, #EAB308, #F97316);
   color: white;
   font-weight: 600;
   font-size: 1rem;

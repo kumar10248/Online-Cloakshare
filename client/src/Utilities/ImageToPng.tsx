@@ -279,7 +279,7 @@ const ImageToPng: React.FC<ImageToPngProps> = ({ isOpen, onClose }) => {
                           </div>
                           <span className="text-slate-600">|</span>
                           <div className="flex items-center space-x-2 text-slate-300">
-                            <FontAwesomeIcon icon={faDownload as IconProp} className="text-cyan-400" />
+                            <FontAwesomeIcon icon={faDownload as IconProp} className="text-orange-400" />
                             <span className="text-sm font-medium">{formatFileSize(result.size)}</span>
                           </div>
                         </div>

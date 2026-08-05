@@ -28,7 +28,7 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow:
-    0 0 60px rgba(139, 92, 246, 0.08),
+    0 0 60px rgba(234, 179, 8, 0.08),
     0 25px 80px rgba(0, 0, 0, 0.5);
 }
 
@@ -45,11 +45,11 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+  background: linear-gradient(135deg, #EAB308, #F97316);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 15px rgba(234, 179, 8, 0.3);
 }
 
 .split-pdf-close-btn {
@@ -88,17 +88,17 @@
   border-radius: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='rgba(139,92,246,0.25)' stroke-width='2' stroke-dasharray='12,8' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='rgba(234, 179, 8,0.25)' stroke-width='2' stroke-dasharray='12,8' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e");
 }
 
 .split-pdf-dropzone:hover {
-  background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='rgba(139,92,246,0.5)' stroke-width='2' stroke-dasharray='12,8' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e");
-  background-color: rgba(139, 92, 246, 0.03);
+  background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='rgba(234, 179, 8,0.5)' stroke-width='2' stroke-dasharray='12,8' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e");
+  background-color: rgba(234, 179, 8, 0.03);
 }
 
 .split-pdf-dropzone.drag-active {
-  background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='rgba(139,92,246,0.7)' stroke-width='2' stroke-dasharray='12,8' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e");
-  background-color: rgba(139, 92, 246, 0.06);
+  background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='rgba(234, 179, 8,0.7)' stroke-width='2' stroke-dasharray='12,8' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e");
+  background-color: rgba(234, 179, 8, 0.06);
 }
 
 .split-pdf-dropzone-content {
@@ -114,7 +114,7 @@
   width: 3rem;
   height: 3rem;
   border-radius: 0.75rem;
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(234, 179, 8, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -169,9 +169,9 @@
 }
 
 .split-pdf-change-btn:hover {
-  background: rgba(139, 92, 246, 0.1);
-  border-color: rgba(139, 92, 246, 0.2);
-  color: #A78BFA;
+  background: rgba(234, 179, 8, 0.1);
+  border-color: rgba(234, 179, 8, 0.2);
+  color: #FDBA74;
 }
 
 /* Settings Wrapper */
@@ -202,16 +202,16 @@
 }
 
 .split-pdf-mode-btn:hover:not(:disabled) {
-  background: rgba(139, 92, 246, 0.06);
-  border-color: rgba(139, 92, 246, 0.15);
-  color: #A78BFA;
+  background: rgba(234, 179, 8, 0.06);
+  border-color: rgba(234, 179, 8, 0.15);
+  color: #FDBA74;
 }
 
 .split-pdf-mode-btn.active {
-  background: rgba(139, 92, 246, 0.1);
-  border-color: rgba(139, 92, 246, 0.35);
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
-  color: #06B6D4;
+  background: rgba(234, 179, 8, 0.1);
+  border-color: rgba(234, 179, 8, 0.35);
+  box-shadow: 0 0 20px rgba(234, 179, 8, 0.1);
+  color: #F97316;
 }
 
 .split-pdf-mode-btn:disabled {
@@ -232,8 +232,8 @@
 
 .split-pdf-input:focus {
   outline: none;
-  border-color: rgba(139, 92, 246, 0.5);
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
+  border-color: rgba(234, 179, 8, 0.5);
+  box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.1);
 }
 
 .split-pdf-input:disabled {
@@ -257,7 +257,7 @@
 .split-pdf-progress-fill {
   height: 100%;
   border-radius: 3px;
-  background: linear-gradient(90deg, #8B5CF6, #06B6D4);
+  background: linear-gradient(90deg, #EAB308, #F97316);
   position: relative;
 }
 
@@ -302,7 +302,7 @@
   padding: 0.875rem;
   border-radius: 0.75rem;
   border: none;
-  background: linear-gradient(135deg, #8B5CF6, #06B6D4);
+  background: linear-gradient(135deg, #EAB308, #F97316);
   color: white;
   font-weight: 600;
   font-size: 0.9375rem;
@@ -312,13 +312,13 @@
   justify-content: center;
   transition: all 0.3s ease;
   font-family: 'Inter', sans-serif;
-  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 20px rgba(234, 179, 8, 0.3);
   position: relative;
   overflow: hidden;
 }
 
 .split-pdf-primary-btn:hover:not(.disabled) {
-  box-shadow: 0 6px 30px rgba(139, 92, 246, 0.5), 0 0 60px rgba(6, 182, 212, 0.15);
+  box-shadow: 0 6px 30px rgba(234, 179, 8, 0.5), 0 0 60px rgba(249, 115, 22, 0.15);
   transform: translateY(-1px);
 }
 
@@ -348,9 +348,9 @@
 }
 
 .split-pdf-secondary-btn:hover {
-  background: rgba(139, 92, 246, 0.1);
-  border-color: rgba(139, 92, 246, 0.2);
-  color: #A78BFA;
+  background: rgba(234, 179, 8, 0.1);
+  border-color: rgba(234, 179, 8, 0.2);
+  color: #FDBA74;
 }
 
 /* Mobile */

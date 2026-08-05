@@ -284,7 +284,7 @@ const EditPDF: React.FC<EditPDFProps> = ({ isOpen, onClose }) => {
               {/* Notice */}
               {!result && !file && (
                 <div className="edit-pdf-notice">
-                  <FontAwesomeIcon icon={faExclamationCircle as IconProp} className="text-blue-400 mt-0.5" />
+                  <FontAwesomeIcon icon={faExclamationCircle as IconProp} className="text-yellow-400 mt-0.5" />
                   <p className="text-slate-400 text-xs leading-relaxed">
                     <strong>Structural Editor:</strong> This tool allows you to manipulate the pages of your PDF (rotate, delete, rearrange) and add a global watermark. Editing existing text content directly is not supported.
                   </p>
@@ -309,7 +309,7 @@ const EditPDF: React.FC<EditPDFProps> = ({ isOpen, onClose }) => {
                   />
                   <div className="edit-pdf-dropzone-content">
                     <div className={`edit-pdf-dropzone-icon ${isDragOver ? 'bounce' : ''}`}>
-                      <FontAwesomeIcon icon={faFileUpload as IconProp} className="text-violet-400 text-xl" />
+                      <FontAwesomeIcon icon={faFileUpload as IconProp} className="text-yellow-400 text-xl" />
                     </div>
                     <span className="text-slate-400 text-sm font-medium">
                       Drop a PDF here or click to browse
@@ -318,7 +318,7 @@ const EditPDF: React.FC<EditPDFProps> = ({ isOpen, onClose }) => {
                 </div>
               ) : isLoading ? (
                 <div className="edit-pdf-loading">
-                  <FontAwesomeIcon icon={faSpinner as IconProp} className="animate-spin text-violet-400 text-3xl mb-3" />
+                  <FontAwesomeIcon icon={faSpinner as IconProp} className="animate-spin text-yellow-400 text-3xl mb-3" />
                   <p className="text-slate-300 font-medium">Loading pages...</p>
                 </div>
               ) : !result ? (

@@ -271,7 +271,7 @@ const SplitPDF: React.FC<SplitPDFProps> = ({ isOpen, onClose }) => {
                   />
                   <div className="split-pdf-dropzone-content">
                     <div className={`split-pdf-dropzone-icon ${isDragOver ? 'bounce' : ''}`}>
-                      <FontAwesomeIcon icon={faFileUpload as IconProp} className="text-violet-400 text-xl" />
+                      <FontAwesomeIcon icon={faFileUpload as IconProp} className="text-yellow-400 text-xl" />
                     </div>
                     <span className="text-slate-400 text-sm font-medium">
                       Drop a PDF here or click to browse
@@ -366,7 +366,7 @@ const SplitPDF: React.FC<SplitPDFProps> = ({ isOpen, onClose }) => {
                         <span className="text-slate-400 text-xs font-medium">
                           Processing page {progress.current} of {progress.total}
                         </span>
-                        <span className="text-violet-400 text-xs font-mono font-bold">{progressPercent}%</span>
+                        <span className="text-yellow-400 text-xs font-mono font-bold">{progressPercent}%</span>
                       </div>
                       <div className="split-pdf-progress-bar">
                         <motion.div
