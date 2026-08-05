@@ -19,7 +19,9 @@ import {
   faFileMedical,
   faImage,
   faPenNib,
-  faCompress
+  faCompress,
+  faEraser,
+  faQrcode
 } from "@fortawesome/free-solid-svg-icons";
 import { faGithub, faLinkedin, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { motion } from "framer-motion";
@@ -36,6 +38,8 @@ import SplitPDF from "../Utilities/SplitPDF";
 import AddRemovePages from "../Utilities/AddRemovePages";
 import ImageToPng from "../Utilities/ImageToPng";
 import CompressImage from "../Utilities/CompressImage";
+import RemoveBackground from "../Utilities/RemoveBackground";
+import QRCodeGenerator from "../Utilities/QRCodeGenerator";
 import RedactPDF from "../Utilities/RedactPDF";
 import Cloak from "../Utilities/Cloak";
 import WarpDrop from "../Utilities/WarpDrop";
@@ -80,6 +84,8 @@ const Home: React.FC = () => {
   const [showAddRemovePages, setShowAddRemovePages] = useState<boolean>(false);
   const [showImageToPng, setShowImageToPng] = useState<boolean>(false);
   const [showCompressImage, setShowCompressImage] = useState<boolean>(false);
+  const [showRemoveBackground, setShowRemoveBackground] = useState<boolean>(false);
+  const [showQRCodeGenerator, setShowQRCodeGenerator] = useState<boolean>(false);
   const [showRedactPDF, setShowRedactPDF] = useState<boolean>(false);
   const [showCloak, setShowCloak] = useState<boolean>(false);
   const [showWarpDrop, setShowWarpDrop] = useState<boolean>(false);
@@ -97,7 +103,7 @@ const Home: React.FC = () => {
     const isAnyModalOpen = 
       showMergePDF || showCompressPDF || showJpgToPDF || showPdfToJpg ||
       showSignPDF || showEditPDF || showSplitPDF || showAddRemovePages ||
-      showImageToPng || showCompressImage || showRedactPDF || showCloak || showWarpDrop;
+      showImageToPng || showCompressImage || showRemoveBackground || showQRCodeGenerator || showRedactPDF || showCloak || showWarpDrop;
 
     if (isAnyModalOpen) {
       document.body.style.overflow = 'hidden';
@@ -111,7 +117,7 @@ const Home: React.FC = () => {
   }, [
     showMergePDF, showCompressPDF, showJpgToPDF, showPdfToJpg,
     showSignPDF, showEditPDF, showSplitPDF, showAddRemovePages,
-    showImageToPng, showCompressImage, showRedactPDF, showCloak, showWarpDrop
+    showImageToPng, showCompressImage, showRemoveBackground, showQRCodeGenerator, showRedactPDF, showCloak, showWarpDrop
   ]);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -356,6 +362,8 @@ const Home: React.FC = () => {
                 { name: "JPG to PDF", icon: faUpload, action: () => setShowJpgToPDF(true) },
                 { name: "Image to PNG", icon: faImage, action: () => setShowImageToPng(true) },
                 { name: "Compress Image", icon: faCompress, action: () => setShowCompressImage(true) },
+                { name: "Remove Background", icon: faEraser, action: () => setShowRemoveBackground(true) },
+                { name: "QR Generator", icon: faQrcode, action: () => setShowQRCodeGenerator(true) },
                 { name: "Compress PDF", icon: faRocket, action: () => setShowCompressPDF(true) },
                 { name: "Redact PDF", icon: faShieldAlt, action: () => setShowRedactPDF(true) },
                 { name: "Cloak", icon: faShieldAlt, action: () => setShowCloak(true) },
@@ -1128,6 +1136,8 @@ const Home: React.FC = () => {
       <AddRemovePages isOpen={showAddRemovePages} onClose={() => setShowAddRemovePages(false)} />
       <ImageToPng isOpen={showImageToPng} onClose={() => setShowImageToPng(false)} />
       <CompressImage isOpen={showCompressImage} onClose={() => setShowCompressImage(false)} />
+      <RemoveBackground isOpen={showRemoveBackground} onClose={() => setShowRemoveBackground(false)} />
+      <QRCodeGenerator isOpen={showQRCodeGenerator} onClose={() => setShowQRCodeGenerator(false)} />
       <RedactPDF isOpen={showRedactPDF} onClose={() => setShowRedactPDF(false)} />
       <Cloak isOpen={showCloak} onClose={() => setShowCloak(false)} />
       <WarpDrop isOpen={showWarpDrop} onClose={() => setShowWarpDrop(false)} />

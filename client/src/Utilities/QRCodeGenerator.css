@@ -1,0 +1,170 @@
+/* ============================================
+   QR Code Generator Modal — Premium Styles
+   ============================================ */
+
+/* Overlay */
+.qr-gen-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* Modal */
+.qr-gen-modal {
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  background: rgba(12, 12, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow:
+    0 0 60px rgba(234, 179, 8, 0.08),
+    0 25px 80px rgba(0, 0, 0, 0.5);
+}
+
+/* Header */
+.qr-gen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.qr-gen-icon-badge {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #EAB308, #F97316);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(234, 179, 8, 0.3);
+}
+
+.qr-gen-close-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: #64748B;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.qr-gen-close-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+}
+
+/* Body */
+.qr-gen-body {
+  padding: 1.25rem 1.5rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Input Area */
+.qr-gen-input-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.qr-gen-textarea {
+  width: 100%;
+  min-height: 100px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 1rem;
+  color: white;
+  font-size: 0.95rem;
+  resize: none;
+  transition: all 0.2s;
+}
+
+.qr-gen-textarea:focus {
+  outline: none;
+  border-color: rgba(234, 179, 8, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.1);
+}
+
+.qr-gen-textarea::placeholder {
+  color: #64748B;
+}
+
+/* QR Code Preview */
+.qr-gen-preview-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.qr-gen-preview-box {
+  background: white;
+  padding: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.qr-gen-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #64748B;
+  padding: 2rem;
+}
+
+/* Action Button */
+.qr-gen-action-btn {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: none;
+  background: linear-gradient(135deg, #EAB308, #F97316);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(234, 179, 8, 0.25);
+}
+
+.qr-gen-action-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(234, 179, 8, 0.4);
+}
+
+.qr-gen-action-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.qr-gen-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
