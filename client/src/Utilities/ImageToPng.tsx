@@ -36,7 +36,11 @@ const ImageToPng: React.FC<ImageToPngProps> = ({ isOpen, onClose }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadFile = (selectedFile: File) => {
-    if (!selectedFile.type.startsWith('image/')) {
+    const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.gif', '.bmp', '.enc'];
+    const fileName = selectedFile.name.toLowerCase();
+    const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
+
+    if (!selectedFile.type.startsWith('image/') && !hasValidExtension) {
       toast.error('Please select a valid image file.');
       return;
     }
@@ -87,8 +91,8 @@ const ImageToPng: React.FC<ImageToPngProps> = ({ isOpen, onClose }) => {
     img.onload = () => {
       try {
         const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
+        canvas.width = img.width || 800; // Fallback for SVGs without dimensions
+        canvas.height = img.height || 600;
         const ctx = canvas.getContext('2d');
         
         if (!ctx) {
@@ -210,7 +214,7 @@ const ImageToPng: React.FC<ImageToPngProps> = ({ isOpen, onClose }) => {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/*,.enc,.webp,.svg,.jpg,.jpeg,.png,.gif"
                     className="hidden"
                     onChange={handleFileSelect}
                   />

@@ -18,7 +18,8 @@ import {
   faCut,
   faFileMedical,
   faImage,
-  faPenNib
+  faPenNib,
+  faCompress
 } from "@fortawesome/free-solid-svg-icons";
 import { faGithub, faLinkedin, faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { motion } from "framer-motion";
@@ -34,6 +35,7 @@ import EditPDF from "../Utilities/EditPDF";
 import SplitPDF from "../Utilities/SplitPDF";
 import AddRemovePages from "../Utilities/AddRemovePages";
 import ImageToPng from "../Utilities/ImageToPng";
+import CompressImage from "../Utilities/CompressImage";
 import RedactPDF from "../Utilities/RedactPDF";
 import Cloak from "../Utilities/Cloak";
 import WarpDrop from "../Utilities/WarpDrop";
@@ -77,6 +79,7 @@ const Home: React.FC = () => {
   const [showSplitPDF, setShowSplitPDF] = useState<boolean>(false);
   const [showAddRemovePages, setShowAddRemovePages] = useState<boolean>(false);
   const [showImageToPng, setShowImageToPng] = useState<boolean>(false);
+  const [showCompressImage, setShowCompressImage] = useState<boolean>(false);
   const [showRedactPDF, setShowRedactPDF] = useState<boolean>(false);
   const [showCloak, setShowCloak] = useState<boolean>(false);
   const [showWarpDrop, setShowWarpDrop] = useState<boolean>(false);
@@ -94,7 +97,7 @@ const Home: React.FC = () => {
     const isAnyModalOpen = 
       showMergePDF || showCompressPDF || showJpgToPDF || showPdfToJpg ||
       showSignPDF || showEditPDF || showSplitPDF || showAddRemovePages ||
-      showImageToPng || showRedactPDF || showCloak || showWarpDrop;
+      showImageToPng || showCompressImage || showRedactPDF || showCloak || showWarpDrop;
 
     if (isAnyModalOpen) {
       document.body.style.overflow = 'hidden';
@@ -108,7 +111,7 @@ const Home: React.FC = () => {
   }, [
     showMergePDF, showCompressPDF, showJpgToPDF, showPdfToJpg,
     showSignPDF, showEditPDF, showSplitPDF, showAddRemovePages,
-    showImageToPng, showRedactPDF, showCloak, showWarpDrop
+    showImageToPng, showCompressImage, showRedactPDF, showCloak, showWarpDrop
   ]);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -352,6 +355,7 @@ const Home: React.FC = () => {
                 { name: "PDF to JPG", icon: faEye, action: () => setShowPdfToJpg(true) },
                 { name: "JPG to PDF", icon: faUpload, action: () => setShowJpgToPDF(true) },
                 { name: "Image to PNG", icon: faImage, action: () => setShowImageToPng(true) },
+                { name: "Compress Image", icon: faCompress, action: () => setShowCompressImage(true) },
                 { name: "Compress PDF", icon: faRocket, action: () => setShowCompressPDF(true) },
                 { name: "Redact PDF", icon: faShieldAlt, action: () => setShowRedactPDF(true) },
                 { name: "Cloak", icon: faShieldAlt, action: () => setShowCloak(true) },
@@ -1123,6 +1127,7 @@ const Home: React.FC = () => {
       <SplitPDF isOpen={showSplitPDF} onClose={() => setShowSplitPDF(false)} />
       <AddRemovePages isOpen={showAddRemovePages} onClose={() => setShowAddRemovePages(false)} />
       <ImageToPng isOpen={showImageToPng} onClose={() => setShowImageToPng(false)} />
+      <CompressImage isOpen={showCompressImage} onClose={() => setShowCompressImage(false)} />
       <RedactPDF isOpen={showRedactPDF} onClose={() => setShowRedactPDF(false)} />
       <Cloak isOpen={showCloak} onClose={() => setShowCloak(false)} />
       <WarpDrop isOpen={showWarpDrop} onClose={() => setShowWarpDrop(false)} />
